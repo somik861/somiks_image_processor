@@ -13,4 +13,4 @@ __pycache__
 /build*
 
 # conan presets
-/CMakeUsersPresets.json
+/CMakeUserPresets.json
