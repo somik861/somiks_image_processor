@@ -76,8 +76,8 @@ conan --version
 conan profile detect --name sip
 vim $( conan profile path sip )
 
-conan install . --output-folder=build_conan --build=missing -pr=sip
-conan install . --output-folder=build_conan --build=missing  -pr=sip -s build_type=Debug
+conan install . --output-folder=build_conan --build=missing -pr:h=sip -pr:b=sip
+conan install . --output-folder=build_conan --build=missing  -pr:h=sip -pr:b=sip -s build_type=Debug
 ```
 Conan config file for windows should look something like this:
 ```
@@ -99,8 +99,11 @@ build_type=Release
 compiler=clang
 compiler.cppstd=20
 compiler.libcxx=libstdc++11
-compiler.version=15
+compiler.version=16
 os=Linux
+[buildenv]
+CC=clang-16
+CXX=clang++-16
 ```
 
 #### build
