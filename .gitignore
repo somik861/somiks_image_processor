@@ -1,0 +1,16 @@
+# vscode
+.vscode
+
+# visual studio
+/out
+.vs
+
+# python caches
+__pycache__
+.mypy_cache
+
+# build directories
+/build*
+
+# conan presets
+/CMakeUsersPresets.json
