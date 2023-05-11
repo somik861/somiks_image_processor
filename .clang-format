@@ -1,0 +1,12 @@
+Language:        Cpp
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+UseTab: ForIndentation
+TabWidth: 4
+
+AllowShortLoopsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: Yes
+PointerAlignment: Left
+BinPackParameters: false
