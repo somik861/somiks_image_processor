@@ -59,7 +59,6 @@ def _contains(dct: dict[str, Any], key: str, path: tuple[str, ...], *args: str, 
 
 
 def check_options(options: list[Any], path: tuple[str, ...]) -> None:
-    _nonempty(options, path, error=False)
     for i, opt in enumerate(options):
         new_path = (*path, str(i))
         if not _is_valid_type(opt, dict, new_path):
