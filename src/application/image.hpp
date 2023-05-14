@@ -65,7 +65,7 @@ class ndImageBase {
 
 	template <ImgType T>
 	ndImage<T> as_typed() {
-		assert((static_cast<int>(_type) == mt::traits::tuple_type_idx_v<T>));
+		assert((static_cast<int>(_type) == mt::traits::tuple_type_idx_v<T, type_list>));
 		return ndImage<T>(*this);
 	}
 
