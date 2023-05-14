@@ -1,0 +1,13 @@
+name: Validation of configuration files
+
+on: [push, pull_request]
+
+jobs:
+    validate-format-configs:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Main validation
+              run: for FILE in `find ${{github.workspace}}/src/formats -name "*.json"`; do echo Processing ${FILE}; python ${{github.workspace}}/utils/check_format_config.py ${FILE} |& > ${{github.workspace}}/out ; test "$(cat ${{github.workspace}}/out)" = ""; done
