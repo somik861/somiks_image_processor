@@ -1,4 +1,22 @@
 {
-    "options": [],
-    "extensions": []
+    "options": [
+        {
+            "description": "compression",
+            "type": "choice",
+            "values": [
+                "None",
+                "LZW"
+            ],
+            "default": "None"
+        }
+    ],
+    "extensions": [
+        {
+            "suffix": ".img"
+        },
+        {
+            "suffix": "\\..*img",
+            "type": "regex"
+        }
+    ]
 }
