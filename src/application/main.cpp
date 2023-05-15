@@ -5,6 +5,5 @@
 int main() {
 	using img_types = img::type_list;
 
-	std::cout << std::boolalpha
-	          << mt::traits::tuple_type_idx_v<uint16_t, img_types> << '\n';
+	std::cout << mt::traits::tuple_type_idx_v<uint8_t, img_types> << '\n';
 }
