@@ -1,10 +1,13 @@
 #pragma once
 #include "meta_types.hpp"
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
 #include <numeric>
+#include <ranges>
+#include <span>
 #include <tuple>
 #include <type_traits>
 #include <vector>
@@ -61,13 +64,15 @@ class ndImage;
 class ndImageBase {
   protected:
 	ndImageBase(std::initializer_list<std::size_t> dims,
-	            std::size_t data_size,
+	            std::size_t elem_size,
 	            types type)
-	    : _data(std::make_shared<std::vector<std::byte>>(data_size)),
+	    : _data(std::make_shared<std::vector<std::byte>>(
+	          std::reduce(
+	              dims.begin(), dims.end(), std::size_t(1), std::multiplies{}) *
+	          elem_size)),
 	      _dims(dims), _type(type) {}
 
   public:
-	ndImageBase() = delete;
 	ndImageBase(const ndImageBase&) = default;
 	ndImageBase(ndImageBase&&) = default;
 	ndImageBase& operator=(const ndImageBase&) = default;
@@ -91,13 +96,64 @@ template <typename T>
 class ndImage : public ndImageBase {
   public:
 	template <typename... dims_t>
-	    requires std::conjunction_v<std::is_same<std::size_t, dims_t>...>
-	ndImage(dims_t... raw_dims) {
-		std::initializer_list<std::size_t> dims = {raw_dims...};
-		std::size_t data_size =
-		    std::reduce(dims.begin(), dims.end(), 1, std::multiplies{}) *
-		    sizeof(T);
-		ndImageBase(dims, data_size, type_to_enum<T>);
+	    requires std::conjunction_v<std::is_same<int, dims_t>...>
+	ndImage(dims_t... raw_dims) : ndImage({std::size_t(raw_dims)...}) {
+		assert(std::ranges::all_of(std::vector{raw_dims...},
+		                           [](auto x) { return x >= 0; }));
+	}
+
+	ndImage(std::initializer_list<std::size_t> il)
+	    : ndImageBase(il, sizeof(T), type_to_enum<T>) {}
+
+	template <typename... dims_t>
+	    requires std::conjunction_v<std::is_same<int, dims_t>...>
+	T& operator()(dims_t... coords) {
+		return (*this)({std::size_t(coords)...});
+	}
+
+	T& operator()(std::initializer_list<std::size_t> coords) {
+		assert(coords.size() == _dims.size());
+
+		std::size_t flat_idx = 0;
+
+		auto il_it = coords.begin();
+
+		for (int i = int(_dims.size()); i > 0; --i) {
+			assert(*il_it < _dims[i]);
+			flat_idx += *il_it;
+			flat_idx *= _dims[i];
+			++il_it;
+		}
+		assert(*il_it < _dims[0]);
+		flat_idx += *il_it;
+
+		return reinterpret_cast<std::span<T>>(std::span(*_data))[flat_idx];
+	}
+
+	template <typename... dims_t>
+	    requires std::conjunction_v<std::is_same<int, dims_t>...>
+	const T& operator()(dims_t... coords) const {
+		return (*this)({std::size_t(coords)...});
+	}
+
+	const T& operator()(std::initializer_list<std::size_t> coords) const {
+		assert(coords.size() == _dims.size());
+
+		std::size_t flat_idx = 0;
+
+		auto il_it = coords.begin();
+
+		for (int i = int(_dims.size()); i > 0; --i) {
+			assert(*il_it < _dims[i]);
+			flat_idx += *il_it;
+			flat_idx *= _dims[i];
+			++il_it;
+		}
+		assert(*il_it < _dims[0]);
+		flat_idx += *il_it;
+
+		return reinterpret_cast<std::span<const T>>(
+		    std::span(*_data))[flat_idx];
 	}
 };
 
