@@ -6,12 +6,12 @@ More specifically, config root structure is dictionary and contains keys:
     * list of options that can be specified
     * option:
         * description: "Option description"
-        * type: "int" | "float" | "text" | "choice" | "checkbox"
+        * type: "int" | "float" | "text" | "choice" | "checkbox" | "subsection"
         * values: ["a", "b", "c"] (only if type is "choice")
         * range: [1, 100] (numeric range if type is "float" or "int", size range if type is "text")
-        * default: 0
+        * default: ? value of given valid entry ?
         * options:
-            * list of options; only if type is "checkbox"
+            * list of options; only if type is "subsection"
 
 * extensions
     * list of extension to match
