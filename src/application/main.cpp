@@ -10,5 +10,7 @@ int main() {
 		std::cout << dim << ' ';
 	std::cout << '\n';
 
+	std::cout << int(image(0, 1, 2, 3, 4)) << '\n';
+
 	std::cout << std::boolalpha << (image.dims() == image2.dims()) << '\n';
 }
