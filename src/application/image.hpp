@@ -174,8 +174,8 @@ class ndImage : public ndImageBase {
 		                           [](auto x) { return x >= 0; }));
 	}
 
-	ndImage(std::span<const std::size_t> span)
-	    : ndImageBase(span, sizeof(T), type_to_enum<T>) {}
+	ndImage(std::span<const std::size_t> sp)
+	    : ndImageBase(sp, sizeof(T), type_to_enum<T>) {}
 
 	std::span<T> span() {
 		return {reinterpret_cast<T*>(_data->data()), _data->size() / sizeof(T)};
@@ -225,11 +225,11 @@ class ndImage : public ndImageBase {
 	auto rbegin() const { return span().rbegin(); }
 	auto crbegin() const { return rbegin(); }
 
-	auto end() { return span.end(); }
-	auto end() const { return span.end(); }
+	auto end() { return span().end(); }
+	auto end() const { return span().end(); }
 	auto cend() const { return end(); }
-	auto rend() { return span.rend(); }
-	auto rend() const { return span.rend(); }
+	auto rend() { return span().rend(); }
+	auto rend() const { return span().rend(); }
 	auto crend() const { rend(); }
 
   private:
@@ -238,15 +238,15 @@ class ndImage : public ndImageBase {
 	 * The index is calculated in such a way, that increasing first coordinate
 	 * results in coalesced access.
 	 */
-	std::size_t _get_flat_idx(std::span<const std::size_t> span) const {
-		assert(span.size() == _dims.size());
+	std::size_t _get_flat_idx(std::span<const std::size_t> sp) const {
+		assert(sp.size() == _dims.size());
 
 		std::size_t flat_idx = 0;
 		std::size_t mult = 1;
 
 		for (std::size_t i = 0; i < _dims.size(); ++i) {
-			assert(span[i] < _dims[i]);
-			flat_idx += span[i] * mult;
+			assert(sp[i] < _dims[i]);
+			flat_idx += sp[i] * mult;
 			mult *= _dims[i];
 		}
 
