@@ -163,9 +163,26 @@ class ndImageBase {
 	types _type;
 };
 
+/**
+ * Typed version of image with basic data access operators.
+ * As of now, there is no image processing functionality included.
+ *
+ * Copies via assignment operators are shallow. For deepcopy, use **copy**;
+ *
+ */
 template <typename T>
 class ndImage : public ndImageBase {
+  private:
+	ndImage() = default;
+
   public:
+	/**
+	 * Construct new image with arbitrary number of dimensions.
+	 * Dimensions are put directly to the constructor as *ints*.
+	 *
+	 * For example: ndImage<img::GRAY8>(1,2,3) will result in 8bit grayscale
+	 * image with dimensions (1, 2, 3).
+	 */
 	template <typename... dims_t>
 	    requires std::conjunction_v<std::is_same<int, dims_t>...>
 	ndImage(dims_t... raw_dims)
@@ -174,6 +191,9 @@ class ndImage : public ndImageBase {
 		                           [](auto x) { return x >= 0; }));
 	}
 
+	/**
+	 * Construct new image, obtain dimensions from continuous container.
+	 */
 	ndImage(std::span<const std::size_t> sp)
 	    : ndImageBase(sp, sizeof(T), type_to_enum<T>) {}
 
@@ -186,7 +206,27 @@ class ndImage : public ndImageBase {
 		        _data->size() / sizeof(T)};
 	}
 
+	/**
+	 * Deep copy of the image
+	 */
+	ndImage copy() const {
+		ndImage cpy;
+		cpy._type = _type;
+		cpy._dims = _dims;
+		cpy._data = std::make_shared<std::vector<std::byte>>(_data->begin(),
+		                                                     _data->end());
+		return cpy;
+	}
+
 	// ======== INDEXED ACCESS ==========
+	/**
+	 * Operator will change from () to [] when multidimensional subscript will
+	 * be supported by all required compilers. Note that multidimensional
+	 * subscribt is part of C++23.
+	 *
+	 * Currently, multidimensional subscript is implemented in GCC >= 12 and
+	 * clang >= 15.
+	 */
 
 	T& operator()(std::size_t idx) {
 		assert(idx < span().size());
