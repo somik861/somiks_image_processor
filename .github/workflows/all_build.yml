@@ -34,6 +34,9 @@ jobs:
       - name: Build release
         run: cmake --build --preset conan-release
 
+      - name: Test release
+        run: ctest --preset conan-release --output-on-failure
+
   build-windows-debug:
     runs-on: windows-latest
 
@@ -64,6 +67,9 @@ jobs:
 
       - name: Build debug
         run: cmake --build --preset conan-debug
+
+      - name: Test debug
+        run: ctest --preset conan-debug --output-on-failure
 
   build-linux-clang-release:
     runs-on: ubuntu-latest
@@ -108,6 +114,9 @@ jobs:
       - name: Build release
         run: cmake --build --preset conan-release
 
+      - name: Test release
+        run: ctest --preset conan-release --output-on-failure
+
   build-linux-clang-debug:
     runs-on: ubuntu-latest
 
@@ -150,6 +159,9 @@ jobs:
 
       - name: Build debug
         run: cmake --build --preset conan-debug
+
+      - name: Test debug
+        run: ctest --preset conan-debug --output-on-failure
 
   build-linux-gcc-release:
     runs-on: ubuntu-latest
@@ -194,6 +206,8 @@ jobs:
       - name: Build release
         run: cmake --build --preset conan-release
 
+      - name: Test release
+        run: ctest --preset conan-release --output-on-failure
 
   build-linux-gcc-debug:
     runs-on: ubuntu-latest
@@ -237,3 +251,6 @@ jobs:
 
       - name: Build debug
         run: cmake --build --preset conan-debug
+
+      - name: Test debug
+        run: ctest --preset conan-debug --output-on-failure
