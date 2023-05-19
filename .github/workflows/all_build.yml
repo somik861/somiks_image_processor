@@ -20,7 +20,7 @@ jobs:
         run: conan profile detect --name sip
 
       - name: Update profile
-        run: (Get-Content $(conan profile path sip)) -replace 'compiler.cppstd=.*', 'compiler.cppstd=20' | Set-Content $(conan profile path sip)
+        run: (Get-Content $(conan profile path sip)) -replace 'compiler.cppstd=.*', 'compiler.cppstd=23' | Set-Content $(conan profile path sip)
 
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
@@ -51,7 +51,7 @@ jobs:
         run: conan profile detect --name sip
 
       - name: Update profile
-        run: (Get-Content $(conan profile path sip)) -replace 'compiler.cppstd=.*', 'compiler.cppstd=20' | Set-Content $(conan profile path sip)
+        run: (Get-Content $(conan profile path sip)) -replace 'compiler.cppstd=.*', 'compiler.cppstd=23' | Set-Content $(conan profile path sip)
 
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
@@ -88,7 +88,7 @@ jobs:
         run: conan profile detect --name sip
 
       - name: Update standard in conan profile
-        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=20/' $(conan profile path sip)
+        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=23/' $(conan profile path sip)
 
       - name: Update compiler in conan profile
         run: sed -i 's/compiler=.*/compiler=clang/' $(conan profile path sip)
@@ -131,7 +131,7 @@ jobs:
         run: conan profile detect --name sip
 
       - name: Update standard in conan profile
-        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=20/' $(conan profile path sip)
+        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=23/' $(conan profile path sip)
 
       - name: Update compiler in conan profile
         run: sed -i 's/compiler=.*/compiler=clang/' $(conan profile path sip)
@@ -174,7 +174,7 @@ jobs:
         run: conan profile detect --name sip
 
       - name: Update standard in conan profile
-        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=20/' $(conan profile path sip)
+        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=23/' $(conan profile path sip)
 
       - name: Update compiler in conan profile
         run: sed -i 's/compiler=.*/compiler=gcc/' $(conan profile path sip)
@@ -218,7 +218,7 @@ jobs:
         run: conan profile detect --name sip
 
       - name: Update standard in conan profile
-        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=20/' $(conan profile path sip)
+        run: sed -i 's/compiler.cppstd=.*/compiler.cppstd=23/' $(conan profile path sip)
 
       - name: Update compiler in conan profile
         run: sed -i 's/compiler=.*/compiler=gcc/' $(conan profile path sip)
