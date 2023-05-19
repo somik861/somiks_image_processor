@@ -69,8 +69,7 @@ std::vector<std::string> ExtensionMatcher::sorted_formats_by_priority(
 	auto raw_division = _divide_matching_nonmatching_raw(ext);
 	auto regex_division = _divide_matching_nonmatching_regex(ext);
 
-	out.insert(out.begin(), raw_division.first.begin(),
-	           raw_division.first.end());
+	out.insert(out.end(), raw_division.first.begin(), raw_division.first.end());
 	found.insert(raw_division.first.begin(), raw_division.first.end());
 
 	for (const auto& s : regex_division.first) {
@@ -100,13 +99,14 @@ std::vector<std::string> ExtensionMatcher::sorted_formats_by_priority(
 std::string ExtensionMatcher::_get_extension(const fs::path& file) const {
 	std::string out;
 
-	for (auto ch : std::basic_string_view(file.extension().c_str())) {
-		if (ch == '.' and out.empty())
-			continue;
-
+	auto ext = file.extension();
+	for (auto ch : std::basic_string_view(ext.c_str())) {
 		if (ch > 127)
 			throw std::invalid_argument(
 			    "File extension characters need to be ASCII symbols");
+
+		if (ch == '.' and out.empty())
+			continue;
 
 		out.push_back(char(ch));
 	}
