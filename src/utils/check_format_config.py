@@ -69,9 +69,14 @@ def check_options(options: list[Any], path: tuple[str, ...]) -> None:
 
         unused = set(opt.keys() - {'description', 'type'})
         if _contains(opt, 'type', new_path, type_=str) and _matches_option(
-                opt['type'], ['int', 'float', 'checkbox', 'text', 'choice', 'subsection'], new_path, 'type'):
+                opt['type'], ['header', 'int', 'float', 'checkbox', 'text', 'choice', 'subsection'], new_path, 'type'):
 
             match opt['type']:
+                case 'header':
+                    unused -= {'text'}
+                    if _contains(opt, 'text', new_path, type_=str):
+                        _nonempty(opt['text'], new_path, 'text', error=False)
+
                 case 'int':
                     unused -= {'range', 'default'}
                     if _contains(opt, 'range', new_path, type_=list):
