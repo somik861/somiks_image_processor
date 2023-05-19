@@ -19,7 +19,8 @@ TEST_CASE("ExtensionMatcher") {
 	SECTION("Regex matching") {
 		ext_match.register_extension("tiff", "tiff?", true);
 		ext_match.register_extension("jpeg", "jpg");
-		ext_match.register_extension("png", "png."); // this is not real :D
+		ext_match.register_extension("png", "png.",
+		                             true); // this is not real :D
 
 		for (std::string img : {"img.tif", "img.tiff"})
 			REQUIRE(ext_match.find_possible_formats(img) ==
