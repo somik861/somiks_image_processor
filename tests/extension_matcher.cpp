@@ -9,15 +9,11 @@ TEST_CASE("ExtensionMatcher") {
 		ext_match.register_extension("tiff", "tif");
 		ext_match.register_extension("jpeg", "jpg");
 
-		std::vector<std::string> poss_formats =
-		    ext_match.find_possible_formats("img.jpg");
+		REQUIRE(ext_match.find_possible_formats("img.jpg") ==
+		        std::vector{"jpeg"s});
 
-		REQUIRE(poss_formats == std::vector{"jpeg"s});
-
-		std::vector<std::string> prio_formats =
-		    ext_match.sorted_formats_by_priority("img.jpg");
-
-		REQUIRE(prio_formats == std::vector{"jpg"s, "tiff"s});
+		REQUIRE(ext_match.sorted_formats_by_priority("img.jpg") ==
+		        std::vector{"jpeg"s, "tiff"s});
 	}
 
 	SECTION("Regex matching") {
@@ -25,19 +21,13 @@ TEST_CASE("ExtensionMatcher") {
 		ext_match.register_extension("jpeg", "jpg");
 		ext_match.register_extension("png", "png."); // this is not real :D
 
-		for (std::string img : {"img.tif", "img.tiff"}) {
-			std::vector<std::string> poss_formats =
-			    ext_match.find_possible_formats(img);
+		for (std::string img : {"img.tif", "img.tiff"})
+			REQUIRE(ext_match.find_possible_formats(img) ==
+			        std::vector{"tiff"s});
 
-			REQUIRE(poss_formats == std::vector{"tiff"s});
-		}
-
-		for (std::string img : {"img.tif", "img.tiff"}) {
-			std::vector<std::string> prio_formats =
-			    ext_match.sorted_formats_by_priority(img);
-
-			REQUIRE(prio_formats == std::vector{"tiff"s, "jpeg"s, "png"s});
-		}
+		for (std::string img : {"img.tif", "img.tiff"})
+			REQUIRE(ext_match.sorted_formats_by_priority(img) ==
+			        std::vector{"tiff"s, "jpeg"s, "png"s});
 	}
 
 	SECTION("Format manimpulation operators") {
@@ -69,5 +59,6 @@ TEST_CASE("ExtensionMatcher") {
 		ext_match.register_extension("jpeg", "jpg");
 		ext_match.remove_format("png");
 		test_contains({"jpeg"});
+		REQUIRE(ext_match.format_raw_suffixes("jpeg") == std::vector{"jpg"s});
 	}
 }

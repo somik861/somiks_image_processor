@@ -1,27 +1,41 @@
 #include "extension_matcher.hpp"
 #include <algorithm>
+#include <iostream>
 #include <stdexcept>
 namespace fs = std::filesystem;
 
 void ExtensionMatcher::register_extension(const std::string& format,
                                           const std::string& extension,
                                           bool regex /* = false */) {
-	if (regex)
-		_format_regex_suffixes[format].push_back(boost::regex(extension));
-	else
-		_format_raw_suffixes[format].push_back(extension);
+	if (regex) {
+		auto& extensions = _format_regex_suffixes[format];
+		if (std::ranges::count(extensions, boost::regex(extension)) == 0)
+			extensions.push_back(boost::regex(extension));
+	} else {
+		auto& extensions = _format_raw_suffixes[format];
+		if (std::ranges::count(extensions, extension) == 0)
+			extensions.push_back(extension);
+	}
 }
 
 void ExtensionMatcher::remove_extension(const std::string& format,
                                         const std::string& extension,
                                         bool regex /* = false */) {
-	if (regex)
-		if (std::ranges::count(_format_regex_suffixes[format],
-		                       boost::regex(extension)) == 0)
-			std::erase(_format_regex_suffixes[format], boost::regex(extension));
-		else if (std::ranges::count(_format_raw_suffixes[format], extension) ==
-		         0)
-			std::erase(_format_raw_suffixes[format], extension);
+	if (regex) {
+		auto& extensions = _format_regex_suffixes[format];
+		if (std::ranges::count(extensions, boost::regex(extension)) != 0) {
+			std::erase(extensions, boost::regex(extension));
+			if (extensions.empty())
+				_format_regex_suffixes.erase(format);
+		}
+	} else {
+		auto& extensions = _format_raw_suffixes[format];
+		if (std::ranges::count(extensions, extension) != 0) {
+			std::erase(extensions, extension);
+			if (extensions.empty())
+				_format_raw_suffixes.erase(format);
+		}
+	}
 }
 
 void ExtensionMatcher::remove_format(const std::string& format) {
@@ -31,8 +45,12 @@ void ExtensionMatcher::remove_format(const std::string& format) {
 
 std::unordered_set<std::string> ExtensionMatcher::registered_formats() const {
 	std::unordered_set<std::string> out;
-	for (const auto& [k, v] : _format_raw_suffixes)
+	for (const auto& [k, _] : _format_raw_suffixes)
 		out.insert(k);
+
+	for (const auto& [k, _] : _format_regex_suffixes)
+		out.insert(k);
+
 	return out;
 }
 
