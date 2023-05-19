@@ -17,6 +17,7 @@ class ExtensionMatcher {
 	void remove_extension(const std::string& format,
 	                      const std::string& extension,
 	                      bool regex = false);
+	void remove_format(const std::string& format);
 
 	std::unordered_set<std::string> registered_formats() const;
 	const std::vector<std::string>&

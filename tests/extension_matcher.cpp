@@ -1,5 +1,6 @@
 #include "../src/application/extension_matcher.hpp"
 #include "common.hpp"
+#include <initializer_list>
 
 TEST_CASE("ExtensionMatcher") {
 	ExtensionMatcher ext_match;
@@ -8,11 +9,65 @@ TEST_CASE("ExtensionMatcher") {
 		ext_match.register_extension("tiff", "tif");
 		ext_match.register_extension("jpeg", "jpg");
 
-		std::vector<std::string> formats =
+		std::vector<std::string> poss_formats =
+		    ext_match.find_possible_formats("img.jpg");
+
+		REQUIRE(poss_formats == std::vector{"jpeg"s});
+
+		std::vector<std::string> prio_formats =
 		    ext_match.sorted_formats_by_priority("img.jpg");
 
-		REQUIRE(formats.size() == 2);
-		REQUIRE(formats[0] == "jpg");
-		REQUIRE(formats[1] == "tiff");
+		REQUIRE(prio_formats == std::vector{"jpg"s, "tiff"s});
+	}
+
+	SECTION("Regex matching") {
+		ext_match.register_extension("tiff", "tiff?", true);
+		ext_match.register_extension("jpeg", "jpg");
+		ext_match.register_extension("png", "png."); // this is not real :D
+
+		for (std::string img : {"img.tif", "img.tiff"}) {
+			std::vector<std::string> poss_formats =
+			    ext_match.find_possible_formats(img);
+
+			REQUIRE(poss_formats == std::vector{"tiff"s});
+		}
+
+		for (std::string img : {"img.tif", "img.tiff"}) {
+			std::vector<std::string> prio_formats =
+			    ext_match.sorted_formats_by_priority(img);
+
+			REQUIRE(prio_formats == std::vector{"tiff"s, "jpeg"s, "png"s});
+		}
+	}
+
+	SECTION("Format manimpulation operators") {
+		auto test_contains =
+		    [&ext_match](std::initializer_list<std::string> il) {
+			    std::unordered_set<std::string> expected(il.begin(), il.end());
+			    REQUIRE(ext_match.registered_formats() == expected);
+		    };
+
+		test_contains({});
+
+		ext_match.register_extension("jpeg", "jpg");
+		test_contains({"jpeg"});
+
+		ext_match.register_extension("tiff", "tiff?", true);
+		test_contains({"jpeg", "tiff"});
+
+		ext_match.remove_extension("jpeg", "jpg");
+		test_contains({"tiff"});
+
+		ext_match.register_extension("png", "png");
+		test_contains({"tiff", "png"});
+
+		ext_match.remove_extension("tiff", "tiff?", true);
+		test_contains({"png"});
+
+		ext_match.register_extension("jpeg", "jpg");
+		ext_match.register_extension("jpeg", "jpg");
+		ext_match.register_extension("jpeg", "jpg");
+		ext_match.remove_format("png");
+		test_contains({"jpeg"});
 	}
 }

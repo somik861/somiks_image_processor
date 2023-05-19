@@ -1,4 +1,5 @@
 #include "extension_matcher.hpp"
+#include <algorithm>
 #include <stdexcept>
 namespace fs = std::filesystem;
 
@@ -15,9 +16,17 @@ void ExtensionMatcher::remove_extension(const std::string& format,
                                         const std::string& extension,
                                         bool regex /* = false */) {
 	if (regex)
-		std::erase(_format_regex_suffixes[format], boost::regex(extension));
-	else
-		std::erase(_format_raw_suffixes[format], extension);
+		if (std::ranges::count(_format_regex_suffixes[format],
+		                       boost::regex(extension)) == 0)
+			std::erase(_format_regex_suffixes[format], boost::regex(extension));
+		else if (std::ranges::count(_format_raw_suffixes[format], extension) ==
+		         0)
+			std::erase(_format_raw_suffixes[format], extension);
+}
+
+void ExtensionMatcher::remove_format(const std::string& format) {
+	_format_raw_suffixes.erase(format);
+	_format_regex_suffixes.erase(format);
 }
 
 std::unordered_set<std::string> ExtensionMatcher::registered_formats() const {
