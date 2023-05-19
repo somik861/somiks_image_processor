@@ -12,7 +12,6 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
-#include <iostream>
 #include <memory>
 #include <numeric>
 #include <ranges>
@@ -120,9 +119,9 @@ class ndImageBase {
 	      _dims(dims.begin(), dims.end()), _type(type) {}
 
   public:
-	ndImageBase(const ndImageBase&) = default;
+	ndImageBase(ndImageBase&) = default;
 	ndImageBase(ndImageBase&&) = default;
-	ndImageBase& operator=(const ndImageBase&) = default;
+	ndImageBase& operator=(ndImageBase&) = default;
 	ndImageBase& operator=(ndImageBase&&) = default;
 
 	/**
@@ -141,7 +140,6 @@ class ndImageBase {
 	 */
 	template <ImgType T>
 	ndImage<T> as_typed() {
-		assert(_type == type_to_enum<T>);
 		return ndImage<T>(*this);
 	}
 
@@ -191,10 +189,14 @@ class ndImage : public ndImageBase {
 		                           [](auto x) { return x >= 0; }));
 	}
 
+	explicit ndImage(ndImageBase& base) : ndImageBase(base) {
+		assert(base.type() == type_to_enum<T>);
+	}
+
 	/**
 	 * Construct new image, obtain dimensions from continuous container.
 	 */
-	ndImage(std::span<const std::size_t> sp)
+	explicit ndImage(std::span<const std::size_t> sp)
 	    : ndImageBase(sp, sizeof(T), type_to_enum<T>) {}
 
 	std::span<T> span() {
@@ -210,11 +212,9 @@ class ndImage : public ndImageBase {
 	 * Deep copy of the image
 	 */
 	ndImage copy() const {
-		ndImage cpy;
-		cpy._type = _type;
-		cpy._dims = _dims;
-		cpy._data = std::make_shared<std::vector<std::byte>>(_data->begin(),
-		                                                     _data->end());
+		ndImage cpy(_dims);
+		std::ranges::copy(*_data, cpy._data->begin());
+
 		return cpy;
 	}
 
