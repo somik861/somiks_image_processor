@@ -9,5 +9,11 @@ jobs:
         steps:
             - uses: actions/checkout@v3
 
+            - name: Verify python version
+              run: python --version
+
+            - name: Find configs to validate
+              run: find ${{github.workspace}}/src/formats -name "*.json" | tee ${{github.workspace}}/filelist.txt
+
             - name: Main validation
-              run: for FILE in `find ${{github.workspace}}/src/formats -name "*.json"`; do echo Processing ${FILE}; python ${{github.workspace}}/utils/check_format_config.py ${FILE} |& > ${{github.workspace}}/out ; test "$(cat ${{github.workspace}}/out)" = ""; done
+              run: for FILE in $(cat ${{github.workspace}}/filelist.txt); do echo Processing ${FILE}; python ${{github.workspace}}/src/utils/check_format_config.py ${FILE} |& tee ${{github.workspace}}/out ; test "$(cat ${{github.workspace}}/out)" = ""; done
