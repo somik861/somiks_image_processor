@@ -1,22 +1,23 @@
 {
-    "options": [
-        {
-            "description": "compression",
-            "type": "choice",
-            "values": [
-                "None",
-                "LZW"
-            ],
-            "default": "None"
-        }
-    ],
-    "extensions": [
-        {
-            "suffix": ".img"
-        },
-        {
-            "suffix": "\\..*img",
-            "type": "regex"
-        }
-    ]
+  "options": [
+    {
+      "text": "compression",
+      "var_name": "compression",
+      "type": "choice",
+      "values": [
+        "None",
+        "LZW"
+      ],
+      "default": "None"
+    }
+  ],
+  "extensions": [
+    {
+      "suffix": ".img"
+    },
+    {
+      "suffix": "\\..*img",
+      "type": "regex"
+    }
+  ]
 }
