@@ -20,7 +20,7 @@ def _report_ignored(path: tuple[str, ...], *args: str) -> None:
 
 
 def _symbol_path(*args: str) -> str:
-    return '\'' + '-> ' + ' -> '.join(args) + '\''
+    return '-> ' + ' -> '.join(map(lambda x: f"'{x}'", args))
 
 
 def _matches_option(value: Any, options: list[Any], path: tuple[str, ...], *args: str) -> bool:
@@ -163,12 +163,12 @@ def check_extensions(extensions: list[Any], path: tuple[str, ...]) -> None:
             continue
 
         if _contains(ext, 'suffix', new_path, type_=str):
-            _nonempty(ext['suffix'], new_path, 'text')
+            _nonempty(ext['suffix'], new_path, 'suffix')
 
         if 'type' in ext and _is_valid_type(ext['type'], str, new_path, 'type'):
             _matches_option(ext['type'], ['plain', 'regex'], new_path, 'type')
 
-        for key in set(ext.keys()) - {'text', 'type'}:
+        for key in set(ext.keys()) - {'suffix', 'type'}:
             _report_ignored(new_path, key)
 
 
@@ -180,7 +180,7 @@ def check_root(config: dict[str, Any]) -> None:
 
     ext = 'extensions'
     if _contains(config, ext, tuple(), type_=list):
-        check_options(config[ext], (ext,))
+        check_extensions(config[ext], (ext,))
 
     for key in keys - {opt, ext}:
         _report_ignored((key,))
