@@ -1,4 +1,4 @@
-# Somik's image processor
+# SSIMP - Somik's image processor
 This is free-time project developed with motivation to create simple and free image conversion (and light processing) application.
 
 ## Current status
@@ -15,12 +15,11 @@ There is nothing to contribute to yet :D all the info about rules is just for me
 * if you want to ensure this automatically before each commit, you can use pre-commit utility (tutorial below)
 
 ### Cross-platform compatibility
-* All of the code has to be (at any time) compilable on Windows (using MSVC) and Linux (using clang).
-* Other compilers will become compatible once they implement new C++ standard features.
+* All of the code has to be (at any time) compilable on Windows (using MSVC) and Linux (using clang 16 and gcc 13.0).
 * Do not ever use compiler/os-specific code. (Not even when guarded with macros).
 
 ### C++ standard and project rules
-* At this point of the time, the project is build with C++20 (and once C++23 will be usable, it will migrate).
+* At this point of the time, the project is build with C++23. (Use only features that are compatible with all 3 main compilers)
 * Header files start with **#pragma once**.
 * For package management, [conan](https://conan.io)  is used
 * Do not add any unecessary libraries. You can ofcourse add library implementing new functionality, but it is really not necessary to add for example **PCRE** when regexes are already in **BOOST**. The same stands for **fmt**, we have **std::format**, and therefore **fmt** is here unecessary.
@@ -60,7 +59,7 @@ class PersonWithBag{
 ## How to setup enviromnent
 ### Precommit hooks
 If you want to setup precommit hooks to automatically control code formating for C++ and python, run this inside the root of the project
-```
+``` bash
 pip3 install --upgrade pre-commit
 pre-commit --version
 pre-commit install
@@ -70,14 +69,11 @@ pre-commit install
 #### conan
 To install dependecies, run:\
 (Do not forget to switch cpp version to 20 and select correct compiler inside conan profile).
-```
+``` bash
 pip3 install --upgrade conan
 conan --version
 conan profile detect --name sip
 vim $( conan profile path sip )
-
-conan install . --output-folder=build_conan --build=missing -pr:h=sip -pr:b=sip
-conan install . --output-folder=build_conan --build=missing  -pr:h=sip -pr:b=sip -s build_type=Debug
 ```
 Conan config file for windows should look something like this:
 ```
@@ -85,19 +81,19 @@ Conan config file for windows should look something like this:
 arch=x86_64
 build_type=Release
 compiler=msvc
-compiler.cppstd=20
+compiler.cppstd=23
 compiler.runtime=dynamic
 compiler.version=193
 os=Windows
 ```
 
-Conan config file for linux should look like this:
+Conan config file for linux (clang) should look like this:
 ```
 [settings]
 arch=x86_64
 build_type=Release
 compiler=clang
-compiler.cppstd=20
+compiler.cppstd=23
 compiler.libcxx=libstdc++11
 compiler.version=16
 os=Linux
@@ -106,16 +102,49 @@ CC=clang-16
 CXX=clang++-16
 ```
 
-#### build
-For windows:
+Conan config file for linux (gcc) should look like this:
+(conan does not recognize compiler.version 13 for gcc yet)
 ```
-cmake --preset conan-default
-cmake --build --preset conan-debug
-cmake --build --preset conan-release
+[settings]
+arch=x86_64
+build_type=Release
+compiler=clang
+compiler.cppstd=23
+compiler.libcxx=libstdc++11
+compiler.version=12.2
+os=Linux
+[buildenv]
+CC=gcc-13
+CXX=g++-13
 ```
 
-For linux:
+#### build
+**Windows:**
+
+``` bash
+conan install . --output-folder=build_conan --build=missing -pr:h=sip -pr:b=sip
+conan install . --output-folder=build_conan --build=missing  -pr:h=sip -pr:b=sip -s build_type=Debug
+
+cmake --preset conan-default
 ```
-cmake --preset conan-debug
+
+* Debug: `cmake --build --preset conan-debug`
+* Release: `cmake --build --preset conan-release`
+
+**Linux:**
+
+Substitute \<ccomp\> and \<cppconp\> with your chosen compiler, e.g. clang-16 and clang-16++.
+
+* Debug:
+``` bash
+conan install . --output-folder=build_conan --build=missing  -pr:h=sip -pr:b=sip -s build_type=Debug
+CC=<ccomp> CXX=<cppcomp> cmake --preset conan-debug
 cmake --build --preset conan-debug
+```
+
+* Release:
+```
+conan install . --output-folder=build_conan --build=missing  -pr:h=sip -pr:b=sip
+CC=<ccomp> CXX=<cppcomp> cmake --preset conan-release
+cmake --build --preset conan-release
 ```
