@@ -1,4 +1,4 @@
-# Somik's image processor
+# SSIMP - Somik's image processor
 This is free-time project developed with motivation to create simple and free image conversion (and light processing) application.
 
 ## Current status
