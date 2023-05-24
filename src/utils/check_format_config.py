@@ -58,25 +58,27 @@ def _contains(dct: dict[str, Any], key: str, path: tuple[str, ...], *args: str, 
     return True
 
 
-def check_options(options: list[Any], path: tuple[str, ...]) -> None:
+def check_options(options: list[Any], path: tuple[str, ...], var_names_base: list[str] | None = None) -> None:
+    var_names = [] if var_names_base is None else var_names_base
     for i, opt in enumerate(options):
         new_path = (*path, str(i))
         if not _is_valid_type(opt, dict, new_path):
             continue
 
-        if _contains(opt, 'description', new_path, type_=str):
-            _nonempty(opt['description'], new_path, 'description')
+        if _contains(opt, 'text', new_path, type_=str):
+            _nonempty(opt['text'], new_path, 'text')
 
-        unused = set(opt.keys() - {'description', 'type'})
+        unused = set(opt.keys() - {'text', 'type'})
         if _contains(opt, 'type', new_path, type_=str) and _matches_option(
                 opt['type'], ['header', 'int', 'float', 'checkbox', 'text', 'choice', 'subsection'], new_path, 'type'):
 
-            match opt['type']:
-                case 'header':
-                    unused -= {'text'}
-                    if _contains(opt, 'text', new_path, type_=str):
-                        _nonempty(opt['text'], new_path, 'text', error=False)
+            if opt['type'] != 'header':
+                if _contains(opt, 'var_name', new_path, type_=str):
+                    unused -= {'var_name'}
+                    if _nonempty(opt['var_name'], new_path, 'var_name'):
+                        var_names.append
 
+            match opt['type']:
                 case 'int':
                     unused -= {'range', 'default'}
                     if _contains(opt, 'range', new_path, type_=list):
@@ -139,9 +141,15 @@ def check_options(options: list[Any], path: tuple[str, ...]) -> None:
                 case 'subsection':
                     unused -= {'options', 'default'}
                     if _contains(opt, 'options', new_path, type_=list):
-                        check_options(opt['options'], new_path + ('',))
+                        check_options(opt['options'],
+                                      new_path + ('',), var_names)
 
                     _contains(opt, 'default', new_path, type_=bool)
+
+        if len(set(var_names)) != len(var_names):
+            for var_name in set(var_names):
+                if var_names.count(var_name) > 1:
+                    _error(f'Var_name: {var_name} is not unique')
 
         for key in unused:
             _report_ignored(new_path, key)
