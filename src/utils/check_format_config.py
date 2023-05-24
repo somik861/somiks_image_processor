@@ -182,7 +182,10 @@ def check_root(config: dict[str, Any]) -> None:
     if _contains(config, ext, tuple(), type_=list):
         check_extensions(config[ext], (ext,))
 
-    for key in keys - {opt, ext}:
+    if _contains(config, 'output_extension', tuple(), type_=str):
+        _nonempty(config['output_extension'], ('output_extension',))
+
+    for key in keys - {opt, ext, 'output_extension'}:
         _report_ignored((key,))
 
 
