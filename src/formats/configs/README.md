@@ -19,3 +19,5 @@ More specifically, config root structure is dictionary and contains keys:
     * extension:
         * suffix: ".tiff"
         * type: "plain" | "regex" (defaults to "plain" if ommited)
+
+* ouptut_extension: string (without '.')
