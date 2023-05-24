@@ -13,11 +13,12 @@
   ],
   "extensions": [
     {
-      "suffix": ".img"
+      "suffix": "img"
     },
     {
-      "suffix": "\\..*img",
+      "suffix": ".*img",
       "type": "regex"
     }
-  ]
+  ],
+  "output_extension": "img"
 }
