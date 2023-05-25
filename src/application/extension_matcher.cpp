@@ -4,6 +4,7 @@
 #include <stdexcept>
 namespace fs = std::filesystem;
 
+namespace ssimp {
 void ExtensionMatcher::register_extension(const std::string& format,
                                           const std::string& extension,
                                           bool regex /* = false */) {
@@ -186,3 +187,4 @@ ExtensionMatcher::_divide_matching_nonmatching_regex(
 
 	return {matching, nonmatching};
 }
+} // namespace ssimp

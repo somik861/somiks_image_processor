@@ -3,7 +3,7 @@
 #include <tuple>
 #include <type_traits>
 
-namespace mt {
+namespace ssimp::mt {
 namespace traits {
 template <typename T, typename... types_t>
 using is_any_of = std::disjunction<std::is_same<T, types_t>...>;
@@ -56,4 +56,4 @@ namespace concepts {
 template <typename T, typename tuple_t>
 concept TupleType = requires { traits::is_type_of_tuple_v<T, tuple_t>; };
 }
-} // namespace mt
+} // namespace ssimp::mt

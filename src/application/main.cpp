@@ -4,7 +4,7 @@
 #include <iostream>
 
 int main() {
-	ExtensionMatcher ext_match;
+	ssimp::ExtensionMatcher ext_match;
 	ext_match.register_extension("tiff", "tif");
 	ext_match.register_extension("tiff", "tiff");
 	ext_match.register_extension("jpeg", "jpg");
