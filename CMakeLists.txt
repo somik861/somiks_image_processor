@@ -5,7 +5,8 @@ project(somiks_image_processor CXX)
 find_package(Boost CONFIG REQUIRED)
 set(LIBS ${LIBS} Boost::headers)
 
-set(APP_NONMAIN_SOURCES src/application/extension_matcher.cpp)
+set(APP_NONMAIN_SOURCES src/application/extension_matcher.cpp
+                        src/application/config_manager.cpp)
 
 add_executable(app src/application/main.cpp ${APP_NONMAIN_SOURCES})
 target_link_libraries(app ${LIBS})
