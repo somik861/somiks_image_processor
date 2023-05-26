@@ -79,7 +79,8 @@ using RGBA8 = enum_to_type<types::RGBA8>;
  * Concept to prevent instatiation of template swith unsupported type
  */
 template <typename T>
-concept ImgType = requires { ssimp::mt::concepts::TupleType<T, type_list>; };
+concept ImgType =
+    requires { requires ssimp::mt::concepts::TupleType<T, type_list>; };
 
 } // namespace type_aliases
 
