@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.23)
 project(somiks_image_processor CXX)
 
 find_package(Boost CONFIG REQUIRED)
-set(LIBS ${LIBS} Boost::headers Boost::filesystem)
+set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json)
 
 set(APP_NONMAIN_SOURCES src/application/extension_matcher.cpp
                         src/application/config_manager.cpp)
