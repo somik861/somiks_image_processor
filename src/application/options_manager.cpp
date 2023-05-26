@@ -32,10 +32,10 @@ OptionsManager::_get_option(const boost::json::array& array,
 	for (boost::json::value value : array) {
 		assert(value.is_object());
 
-		boost::json::object obj = value.as_object();
+		boost::json::object obj = value.get_object();
 		assert(obj.contains("type"));
 		assert(obj.at("type").is_string());
-		std::string_view type = obj.at("type").as_string();
+		std::string_view type = obj.at("type").get_string();
 
 		if (type == "header"sv)
 			continue;
@@ -43,14 +43,14 @@ OptionsManager::_get_option(const boost::json::array& array,
 		assert(obj.contains("var_name"));
 		assert(obj.at("var_name").is_string());
 
-		if (obj.at("var_name").as_string() == var_name)
+		if (obj.at("var_name").get_string() == var_name)
 			return obj;
 
 		if (type == "subsection") {
 			assert(obj.contains("options"));
 			assert(obj.at("options").is_array());
 
-			auto option = _get_option(obj.at("options").as_array(), var_name);
+			auto option = _get_option(obj.at("options").get_array(), var_name);
 			if (option)
 				return option;
 		}
