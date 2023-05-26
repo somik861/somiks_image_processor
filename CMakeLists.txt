@@ -7,8 +7,9 @@ find_package(Boost CONFIG REQUIRED)
 set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json)
 
 # sources
-set(APP_NONMAIN_SOURCES src/application/extension_matcher.cpp
-                        src/application/config_manager.cpp)
+set(APP_NONMAIN_SOURCES
+    src/application/extension_matcher.cpp src/application/config_manager.cpp
+    src/application/options_manager.cpp)
 
 add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})

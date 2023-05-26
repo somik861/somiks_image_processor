@@ -2,6 +2,7 @@
 #include "extension_matcher.hpp"
 #include "image.hpp"
 #include "meta_types.hpp"
+#include "options_manager.hpp"
 #include <filesystem>
 #include <iostream>
 
