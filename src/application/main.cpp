@@ -9,5 +9,8 @@ namespace fs = std::filesystem;
 
 int main() {
 	ssimp::ConfigManager cfg;
-	std::cout << cfg;
+	auto loaded = cfg.load_format("sample");
+	std::cout << loaded << '\n';
+
+	// boost::json::array root_tmp = loaded.as_array();
 }
