@@ -1,14 +1,13 @@
+#include "config_manager.hpp"
 #include "extension_matcher.hpp"
 #include "image.hpp"
 #include "meta_types.hpp"
+#include <filesystem>
 #include <iostream>
 
-int main() {
-	ssimp::ExtensionMatcher ext_match;
-	ext_match.register_extension("tiff", "tif");
-	ext_match.register_extension("tiff", "tiff");
-	ext_match.register_extension("jpeg", "jpg");
+namespace fs = std::filesystem;
 
-	for (auto m : ext_match.sorted_formats_by_priority("img.jpg"))
-		std::cout << m << '\n';
+int main() {
+	ssimp::ConfigManager cfg;
+	std::cout << cfg;
 }
