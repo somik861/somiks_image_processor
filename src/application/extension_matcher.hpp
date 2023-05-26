@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <vector>
 
+namespace ssimp {
 class ExtensionMatcher {
   public:
 	/**
@@ -94,3 +95,4 @@ class ExtensionMatcher {
 	std::unordered_map<std::string, std::vector<boost::regex>>
 	    _format_regex_suffixes;
 };
+} // namespace ssimp

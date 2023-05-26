@@ -20,7 +20,7 @@
 #include <type_traits>
 #include <vector>
 
-namespace img {
+namespace ssimp::img {
 
 /**
  * Supported image element types enumeration
@@ -60,7 +60,7 @@ using enum_to_type = std::tuple_element_t<static_cast<int>(type), type_list>;
  */
 template <typename T>
 constexpr types type_to_enum =
-    static_cast<types>(int(mt::traits::tuple_type_idx_v<T, type_list>));
+    static_cast<types>(int(ssimp::mt::traits::tuple_type_idx_v<T, type_list>));
 
 /**
  * Once again, now with type aliases to make the image manipulation as
@@ -79,7 +79,8 @@ using RGBA8 = enum_to_type<types::RGBA8>;
  * Concept to prevent instatiation of template swith unsupported type
  */
 template <typename T>
-concept ImgType = requires { mt::concepts::TupleType<T, type_list>; };
+concept ImgType =
+    requires { requires ssimp::mt::concepts::TupleType<T, type_list>; };
 
 } // namespace type_aliases
 
@@ -294,4 +295,4 @@ class ndImage : public ndImageBase {
 	}
 };
 
-} // namespace img
+} // namespace ssimp::img

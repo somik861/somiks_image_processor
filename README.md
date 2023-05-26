@@ -108,7 +108,7 @@ Conan config file for linux (gcc) should look like this:
 [settings]
 arch=x86_64
 build_type=Release
-compiler=clang
+compiler=gcc
 compiler.cppstd=23
 compiler.libcxx=libstdc++11
 compiler.version=12.2
@@ -143,7 +143,7 @@ cmake --build --preset conan-debug
 ```
 
 * Release:
-```
+``` bash
 conan install . --output-folder=build_conan --build=missing  -pr:h=sip -pr:b=sip
 CC=<ccomp> CXX=<cppcomp> cmake --preset conan-release
 cmake --build --preset conan-release
