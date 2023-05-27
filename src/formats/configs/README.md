@@ -12,7 +12,7 @@ More specifically, config root structure is dictionary and contains keys:
         * default: ? value of given valid entry ?
         * options:
             * list of options; only if type is "subsection"
-        * var_name: unique identifier, that would be used in C++ code to identify the option (not required for "header")
+        * var_name: unique identifier, that would be used in C++ code to identify the option (not used for "header")
 
 * extensions
     * list of extension to match
