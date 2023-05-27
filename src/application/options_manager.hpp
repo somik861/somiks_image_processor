@@ -28,6 +28,9 @@ class OptionsManager {
 	_get_option(const std::string& identifier,
 	            const std::string& var_name) const;
 
-	std::unordered_map<std::string, boost::json::array> _loaded_options;
+	void _finalize_options_rec(const boost::json::array& option_cfg,
+	                           options_t& options) const;
+
+	std::unordered_map<std::string, boost::json::array> _loaded_configs;
 };
 } // namespace ssimp

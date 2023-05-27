@@ -24,17 +24,20 @@ using namespace std::literals;
 namespace ssimp {
 void OptionsManager::load_from_json(const std::string& identifier,
                                     const boost::json::value& json) {
-	assert(!_loaded_options.contains(identifier));
+	assert(!_loaded_configs.contains(identifier));
 	assert(json.is_array());
 
-	_loaded_options[identifier] = json.as_array();
+	_loaded_configs[identifier] = json.as_array();
 }
 
-// TODO
 OptionsManager::options_t OptionsManager::finalize_options(
     const std::string& identifier,
     const OptionsManager::options_t& options) const {
-	return options;
+	OptionsManager::options_t finalized = options;
+
+	_finalize_options_rec(_loaded_configs.at(identifier), finalized);
+
+	return finalized;
 }
 
 // TODO
@@ -119,6 +122,39 @@ OptionsManager::_get_option(const boost::json::array& array,
 std::optional<boost::json::object>
 OptionsManager::_get_option(const std::string& identifier,
                             const std::string& var_name) const {
-	return _get_option(_loaded_options.at(identifier), var_name);
+	return _get_option(_loaded_configs.at(identifier), var_name);
+}
+
+void OptionsManager::_finalize_options_rec(
+    const boost::json::array& option_cfgs,
+    OptionsManager::options_t& options) const {
+
+	for (const auto& cfg : option_cfgs) {
+		const auto& obj = cfg.get_object();
+		std::string_view type = obj.at("type").get_string();
+
+		if (type == "header")
+			continue;
+
+		std::string var_name = std::string(obj.at("var_name").get_string());
+		if (!options.contains(var_name)) {
+			if (type == "int")
+				options[var_name] = int32_t(obj.at("default").get_int64());
+
+			if (type == "double")
+				options[var_name] = obj.at("default").get_double();
+
+			if (type == "text" || type == "choice")
+				options[var_name] = std::string(obj.at("default").get_string());
+
+			if (type == "checkbox")
+				options[var_name] = obj.at("defualt").get_bool();
+
+			if (type == "subsection")
+				options[var_name] = obj.at("default").get_bool();
+		}
+		if (type == "subsection" && std::get<bool>(options[var_name]))
+			_finalize_options_rec(obj.at("options").get_array(), options);
+	}
 }
 } // namespace ssimp
