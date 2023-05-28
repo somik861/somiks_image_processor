@@ -1,4 +1,4 @@
-#include "../src/application/config_manager.hpp"
+#include "../src/application/managers/config_manager.hpp"
 #include "common.hpp"
 
 TEST_CASE("ConfigManager") {
