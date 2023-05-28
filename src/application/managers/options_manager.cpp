@@ -85,11 +85,10 @@ using namespace std::literals;
 
 namespace ssimp {
 void OptionsManager::load_from_json(const std::string& identifier,
-                                    const boost::json::value& json) {
+                                    const boost::json::array& json) {
 	assert(!_loaded_configs.contains(identifier));
-	assert(json.is_array());
 
-	_loaded_configs[identifier] = json.as_array();
+	_loaded_configs[identifier] = json;
 }
 
 OptionsManager::options_t OptionsManager::finalize_options(
