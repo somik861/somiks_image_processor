@@ -4,7 +4,7 @@
 TEST_CASE("ConfigManager") {
 	SECTION("Load sample format") {
 		ConfigManager cfg;
-		auto loaded = cfg.load_format("sample");
+		auto loaded = cfg.load_format("testing_sample");
 
 		REQUIRE(loaded.is_object());
 	}
