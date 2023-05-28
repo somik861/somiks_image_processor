@@ -3,6 +3,8 @@
 #include <optional>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
+#include <utility>
 #include <variant>
 
 namespace ssimp {
@@ -20,16 +22,10 @@ class OptionsManager {
 	              const options_t& options) const;
 
   private:
-	std::optional<boost::json::object>
-	_get_option(const boost::json::array& array,
-	            const std::string& var_name) const;
-
-	std::optional<boost::json::object>
-	_get_option(const std::string& identifier,
-	            const std::string& var_name) const;
-
-	void _finalize_options_rec(const boost::json::array& option_cfg,
-	                           options_t& options) const;
+	std::pair<std::optional<boost::json::object>,
+	          std::unordered_set<std::string>>
+	_get_option_and_deps(const std::string& identifier,
+	                     const std::string& var_name) const;
 
 	std::unordered_map<std::string, boost::json::array> _loaded_configs;
 };

@@ -17,6 +17,68 @@ string_array_to_set(const boost::json::array& arr) {
 		out.emplace(value.get_string());
 	return out;
 }
+
+void finalize_options_rec(const boost::json::array& option_cfgs,
+                          ssimp::OptionsManager::options_t& options) {
+
+	for (const auto& cfg : option_cfgs) {
+		const auto& obj = cfg.get_object();
+		std::string_view type = obj.at("type").get_string();
+
+		if (type == "header")
+			continue;
+
+		std::string var_name = std::string(obj.at("var_name").get_string());
+		if (!options.contains(var_name)) {
+			if (type == "int")
+				options[var_name] = int32_t(obj.at("default").get_int64());
+
+			if (type == "double")
+				options[var_name] = obj.at("default").get_double();
+
+			if (type == "text" || type == "choice")
+				options[var_name] = std::string(obj.at("default").get_string());
+
+			if (type == "checkbox")
+				options[var_name] = obj.at("defualt").get_bool();
+
+			if (type == "subsection")
+				options[var_name] = obj.at("default").get_bool();
+		}
+		if (type == "subsection" && std::get<bool>(options[var_name]))
+			finalize_options_rec(obj.at("options").get_array(), options);
+	}
+}
+
+void get_option_and_deps_rec(std::optional<boost::json::object>& option,
+                             std::unordered_set<std::string>& deps,
+                             const boost::json::array& array,
+                             const std::string& var_name) {
+	for (boost::json::value value : array) {
+
+		boost::json::object obj = value.get_object();
+		std::string_view type = obj.at("type").get_string();
+
+		if (type == "header")
+			continue;
+
+		auto obj_var_name = std::string(obj.at("var_name").get_string());
+		if (obj_var_name == var_name) {
+			option = obj;
+			return;
+		}
+
+		if (type == "subsection") {
+			deps.insert(obj_var_name);
+			get_option_and_deps_rec(option, deps, obj.at("options").get_array(),
+			                        var_name);
+			if (option)
+				return;
+			deps.erase(obj_var_name);
+		}
+	}
+}
+
 } // namespace
 
 using namespace std::literals;
@@ -35,17 +97,25 @@ OptionsManager::options_t OptionsManager::finalize_options(
     const OptionsManager::options_t& options) const {
 	OptionsManager::options_t finalized = options;
 
-	_finalize_options_rec(_loaded_configs.at(identifier), finalized);
+	finalize_options_rec(_loaded_configs.at(identifier), finalized);
 
 	return finalized;
 }
 
-// TODO
 bool OptionsManager::is_valid(const std::string& identifier,
                               const options_t& options) const {
 	for (const auto& [name, value] : options) {
-		auto option = _get_option(identifier, name);
+		const auto& [option, deps] = _get_option_and_deps(identifier, name);
 		CHECK(option);
+
+		for (const auto& dep : deps) {
+			CHECK((options.contains(dep) &&
+			       std::holds_alternative<bool>(options.at(dep)) &&
+			       std::get<bool>(options.at(dep))) ||
+			      _get_option_and_deps(identifier, dep)
+			          .first->at("default")
+			          .get_bool());
+		}
 
 		std::string_view type = option->at("type").get_string();
 		if (type == "int") {
@@ -87,7 +157,7 @@ bool OptionsManager::is_valid(const std::string& identifier,
 		} else if (type == "checkbox") {
 			CHECK(std::holds_alternative<bool>(value));
 		} else if (type == "subsection") {
-			// TODO Check if subsection is correctly enabled
+			CHECK(std::holds_alternative<bool>(value));
 		} else
 			return false;
 	}
@@ -95,66 +165,17 @@ bool OptionsManager::is_valid(const std::string& identifier,
 	return true;
 }
 
-std::optional<boost::json::object>
-OptionsManager::_get_option(const boost::json::array& array,
-                            const std::string& var_name) const {
-	for (boost::json::value value : array) {
+std::pair<std::optional<boost::json::object>, std::unordered_set<std::string>>
+OptionsManager::_get_option_and_deps(const std::string& identifier,
+                                     const std::string& var_name) const {
 
-		boost::json::object obj = value.get_object();
-		std::string_view type = obj.at("type").get_string();
+	std::optional<boost::json::object> option;
+	std::unordered_set<std::string> deps;
 
-		if (type == "header"sv)
-			continue;
+	get_option_and_deps_rec(option, deps, _loaded_configs.at(identifier),
+	                        var_name);
 
-		if (obj.at("var_name").get_string() == var_name)
-			return obj;
-
-		if (type == "subsection") {
-			auto option = _get_option(obj.at("options").get_array(), var_name);
-			if (option)
-				return option;
-		}
-	}
-
-	return {};
+	return {option, deps};
 }
 
-std::optional<boost::json::object>
-OptionsManager::_get_option(const std::string& identifier,
-                            const std::string& var_name) const {
-	return _get_option(_loaded_configs.at(identifier), var_name);
-}
-
-void OptionsManager::_finalize_options_rec(
-    const boost::json::array& option_cfgs,
-    OptionsManager::options_t& options) const {
-
-	for (const auto& cfg : option_cfgs) {
-		const auto& obj = cfg.get_object();
-		std::string_view type = obj.at("type").get_string();
-
-		if (type == "header")
-			continue;
-
-		std::string var_name = std::string(obj.at("var_name").get_string());
-		if (!options.contains(var_name)) {
-			if (type == "int")
-				options[var_name] = int32_t(obj.at("default").get_int64());
-
-			if (type == "double")
-				options[var_name] = obj.at("default").get_double();
-
-			if (type == "text" || type == "choice")
-				options[var_name] = std::string(obj.at("default").get_string());
-
-			if (type == "checkbox")
-				options[var_name] = obj.at("defualt").get_bool();
-
-			if (type == "subsection")
-				options[var_name] = obj.at("default").get_bool();
-		}
-		if (type == "subsection" && std::get<bool>(options[var_name]))
-			_finalize_options_rec(obj.at("options").get_array(), options);
-	}
-}
 } // namespace ssimp
