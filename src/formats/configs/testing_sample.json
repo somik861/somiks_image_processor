@@ -9,6 +9,21 @@
         "LZW"
       ],
       "default": "None"
+    },
+    {
+      "text": "quality loss",
+      "var_name": "quality_loss",
+      "type": "subsection",
+      "default": false,
+      "options": [
+        {
+          "text": "Quality percentage",
+          "var_name": "quality_perc",
+          "type": "double",
+          "range": [ 0.0, 100.0 ],
+          "default": 100.0
+        }
+      ]
     }
   ],
   "extensions": [
