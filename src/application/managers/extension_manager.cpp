@@ -1,11 +1,11 @@
-#include "extension_matcher.hpp"
+#include "extension_manager.hpp"
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
 namespace fs = std::filesystem;
 
 namespace ssimp {
-void ExtensionMatcher::register_extension(const std::string& format,
+void ExtensionManager::register_extension(const std::string& format,
                                           const std::string& extension,
                                           bool regex /* = false */) {
 	if (regex) {
@@ -19,7 +19,7 @@ void ExtensionMatcher::register_extension(const std::string& format,
 	}
 }
 
-void ExtensionMatcher::remove_extension(const std::string& format,
+void ExtensionManager::remove_extension(const std::string& format,
                                         const std::string& extension,
                                         bool regex /* = false */) {
 	if (regex) {
@@ -39,12 +39,12 @@ void ExtensionMatcher::remove_extension(const std::string& format,
 	}
 }
 
-void ExtensionMatcher::remove_format(const std::string& format) {
+void ExtensionManager::remove_format(const std::string& format) {
 	_format_raw_suffixes.erase(format);
 	_format_regex_suffixes.erase(format);
 }
 
-std::unordered_set<std::string> ExtensionMatcher::registered_formats() const {
+std::unordered_set<std::string> ExtensionManager::registered_formats() const {
 	std::unordered_set<std::string> out;
 	for (const auto& [k, _] : _format_raw_suffixes)
 		out.insert(k);
@@ -56,16 +56,16 @@ std::unordered_set<std::string> ExtensionMatcher::registered_formats() const {
 }
 
 const std::vector<std::string>&
-ExtensionMatcher::format_raw_suffixes(const std::string& format) const {
+ExtensionManager::format_raw_suffixes(const std::string& format) const {
 	return _format_raw_suffixes.at(format);
 }
 
 const std::vector<boost::regex>&
-ExtensionMatcher::format_regex_suffixes(const std::string& format) const {
+ExtensionManager::format_regex_suffixes(const std::string& format) const {
 	return _format_regex_suffixes.at(format);
 }
 
-std::vector<std::string> ExtensionMatcher::find_possible_formats(
+std::vector<std::string> ExtensionManager::find_possible_formats(
     const std::filesystem::path& file) const {
 	std::string ext = _get_extension(file);
 	std::vector<std::string> out;
@@ -87,7 +87,7 @@ std::vector<std::string> ExtensionMatcher::find_possible_formats(
 	return out;
 }
 
-std::vector<std::string> ExtensionMatcher::sorted_formats_by_priority(
+std::vector<std::string> ExtensionManager::sorted_formats_by_priority(
     const std::filesystem::path& file) const {
 	std::string ext = _get_extension(file);
 
@@ -124,7 +124,7 @@ std::vector<std::string> ExtensionMatcher::sorted_formats_by_priority(
 	return out;
 }
 
-std::string ExtensionMatcher::_get_extension(const fs::path& file) const {
+std::string ExtensionManager::_get_extension(const fs::path& file) const {
 	std::string out;
 
 	auto ext = file.extension();
@@ -143,7 +143,7 @@ std::string ExtensionMatcher::_get_extension(const fs::path& file) const {
 }
 
 std::pair<std::vector<std::string>, std::vector<std::string>>
-ExtensionMatcher::_divide_matching_nonmatching_raw(
+ExtensionManager::_divide_matching_nonmatching_raw(
     const std::string& ext) const {
 	std::vector<std::string> matching, nonmatching;
 
@@ -166,7 +166,7 @@ ExtensionMatcher::_divide_matching_nonmatching_raw(
 }
 
 std::pair<std::vector<std::string>, std::vector<std::string>>
-ExtensionMatcher::_divide_matching_nonmatching_regex(
+ExtensionManager::_divide_matching_nonmatching_regex(
     const std::string& ext) const {
 	std::vector<std::string> matching, nonmatching;
 
@@ -187,4 +187,37 @@ ExtensionMatcher::_divide_matching_nonmatching_regex(
 
 	return {matching, nonmatching};
 }
+
+void ExtensionManager::set_output_extension(const std::string& format,
+                                            const std::string& extension) {
+	_output_extensions[format] = extension;
+}
+
+const std::string&
+ExtensionManager::get_output_extension(const std::string& format) const {
+	return _output_extensions.at(format);
+}
+
+fs::path ExtensionManager::with_output_extension(const std::string& format,
+                                                 const fs::path& file) const {
+	auto out = file;
+	out.replace_extension(_output_extensions.at(format));
+
+	return out;
+}
+
+void ExtensionManager::load_from_json(const std::string& format,
+                                      const boost::json::array& matchers,
+                                      const boost::json::string& output_ext) {
+	for (auto match : matchers) {
+		auto obj = match.get_object();
+		bool regex =
+		    obj.contains("type") && obj.at("type").get_string() == "regex";
+		register_extension(format, std::string(obj.at("suffix").get_string()),
+		                   regex);
+	}
+
+	set_output_extension(format, std::string(output_ext));
+}
+
 } // namespace ssimp

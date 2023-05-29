@@ -1,9 +1,9 @@
-#include "../src/application/extension_matcher.hpp"
+#include "../src/application/managers/extension_manager.hpp"
 #include "common.hpp"
 #include <initializer_list>
 
-TEST_CASE("ExtensionMatcher") {
-	ExtensionMatcher ext_match;
+TEST_CASE("ExtensionManager") {
+	ExtensionManager ext_match;
 
 	SECTION("Raw matching") {
 		ext_match.register_extension("tiff", "tif");
