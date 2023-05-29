@@ -187,4 +187,37 @@ ExtensionManager::_divide_matching_nonmatching_regex(
 
 	return {matching, nonmatching};
 }
+
+void ExtensionManager::set_output_extension(const std::string& format,
+                                            const std::string& extension) {
+	_output_extensions[format] = extension;
+}
+
+const std::string&
+ExtensionManager::get_output_extension(const std::string& format) const {
+	return _output_extensions.at(format);
+}
+
+fs::path ExtensionManager::with_output_extension(const std::string& format,
+                                                 const fs::path& file) const {
+	auto out = file;
+	out.replace_extension(_output_extensions.at(format));
+
+	return out;
+}
+
+void ExtensionManager::load_from_json(const std::string& format,
+                                      const boost::json::array& matchers,
+                                      const boost::json::string& output_ext) {
+	for (auto match : matchers) {
+		auto obj = match.get_object();
+		bool regex =
+		    obj.contains("type") && obj.at("type").get_string() == "regex";
+		register_extension(format, std::string(obj.at("suffix").get_string()),
+		                   regex);
+	}
+
+	set_output_extension(format, std::string(output_ext));
+}
+
 } // namespace ssimp

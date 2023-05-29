@@ -1,4 +1,5 @@
 #pragma once
+#include <boost/json.hpp>
 #include <boost/regex.hpp>
 #include <filesystem>
 #include <functional>
@@ -82,6 +83,32 @@ class ExtensionManager {
 	std::vector<std::string>
 	sorted_formats_by_priority(const std::filesystem::path& file) const;
 
+	/**
+	 * Set output extension to a **format**.
+	 * This will be used when an image is saved.
+	 */
+	void set_output_extension(const std::string& format,
+	                          const std::string& extension);
+
+	/**
+	 * Get output extension.
+	 */
+	const std::string& get_output_extension(const std::string& format) const;
+
+	/**
+	 * Update filename **file** to have output extension of **format**.
+	 */
+	std::filesystem::path
+	with_output_extension(const std::string& format,
+	                      const std::filesystem::path& file) const;
+
+	/**
+	 * Load format informations from json configuration.
+	 */
+	void load_from_json(const std::string& format,
+	                    const boost::json::array& matchers,
+	                    const boost::json::string& output_ext);
+
   private:
 	std::string _get_extension(const std::filesystem::path& file) const;
 	std::pair<std::vector<std::string>, std::vector<std::string>>
@@ -94,5 +121,6 @@ class ExtensionManager {
 	    _format_raw_suffixes;
 	std::unordered_map<std::string, std::vector<boost::regex>>
 	    _format_regex_suffixes;
+	std::unordered_map<std::string, std::string> _output_extensions;
 };
 } // namespace ssimp
