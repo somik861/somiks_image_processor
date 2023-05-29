@@ -12,6 +12,7 @@
 #include <array>
 #include <cassert>
 #include <cstddef>
+#include <filesystem>
 #include <memory>
 #include <numeric>
 #include <ranges>
@@ -293,6 +294,16 @@ class ndImage : public ndImageBase {
 
 		return flat_idx;
 	}
+};
+
+/**
+ * Wrapper containing image and its location information (mostly just name with
+ * original extension or relative path from the input folder)
+ */
+class LocalizedImage {
+  public:
+	ndImageBase image;
+	std::filesystem::path location;
 };
 
 } // namespace ssimp::img
