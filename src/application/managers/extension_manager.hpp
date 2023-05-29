@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace ssimp {
-class ExtensionMatcher {
+class ExtensionManager {
   public:
 	/**
 	 * Register **extension** of a given **format**.

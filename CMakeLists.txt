@@ -8,8 +8,9 @@ set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json)
 
 # sources
 set(APP_NONMAIN_SOURCES
-    src/application/extension_matcher.cpp src/application/managers/config_manager.cpp
-    src/application/managers/options_manager.cpp)
+    "src/application/managers/extension_manager.cpp"
+    "src/application/managers/config_manager.cpp"
+    "src/application/managers/options_manager.cpp")
 
 add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})
@@ -56,7 +57,7 @@ function(_copy_config_files dest)
 endfunction()
 
 # executables
-add_executable(app src/application/main.cpp)
+add_executable(app "src/application/main.cpp")
 target_link_libraries(app nonmain_files)
 target_add_config(app)
 

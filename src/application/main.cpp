@@ -1,6 +1,6 @@
-#include "extension_matcher.hpp"
 #include "image.hpp"
 #include "managers/config_manager.hpp"
+#include "managers/extension_manager.hpp"
 #include "managers/options_manager.hpp"
 #include "meta_types.hpp"
 #include <filesystem>
