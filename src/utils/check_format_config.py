@@ -70,7 +70,7 @@ def check_options(options: list[Any], path: tuple[str, ...], var_names_base: lis
 
         unused = set(opt.keys() - {'text', 'type'})
         if _contains(opt, 'type', new_path, type_=str) and _matches_option(
-                opt['type'], ['header', 'int', 'float', 'checkbox', 'text', 'choice', 'subsection'], new_path, 'type'):
+                opt['type'], ['header', 'int', 'double', 'checkbox', 'text', 'choice', 'subsection'], new_path, 'type'):
 
             if opt['type'] != 'header':
                 if _contains(opt, 'var_name', new_path, type_=str):
@@ -94,7 +94,7 @@ def check_options(options: list[Any], path: tuple[str, ...], var_names_base: lis
                                     _error(
                                         f'{_symbol_path(*new_path, "default")} not in range')
 
-                case 'float':
+                case 'double':
                     unused -= {'range', 'default'}
                     if _contains(opt, 'range', new_path, type_=list):
                         range_ = opt['range']
