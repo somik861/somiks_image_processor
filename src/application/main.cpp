@@ -1,3 +1,4 @@
+#include "api.hpp"
 #include "managers/config_manager.hpp"
 #include "managers/extension_manager.hpp"
 #include "managers/format_manager.hpp"
