@@ -18,6 +18,9 @@ struct generate_templates_impl<format_t, std::tuple<this_t, rest_t...>> {
 	}
 };
 
+} // namespace
+
+namespace ssimp::formats {
 template <typename format_t>
 struct generate_templates {
 	static void do_not_call_me() {
@@ -25,4 +28,4 @@ struct generate_templates {
 		    format_t, typename format_t::supported_types>::do_not_call_me();
 	}
 };
-} // namespace
+} // namespace ssimp::formats
