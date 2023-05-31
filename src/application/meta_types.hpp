@@ -50,6 +50,17 @@ struct tuple_type_idx<T, std::tuple<types_t...>>
 template <typename T, typename tuple_t>
 constexpr std::size_t tuple_type_idx_v = tuple_type_idx<T, tuple_t>::value;
 
+template <typename needle_t, typename haystack_t>
+struct is_subset_of : public std::true_type {};
+
+template <typename first_t, typename... rest_t, typename haystack_t>
+struct is_subset_of<std::tuple<first_t, rest_t...>, haystack_t>
+    : public std::conditional_t<is_any_of_v<first_t, haystack_t>,
+                                is_subset_of<std::tuple<rest_t...>, haystack_t>,
+                                std::false_type> {};
+
+template <typename needle_t, typename haystack_t>
+constexpr bool is_subset_of_v = is_subset_of<needle_t, haystack_t>::value;
 } // namespace traits
 
 namespace concepts {
