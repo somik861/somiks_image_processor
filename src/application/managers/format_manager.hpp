@@ -36,6 +36,11 @@ class FormatManager {
 	                const std::string& format,
 	                const OptionsManager::options_t& options) const;
 
+	/**
+	 * Get names of registered formats
+	 */
+	std::unordered_set<std::string> registered_formats() const;
+
   private:
 	std::unordered_map<std::string,
 	                   std::function<std::vector<img::LocalizedImage>(

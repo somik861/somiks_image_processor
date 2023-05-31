@@ -91,4 +91,14 @@ void FormatManager::save_image(const fs::path& directory,
                                const OptionsManager::options_t& options) const {
 	_image_savers.at(format)(image.image, directory / image.location, options);
 }
+
+std::unordered_set<std::string> FormatManager::registered_formats() const {
+	std::unordered_set<std::string> formats;
+	formats.reserve(_image_loaders.size());
+	for (const auto& [k, _] : _image_loaders) {
+		formats.insert(k);
+	}
+
+	return formats;
+}
 } // namespace ssimp
