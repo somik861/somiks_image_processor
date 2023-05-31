@@ -1,8 +1,37 @@
 #include "format_manager.hpp"
+#include "../meta_types.hpp"
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
 namespace {
+template <typename format_t, typename all_types>
+struct img_save_dispatcher {
+	static void save(const ssimp::img::ndImageBase& img,
+	                 const fs::path& path,
+	                 const ssimp::OptionsManager::options_t& options) {
+		throw std::logic_error("Unsupported type");
+	}
+};
+
+template <typename format_t, typename type_t, typename... rest_t>
+struct img_save_dispatcher<format_t, std::tuple<type_t, rest_t...>> {
+	static void save(const ssimp::img::ndImageBase& img,
+	                 const fs::path& path,
+	                 const ssimp::OptionsManager::options_t& options) {
+		if constexpr (ssimp::mt::traits::is_any_of_tuple_v<
+		                  type_t, typename format_t::supported_types>) {
+			if (ssimp::img::type_to_enum<type_t> == img.type()) {
+				format_t::save_image(img.as_typed<type_t>(), path, options);
+				return;
+			}
+		}
+
+		img_save_dispatcher<format_t, std::tuple<rest_t...>>::save(img, path,
+		                                                           options);
+	}
+};
+
 template <typename T>
 struct format_registerer {
 	static void register_format(auto&, auto&) {}
@@ -22,15 +51,19 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 	                           const ssimp::OptionsManager::options_t&)>>&
 	        savers) {
 		static_assert(
-		    mt::traits::is_subset_of_v<typename first_t::supported_types,
-		                               img::type_list>,
+		    ssimp::mt::traits::is_subset_of_v<typename first_t::supported_types,
+		                                      ssimp::img::type_list>,
 		    "Image format supports unknown type");
 
-		loaders[first_t::name] = auto [](const fs::path& path) {
+		loaders[first_t::name] = [](const fs::path& path) {
 			return first_t::load_image(path);
 		};
-
-		// TODO savers
+		savers[first_t::name] =
+		    [](const ssimp::img::ndImageBase& img, const fs::path& path,
+		       const ssimp::OptionsManager::options_t& options) {
+			    img_save_dispatcher<first_t, ssimp::img::type_list>::save(
+			        img, path, options);
+		    };
 
 		format_registerer<std::tuple<types_t...>>::register_format(loaders,
 		                                                           savers);
