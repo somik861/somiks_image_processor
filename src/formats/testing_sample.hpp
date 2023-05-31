@@ -16,7 +16,8 @@ class TestingSample {
 	load_image(const std::filesystem::path&);
 
 	template <typename T>
-	    requires mt::traits::is_type_of_tuple_v<T, supported_types>
+	    requires mt::traits::is_any_of_tuple_v<T,
+	                                           TestingSample::supported_types>
 	static void save_image(const img::ndImage<T>& img,
 	                       const std::filesystem::path& path,
 	                       const OptionsManager::options_t& options);
