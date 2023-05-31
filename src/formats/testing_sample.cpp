@@ -7,8 +7,8 @@ namespace ssimp::formats {
 template class generate_templates<TestingSample>;
 
 /* static */ std::vector<img::LocalizedImage>
-TestingSample::load_image(const std::filesystem::path&) {
-	return {};
+TestingSample::load_image(const fs::path& path) {
+	return {{img::ndImage<img::GRAY8>(2, 2), path.filename()}};
 }
 
 template <typename T>
