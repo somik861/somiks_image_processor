@@ -13,7 +13,13 @@ set(APP_NONMAIN_SOURCES
     "src/application/managers/options_manager.cpp"
     "src/application/managers/format_manager.cpp")
 
-add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES})
+# formats
+file(GLOB FORMAT_SOURCES ${CMAKE_SOURCE_DIR}/src/formats/*.cpp)
+foreach(FILE ${FORMAT_SOURCES})
+  message("Found format source: ${FILE}")
+endforeach()
+
+add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})
 
 # configuration files
