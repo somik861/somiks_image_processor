@@ -121,9 +121,9 @@ class ndImageBase {
 	      _dims(dims.begin(), dims.end()), _type(type) {}
 
   public:
-	ndImageBase(ndImageBase&) = default;
+	ndImageBase(const ndImageBase&) = default;
 	ndImageBase(ndImageBase&&) = default;
-	ndImageBase& operator=(ndImageBase&) = default;
+	ndImageBase& operator=(const ndImageBase&) = default;
 	ndImageBase& operator=(ndImageBase&&) = default;
 
 	/**
@@ -196,7 +196,7 @@ class ndImage : public ndImageBase {
 		                           [](auto x) { return x >= 0; }));
 	}
 
-	explicit ndImage(ndImageBase& base) : ndImageBase(base) {
+	explicit ndImage(const ndImageBase& base) : ndImageBase(base) {
 		assert(base.type() == type_to_enum<T>);
 	}
 
