@@ -1,4 +1,4 @@
-#include "../src/application/image.hpp"
+#include "../src/application/nd_image.hpp"
 #include "common.hpp"
 #include <tuple>
 
