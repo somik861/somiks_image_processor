@@ -145,6 +145,11 @@ class ndImageBase {
 		return ndImage<T>(*this);
 	}
 
+	template <ImgType T>
+	const ndImage<T> as_typed() const {
+		return ndImage<T>(*this);
+	}
+
 	/**
 	 * Deep copy of the image
 	 */
