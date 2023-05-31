@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../formats/testing_sample.hpp"
 #include "../nd_image.hpp"
 #include "options_manager.hpp"
 #include <filesystem>
@@ -12,7 +13,7 @@
 namespace ssimp {
 class FormatManager {
   private:
-	using _registered_types = std::tuple<>;
+	using _registered_formats = std::tuple<formats::TestingSample>;
 
   public:
 	/**
@@ -24,11 +25,11 @@ class FormatManager {
 	 * Detect automatically format and try to open the image.
 	 */
 	std::vector<img::LocalizedImage>
-	load_image(const std::filesystem::path& path) const;
+	load_image(const std::filesystem::path& path,
+	           const std::string& format) const;
 
 	/**
-	 * Save **image** in **directory** using using default extension of a
-	 * format.
+	 * Save **image** in **directory** using **image::location** as name.
 	 */
 	void save_image(const std::filesystem::path& directory,
 	                const img::LocalizedImage& image,
