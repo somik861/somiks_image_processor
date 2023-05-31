@@ -30,15 +30,15 @@ template <typename T, typename... types_t>
 constexpr int type_idx_v = type_idx<T, types_t...>::value;
 
 template <typename T, typename tuple_t>
-struct is_type_of_tuple : public std::false_type {};
+struct is_any_of_tuple : public std::false_type {};
 
 template <typename T, typename... types_t>
-struct is_type_of_tuple<T, std::tuple<types_t...>> {
+struct is_any_of_tuple<T, std::tuple<types_t...>> {
 	static constexpr bool value = is_any_of_v<T, types_t...>;
 };
 
 template <typename T, typename tuple_t>
-constexpr bool is_type_of_tuple_v = is_type_of_tuple<T, tuple_t>::value;
+constexpr bool is_any_of_tuple_v = is_any_of_tuple<T, tuple_t>::value;
 
 template <typename T, typename... tuple_t>
 struct tuple_type_idx {};
@@ -51,13 +51,11 @@ template <typename T, typename tuple_t>
 constexpr std::size_t tuple_type_idx_v = tuple_type_idx<T, tuple_t>::value;
 
 template <typename needle_t, typename haystack_t>
-struct is_subset_of : public std::true_type {};
+struct is_subset_of;
 
-template <typename first_t, typename... rest_t, typename haystack_t>
-struct is_subset_of<std::tuple<first_t, rest_t...>, haystack_t>
-    : public std::conditional_t<is_any_of_v<first_t, haystack_t>,
-                                is_subset_of<std::tuple<rest_t...>, haystack_t>,
-                                std::false_type> {};
+template <typename... types_t, typename haystack_t>
+struct is_subset_of<std::tuple<types_t...>, haystack_t>
+    : public std::conjunction<is_any_of_tuple<types_t, haystack_t>...> {};
 
 template <typename needle_t, typename haystack_t>
 constexpr bool is_subset_of_v = is_subset_of<needle_t, haystack_t>::value;
@@ -65,6 +63,6 @@ constexpr bool is_subset_of_v = is_subset_of<needle_t, haystack_t>::value;
 
 namespace concepts {
 template <typename T, typename tuple_t>
-concept TupleType = requires { traits::is_type_of_tuple_v<T, tuple_t>; };
+concept TupleType = requires { traits::is_any_of_tuple_v<T, tuple_t>; };
 }
 } // namespace ssimp::mt
