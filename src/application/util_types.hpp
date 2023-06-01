@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <variant>
+#include <vector>
 
 namespace ssimp {
 namespace option_types {

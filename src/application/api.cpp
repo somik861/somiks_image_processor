@@ -3,6 +3,7 @@
 #include "managers/extension_manager.hpp"
 #include "managers/format_manager.hpp"
 #include "managers/options_manager.hpp"
+#include <iostream>
 
 namespace fs = std::filesystem;
 

@@ -11,7 +11,7 @@ namespace ssimp::formats {
 class TestingSample {
   public:
 	using supported_types = std::tuple<img::GRAY8>;
-	constexpr static const char* name = "TestingSample";
+	constexpr static const char* name = "testing_sample";
 
 	static std::vector<img::LocalizedImage>
 	load_image(const std::filesystem::path&);
