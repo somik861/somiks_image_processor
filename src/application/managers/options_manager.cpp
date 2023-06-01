@@ -19,7 +19,7 @@ string_array_to_set(const boost::json::array& arr) {
 }
 
 void finalize_options_rec(const boost::json::array& option_cfgs,
-                          ssimp::OptionsManager::options_t& options) {
+                          ssimp::option_types::options_t& options) {
 
 	for (const auto& cfg : option_cfgs) {
 		const auto& obj = cfg.get_object();
@@ -91,10 +91,10 @@ void OptionsManager::load_from_json(const std::string& identifier,
 	_loaded_configs[identifier] = json;
 }
 
-OptionsManager::options_t OptionsManager::finalize_options(
-    const std::string& identifier,
-    const OptionsManager::options_t& options) const {
-	OptionsManager::options_t finalized = options;
+option_types::options_t
+OptionsManager::finalize_options(const std::string& identifier,
+                                 const option_types::options_t& options) const {
+	option_types::options_t finalized = options;
 
 	finalize_options_rec(_loaded_configs.at(identifier), finalized);
 
@@ -102,7 +102,7 @@ OptionsManager::options_t OptionsManager::finalize_options(
 }
 
 bool OptionsManager::is_valid(const std::string& identifier,
-                              const options_t& options) const {
+                              const option_types::options_t& options) const {
 	for (const auto& [name, value] : options) {
 		const auto& [option, deps] = _get_option_and_deps(identifier, name);
 		CHECK(option);

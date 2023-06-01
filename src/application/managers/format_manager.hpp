@@ -34,7 +34,7 @@ class FormatManager {
 	void save_image(const std::filesystem::path& directory,
 	                const img::LocalizedImage& image,
 	                const std::string& format,
-	                const OptionsManager::options_t& options) const;
+	                const option_types::options_t& options) const;
 
 	/**
 	 * Get names of registered formats
@@ -49,7 +49,7 @@ class FormatManager {
 	std::unordered_map<std::string,
 	                   std::function<void(const img::ndImageBase&,
 	                                      const std::filesystem::path&,
-	                                      const OptionsManager::options_t&)>>
+	                                      const option_types::options_t&)>>
 	    _image_savers;
 };
 } // namespace ssimp

@@ -9,7 +9,7 @@ template <typename format_t, typename all_types>
 struct img_save_dispatcher {
 	static void save(const ssimp::img::ndImageBase& img,
 	                 const fs::path& path,
-	                 const ssimp::OptionsManager::options_t& options) {
+	                 const ssimp::option_types::options_t& options) {
 		throw std::logic_error("Unsupported type");
 	}
 };
@@ -18,7 +18,7 @@ template <typename format_t, typename type_t, typename... rest_t>
 struct img_save_dispatcher<format_t, std::tuple<type_t, rest_t...>> {
 	static void save(const ssimp::img::ndImageBase& img,
 	                 const fs::path& path,
-	                 const ssimp::OptionsManager::options_t& options) {
+	                 const ssimp::option_types::options_t& options) {
 		if constexpr (ssimp::mt::traits::is_any_of_tuple_v<
 		                  type_t, typename format_t::supported_types>) {
 			if (ssimp::img::type_to_enum<type_t> == img.type()) {
@@ -48,7 +48,7 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 	        std::string,
 	        std::function<void(const ssimp::img::ndImageBase&,
 	                           const std::filesystem::path&,
-	                           const ssimp::OptionsManager::options_t&)>>&
+	                           const ssimp::option_types::options_t&)>>&
 	        savers) {
 		static_assert(
 		    ssimp::mt::traits::is_subset_of_v<typename first_t::supported_types,
@@ -60,7 +60,7 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 		};
 		savers[first_t::name] =
 		    [](const ssimp::img::ndImageBase& img, const fs::path& path,
-		       const ssimp::OptionsManager::options_t& options) {
+		       const ssimp::option_types::options_t& options) {
 			    img_save_dispatcher<first_t, ssimp::img::type_list>::save(
 			        img, path, options);
 		    };
@@ -88,7 +88,7 @@ FormatManager::load_image(const fs::path& path,
 void FormatManager::save_image(const fs::path& directory,
                                const img::LocalizedImage& image,
                                const std::string& format,
-                               const OptionsManager::options_t& options) const {
+                               const option_types::options_t& options) const {
 	_image_savers.at(format)(image.image, directory / image.location, options);
 }
 

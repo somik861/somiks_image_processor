@@ -20,6 +20,6 @@ class TestingSample {
 	                                           TestingSample::supported_types>
 	static void save_image(const img::ndImage<T>& img,
 	                       const std::filesystem::path& path,
-	                       const OptionsManager::options_t& options);
+	                       const option_types::options_t& options);
 };
 } // namespace ssimp::formats

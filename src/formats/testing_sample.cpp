@@ -13,7 +13,7 @@ template <typename T>
 /* static */ void
 TestingSample::save_image(const img::ndImage<T>& img,
                           const fs::path& path,
-                          const OptionsManager::options_t& options) {}
+                          const option_types::options_t& options) {}
 
 INSTANTIATE_SAVE_TEMPLATE(TestingSample, img::GRAY8);
 
