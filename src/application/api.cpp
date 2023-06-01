@@ -26,8 +26,8 @@ API::API()
 }
 
 std::vector<img::LocalizedImage> API::load_image(const fs::path& path) const {
-	auto formats_to_try = _extension_manager->sorted_formats_by_priority(path);
-	for (const auto& format : formats_to_try) {
+	for (const auto& format :
+	     _extension_manager->sorted_formats_by_priority(path)) {
 		auto out = _format_manager->load_image(path, format);
 		if (!out.empty())
 			return out;
@@ -55,6 +55,16 @@ void API::save_image(img::LocalizedImage img,
 	    _options_manager->finalize_options(format, options));
 }
 
-ImageProperties API::get_properties(const fs::path& path) const { return {}; }
+ssimp::ImageProperties API::get_properties(const fs::path& path) const {
+	for (const auto& format :
+	     _extension_manager->sorted_formats_by_priority(path)) {
+		auto out = _format_manager->get_image_information(path, format);
+
+		if (out)
+			return *out;
+	}
+
+	throw std::runtime_error("Unsupported file");
+}
 
 } // namespace ssimp

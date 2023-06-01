@@ -2,6 +2,7 @@
 
 #include "../../formats/testing_sample.hpp"
 #include "../nd_image.hpp"
+#include "../util_types.hpp"
 #include "options_manager.hpp"
 #include <filesystem>
 #include <functional>
@@ -43,6 +44,13 @@ class FormatManager {
 	                       img::elem_type type) const;
 
 	/**
+	 * Get image information
+	 */
+	std::optional<ImageProperties>
+	get_image_information(const std::filesystem::path& path,
+	                      const std::string& format) const;
+
+	/**
 	 * Get names of registered formats
 	 */
 	std::unordered_set<std::string> registered_formats() const;
@@ -57,6 +65,12 @@ class FormatManager {
 	                                      const std::filesystem::path&,
 	                                      const option_types::options_t&)>>
 	    _image_savers;
+
+	std::unordered_map<std::string,
+	                   std::function<std::optional<ImageProperties>(
+	                       const std::filesystem::path&)>>
+	    _image_information_getters;
+
 	std::unordered_map<std::string, std::unordered_set<img::elem_type>>
 	    _format_supported_types;
 };

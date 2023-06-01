@@ -59,6 +59,9 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 	                           const std::filesystem::path&,
 	                           const ssimp::option_types::options_t&)>>& savers,
 	    std::unordered_map<std::string,
+	                       std::function<std::optional<ssimp::ImageProperties>(
+	                           const std::filesystem::path&)>>& info_getters,
+	    std::unordered_map<std::string,
 	                       std::unordered_set<ssimp::img::elem_type>>&
 	        supported_types) {
 		static_assert(
@@ -76,6 +79,9 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 			        first_t, typename first_t::supported_types>::save(img, path,
 			                                                          options);
 		    };
+		info_getters[first_t::name] = [](const fs::path& path) {
+			return first_t::get_information(path);
+		};
 
 		fill_supported_types<typename first_t::supported_types>::fill(
 		    supported_types[first_t::name]);
@@ -91,7 +97,8 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 namespace ssimp {
 FormatManager::FormatManager() {
 	format_registerer<_registered_formats>::register_format(
-	    _image_loaders, _image_savers, _format_supported_types);
+	    _image_loaders, _image_savers, _image_information_getters,
+	    _format_supported_types);
 }
 
 std::vector<img::LocalizedImage>
@@ -120,5 +127,11 @@ std::unordered_set<std::string> FormatManager::registered_formats() const {
 bool FormatManager::is_type_supported(const std::string& format,
                                       img::elem_type type) const {
 	return _format_supported_types.at(format).contains(type);
+}
+
+std::optional<ssimp::ImageProperties>
+FormatManager::get_image_information(const std::filesystem::path& path,
+                                     const std::string& format) const {
+	return _image_information_getters.at(format)(path);
 }
 } // namespace ssimp
