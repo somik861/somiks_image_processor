@@ -18,6 +18,7 @@ using options_t = std::unordered_map<std::string, value_t>;
 
 class ImageProperties {
   public:
+	std::string format;
 	std::vector<std::size_t> dims;
 	std::unordered_map<std::string, std::string> others;
 };

@@ -4,6 +4,8 @@
 #include "managers/format_manager.hpp"
 #include "managers/options_manager.hpp"
 
+namespace fs = std::filesystem;
+
 namespace ssimp {
 API::API()
     : _config_manager(std::make_unique<ConfigManager>()),
@@ -22,5 +24,37 @@ API::API()
 		                                 config.at("options").get_array());
 	}
 }
+
+std::vector<img::LocalizedImage> API::load_image(const fs::path& path) const {
+	auto formats_to_try = _extension_manager->sorted_formats_by_priority(path);
+	for (const auto& format : formats_to_try) {
+		auto out = _format_manager->load_image(path, format);
+		if (!out.empty())
+			return out;
+	}
+
+	return {};
+}
+
+void API::save_image(img::LocalizedImage img,
+                     const std::filesystem::path& output_dir,
+                     const std::string& format,
+                     const option_types::options_t& options) const {
+
+	if (!_format_manager->is_type_supported(format, img.image.type()))
+		throw std::runtime_error(std::string("Unsupported type of format ") +
+		                         format);
+	if (!_options_manager->is_valid(format, options))
+		throw std::runtime_error("Unsupported options");
+
+	img.location =
+	    _extension_manager->with_output_extension(format, img.location);
+
+	_format_manager->save_image(
+	    output_dir, img, format,
+	    _options_manager->finalize_options(format, options));
+}
+
+ImageProperties API::get_properties(const fs::path& path) const { return {}; }
 
 } // namespace ssimp

@@ -19,14 +19,30 @@ class OptionsManager;
 
 class API {
   public:
+	/**
+	 * Custom contructor to initalize everything
+	 */
 	API();
+
+	/**
+	 * Detect format from extension are try to open it.
+	 * If failed, try every other supported format.
+	 */
 	std::vector<img::LocalizedImage>
 	load_image(const std::filesystem::path& path) const;
 
-	void save_image(const img::LocalizedImage& img,
+	/**
+	 * Save image to **output_dir/img.location** with extension
+	 * changed to respect **format** with **options**.
+	 */
+	void save_image(img::LocalizedImage img,
 	                const std::filesystem::path& output_dir,
+	                const std::string& format,
 	                const option_types::options_t& options) const;
 
+	/**
+	 * Get properties of image located at **path**.
+	 */
 	ImageProperties get_properties(const std::filesystem::path& path) const;
 
   private:
