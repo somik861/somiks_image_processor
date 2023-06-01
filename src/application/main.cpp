@@ -1,18 +1,20 @@
-#include "managers/config_manager.hpp"
-#include "managers/extension_manager.hpp"
-#include "managers/format_manager.hpp"
-#include "managers/options_manager.hpp"
-#include "meta_types.hpp"
-#include "nd_image.hpp"
+#include "api.hpp"
 #include <filesystem>
 #include <iostream>
 
 namespace fs = std::filesystem;
 
 int main() {
-	ssimp::ConfigManager cfg;
-	auto loaded = cfg.load_format("sample");
-	std::cout << loaded << '\n';
 
-	// boost::json::array root_tmp = loaded.as_array();
+	try {
+
+		ssimp::API api;
+		auto imgs = api.load_image("testing_image.img");
+
+		std::cout << "Image count: " << imgs.size() << '\n';
+		auto img = imgs[0];
+		std::cout << "Images[0]:\n" << img;
+	} catch (const std::exception& e) {
+		std::cerr << e.what() << '\n';
+	}
 }

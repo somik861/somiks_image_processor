@@ -1,4 +1,5 @@
 #pragma once
+#include "../util_types.hpp"
 #include <boost/json.hpp>
 #include <optional>
 #include <string>
@@ -11,15 +12,6 @@ namespace ssimp {
 class OptionsManager {
   public:
 	/**
-	 * Variant of possible option values
-	 */
-	using value_t = std::variant<bool, int32_t, double, std::string>;
-	/**
-	 * Type representing a set of options
-	 */
-	using options_t = std::unordered_map<std::string, value_t>;
-
-	/**
 	 * Load options configuration of **identifier** from json array
 	 */
 	void load_from_json(const std::string& identifier,
@@ -31,8 +23,9 @@ class OptionsManager {
 	 *
 	 * **is_valid** on **options** must evaluate to **true**.
 	 */
-	options_t finalize_options(const std::string& identifier,
-	                           const options_t& options) const;
+	option_types::options_t
+	finalize_options(const std::string& identifier,
+	                 const option_types::options_t& options) const;
 
 	/**
 	 * Checks if **options** formed correctly.
@@ -40,7 +33,7 @@ class OptionsManager {
 	 * That is, correct var_names, formats, enabled necessary subsections, etc.
 	 */
 	bool is_valid(const std::string& identifier,
-	              const options_t& options) const;
+	              const option_types::options_t& options) const;
 
   private:
 	std::pair<std::optional<boost::json::object>,

@@ -2,6 +2,7 @@
 
 #include "../../formats/testing_sample.hpp"
 #include "../nd_image.hpp"
+#include "../util_types.hpp"
 #include "options_manager.hpp"
 #include <filesystem>
 #include <functional>
@@ -34,7 +35,20 @@ class FormatManager {
 	void save_image(const std::filesystem::path& directory,
 	                const img::LocalizedImage& image,
 	                const std::string& format,
-	                const OptionsManager::options_t& options) const;
+	                const option_types::options_t& options) const;
+
+	/**
+	 * Return true if type is supported.
+	 */
+	bool is_type_supported(const std::string& format,
+	                       img::elem_type type) const;
+
+	/**
+	 * Get image information
+	 */
+	std::optional<ImageProperties>
+	get_image_information(const std::filesystem::path& path,
+	                      const std::string& format) const;
 
 	/**
 	 * Get names of registered formats
@@ -49,7 +63,15 @@ class FormatManager {
 	std::unordered_map<std::string,
 	                   std::function<void(const img::ndImageBase&,
 	                                      const std::filesystem::path&,
-	                                      const OptionsManager::options_t&)>>
+	                                      const option_types::options_t&)>>
 	    _image_savers;
+
+	std::unordered_map<std::string,
+	                   std::function<std::optional<ImageProperties>(
+	                       const std::filesystem::path&)>>
+	    _image_information_getters;
+
+	std::unordered_map<std::string, std::unordered_set<img::elem_type>>
+	    _format_supported_types;
 };
 } // namespace ssimp

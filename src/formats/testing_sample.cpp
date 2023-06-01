@@ -8,12 +8,18 @@ TestingSample::load_image(const fs::path& path) {
 	return {{img::ndImage<img::GRAY8>(2, 2), path.filename()}};
 }
 
+/* static */
+std::optional<ImageProperties>
+TestingSample::get_information(const fs::path& path) {
+	return ImageProperties{name, {}, {}};
+}
+
 template <typename T>
     requires mt::traits::is_any_of_tuple_v<T, TestingSample::supported_types>
 /* static */ void
 TestingSample::save_image(const img::ndImage<T>& img,
                           const fs::path& path,
-                          const OptionsManager::options_t& options) {}
+                          const option_types::options_t& options) {}
 
 INSTANTIATE_SAVE_TEMPLATE(TestingSample, img::GRAY8);
 

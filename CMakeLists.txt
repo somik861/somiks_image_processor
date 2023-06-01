@@ -11,7 +11,8 @@ set(APP_NONMAIN_SOURCES
     "src/application/managers/extension_manager.cpp"
     "src/application/managers/config_manager.cpp"
     "src/application/managers/options_manager.cpp"
-    "src/application/managers/format_manager.cpp")
+    "src/application/managers/format_manager.cpp"
+    "src/application/api.cpp")
 
 # formats
 file(GLOB FORMAT_SOURCES ${CMAKE_SOURCE_DIR}/src/formats/*.cpp)
