@@ -4,7 +4,8 @@
 #include <unordered_map>
 #include <variant>
 
-namespace ssimp::option_types {
+namespace ssimp {
+namespace option_types {
 /**
  * Variant of possible option values
  */
@@ -13,4 +14,11 @@ using value_t = std::variant<bool, int32_t, double, std::string>;
  * Type representing a set of options
  */
 using options_t = std::unordered_map<std::string, value_t>;
-} // namespace ssimp::option_types
+} // namespace option_types
+
+class ImageProperties {
+  public:
+	std::vector<std::size_t> dims;
+	std::unordered_map<std::string, std::string> others;
+};
+} // namespace ssimp
