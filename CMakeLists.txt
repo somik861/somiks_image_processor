@@ -3,8 +3,14 @@ cmake_minimum_required(VERSION 3.23)
 project(somiks_image_processor CXX)
 
 # external packages
+## Boost
 find_package(Boost CONFIG REQUIRED)
 set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json)
+
+## Jpeg
+find_package(JPEG REQUIRED)
+set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
+
 
 # sources
 set(APP_NONMAIN_SOURCES
