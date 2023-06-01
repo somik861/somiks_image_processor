@@ -1,12 +1,13 @@
 #include "jpeg.hpp"
-
 #include "common.hpp"
+#include <turbojpeg.h>
 
 namespace ssimp::formats {
 /* static */ std::vector<img::LocalizedImage>
 JPEG::load_image(const fs::path& path) {
+	tjhandle decompressor = tjInitDecompress();
 
-	return {{img::ndImage<img::GRAY8>(2, 2), path.filename()}};
+	return {};
 }
 
 /* static */

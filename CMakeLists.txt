@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.23)
 
 project(somiks_image_processor CXX)
 
+# suppress no debug files linker warning
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+	add_definitions("/wd4099")
+endif()
+
+
 # external packages
 ## Boost
 find_package(Boost CONFIG REQUIRED)
