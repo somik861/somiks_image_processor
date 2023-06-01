@@ -45,6 +45,11 @@ class API {
 	 */
 	ImageProperties get_properties(const std::filesystem::path& path) const;
 
+	/**
+	 * Custom destructor to enable destruction of managers
+	 */
+	~API();
+
   private:
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;

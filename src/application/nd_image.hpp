@@ -15,6 +15,7 @@
 #include <filesystem>
 #include <memory>
 #include <numeric>
+#include <ostream>
 #include <ranges>
 #include <span>
 #include <tuple>
@@ -162,10 +163,26 @@ class ndImageBase {
 		return cpy;
 	}
 
+	friend std::ostream& operator<<(std::ostream& os, const ndImageBase& img) {
+		os << "Type: " << ndImageBase::_type_names[static_cast<int>(img.type())]
+		   << '\n';
+		os << "Dims: [ ";
+		for (auto n : img._dims)
+			os << n << " ";
+		os << "]\n";
+
+		return os;
+	}
+
   protected:
 	std::shared_ptr<std::vector<std::byte>> _data;
 	std::vector<std::size_t> _dims;
 	elem_type _type;
+
+  private:
+	static constexpr std::array _type_names = {"GRAY8",  "GRAY16", "GRAY32",
+	                                           "GRAY64", "FLOAT",  "DOUBLE",
+	                                           "RGB8",   "RGBA8"};
 };
 
 /**
@@ -309,6 +326,14 @@ class LocalizedImage {
   public:
 	ndImageBase image;
 	std::filesystem::path location;
+
+	friend std::ostream& operator<<(std::ostream& os,
+	                                const LocalizedImage& img) {
+		os << "Location: " << img.location << '\n';
+		os << img.image << '\n';
+
+		return os;
+	}
 };
 
 } // namespace ssimp::img

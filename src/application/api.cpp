@@ -67,4 +67,6 @@ ssimp::ImageProperties API::get_properties(const fs::path& path) const {
 	throw std::runtime_error("Unsupported file");
 }
 
+API::~API() {}
+
 } // namespace ssimp
