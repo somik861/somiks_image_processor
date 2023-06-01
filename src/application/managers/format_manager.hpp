@@ -37,6 +37,12 @@ class FormatManager {
 	                const option_types::options_t& options) const;
 
 	/**
+	 * Return true if type is supported.
+	 */
+	bool is_type_supported(const std::string& format,
+	                       img::elem_type type) const;
+
+	/**
 	 * Get names of registered formats
 	 */
 	std::unordered_set<std::string> registered_formats() const;
@@ -51,5 +57,7 @@ class FormatManager {
 	                                      const std::filesystem::path&,
 	                                      const option_types::options_t&)>>
 	    _image_savers;
+	std::unordered_map<std::string, std::unordered_set<img::elem_type>>
+	    _format_supported_types;
 };
 } // namespace ssimp

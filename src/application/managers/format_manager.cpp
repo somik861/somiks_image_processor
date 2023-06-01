@@ -5,7 +5,7 @@
 namespace fs = std::filesystem;
 
 namespace {
-template <typename format_t, typename all_types>
+template <typename format_t, typename supported_types>
 struct img_save_dispatcher {
 	static void save(const ssimp::img::ndImageBase& img,
 	                 const fs::path& path,
@@ -19,16 +19,25 @@ struct img_save_dispatcher<format_t, std::tuple<type_t, rest_t...>> {
 	static void save(const ssimp::img::ndImageBase& img,
 	                 const fs::path& path,
 	                 const ssimp::option_types::options_t& options) {
-		if constexpr (ssimp::mt::traits::is_any_of_tuple_v<
-		                  type_t, typename format_t::supported_types>) {
-			if (ssimp::img::type_to_enum<type_t> == img.type()) {
-				format_t::save_image(img.as_typed<type_t>(), path, options);
-				return;
-			}
+		if (ssimp::img::type_to_enum<type_t> == img.type()) {
+			format_t::save_image(img.as_typed<type_t>(), path, options);
+			return;
 		}
-
 		img_save_dispatcher<format_t, std::tuple<rest_t...>>::save(img, path,
 		                                                           options);
+	}
+};
+
+template <typename supported_types>
+struct fill_supported_types {
+	static void fill(std::unordered_set<ssimp::img::elem_type>&) {}
+};
+
+template <typename type_t, typename... rest_t>
+struct fill_supported_types<std::tuple<type_t, rest_t...>> {
+	static void fill(std::unordered_set<ssimp::img::elem_type>& set) {
+		set.insert(ssimp::img::type_to_enum<type_t>);
+		fill_supported_types<std::tuple<rest_t...>>::fill(set);
 	}
 };
 
@@ -48,8 +57,10 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 	        std::string,
 	        std::function<void(const ssimp::img::ndImageBase&,
 	                           const std::filesystem::path&,
-	                           const ssimp::option_types::options_t&)>>&
-	        savers) {
+	                           const ssimp::option_types::options_t&)>>& savers,
+	    std::unordered_map<std::string,
+	                       std::unordered_set<ssimp::img::elem_type>>&
+	        supported_types) {
 		static_assert(
 		    ssimp::mt::traits::is_subset_of_v<typename first_t::supported_types,
 		                                      ssimp::img::type_list>,
@@ -61,9 +72,13 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 		savers[first_t::name] =
 		    [](const ssimp::img::ndImageBase& img, const fs::path& path,
 		       const ssimp::option_types::options_t& options) {
-			    img_save_dispatcher<first_t, ssimp::img::type_list>::save(
-			        img, path, options);
+			    img_save_dispatcher<
+			        first_t, typename first_t::supported_types>::save(img, path,
+			                                                          options);
 		    };
+
+		fill_supported_types<typename first_t::supported_types>::fill(
+		    supported_types[first_t::name]);
 
 		format_registerer<std::tuple<types_t...>>::register_format(loaders,
 		                                                           savers);
@@ -75,8 +90,8 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 
 namespace ssimp {
 FormatManager::FormatManager() {
-	format_registerer<_registered_formats>::register_format(_image_loaders,
-	                                                        _image_savers);
+	format_registerer<_registered_formats>::register_format(
+	    _image_loaders, _image_savers, _format_supported_types);
 }
 
 std::vector<img::LocalizedImage>
@@ -100,5 +115,10 @@ std::unordered_set<std::string> FormatManager::registered_formats() const {
 	}
 
 	return formats;
+}
+
+bool FormatManager::is_type_supported(const std::string& format,
+                                      img::elem_type type) const {
+	return _format_supported_types.at(format).contains(type);
 }
 } // namespace ssimp

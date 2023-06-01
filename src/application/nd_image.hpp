@@ -26,7 +26,7 @@ namespace ssimp::img {
 /**
  * Supported image element types enumeration
  */
-enum class types : int {
+enum class elem_type : int {
 	GRAY8,
 	GRAY16,
 	GRAY32,
@@ -53,28 +53,28 @@ using type_list = std::tuple<uint8_t,
 /**
  * Convenience function for convering enum type to c++-type
  */
-template <types type>
+template <elem_type type>
 using enum_to_type = std::tuple_element_t<static_cast<int>(type), type_list>;
 
 /**
  * Convenience function for convering c++-type to enum type
  */
 template <typename T>
-constexpr types type_to_enum =
-    static_cast<types>(int(ssimp::mt::traits::tuple_type_idx_v<T, type_list>));
+constexpr elem_type type_to_enum = static_cast<elem_type>(
+    int(ssimp::mt::traits::tuple_type_idx_v<T, type_list>));
 
 /**
  * Once again, now with type aliases to make the image manipulation as
  * convenient as possible
  */
-using GRAY8 = enum_to_type<types::GRAY8>;
-using GRAY16 = enum_to_type<types::GRAY16>;
-using GRAY32 = enum_to_type<types::GRAY32>;
-using GRAY64 = enum_to_type<types::GRAY64>;
-using FLOAT = enum_to_type<types::FLOAT>;
-using DOUBLE = enum_to_type<types::DOUBLE>;
-using RGB8 = enum_to_type<types::RGB8>;
-using RGBA8 = enum_to_type<types::RGBA8>;
+using GRAY8 = enum_to_type<elem_type::GRAY8>;
+using GRAY16 = enum_to_type<elem_type::GRAY16>;
+using GRAY32 = enum_to_type<elem_type::GRAY32>;
+using GRAY64 = enum_to_type<elem_type::GRAY64>;
+using FLOAT = enum_to_type<elem_type::FLOAT>;
+using DOUBLE = enum_to_type<elem_type::DOUBLE>;
+using RGB8 = enum_to_type<elem_type::RGB8>;
+using RGBA8 = enum_to_type<elem_type::RGBA8>;
 
 /**
  * Concept to prevent instatiation of template swith unsupported type
@@ -113,7 +113,7 @@ class ndImageBase {
   protected:
 	ndImageBase(std::span<const std::size_t> dims,
 	            std::size_t elem_size,
-	            types type)
+	            elem_type type)
 	    : _data(std::make_shared<std::vector<std::byte>>(
 	          std::reduce(
 	              dims.begin(), dims.end(), std::size_t(1), std::multiplies{}) *
@@ -134,7 +134,7 @@ class ndImageBase {
 	/**
 	 * Original type of the image
 	 */
-	types type() const { return _type; }
+	elem_type type() const { return _type; }
 
 	/**
 	 * Return typed version of this image, that is: ndImage<T>.
@@ -165,7 +165,7 @@ class ndImageBase {
   protected:
 	std::shared_ptr<std::vector<std::byte>> _data;
 	std::vector<std::size_t> _dims;
-	types _type;
+	elem_type _type;
 };
 
 /**
