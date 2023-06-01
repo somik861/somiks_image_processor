@@ -12,7 +12,16 @@ JPEG::load_image(const fs::path& path) {
 
 /* static */
 std::optional<ImageProperties> JPEG::get_information(const fs::path& path) {
-	return ImageProperties{name, {}, {}};
+	tjhandle decompressor = tjInitDecompress();
+
+	int width, height, jpegSubsamp, jpegColorspace;
+	auto bytes = details::read_file(path);
+
+	tjDecompressHeader3(
+	    decompressor, reinterpret_cast<const unsigned char*>(bytes.data()),
+	    bytes.size(), &width, &height, &jpegSubsamp, &jpegColorspace);
+
+	return ImageProperties(name, {std::size_t(width), std::size_t(height)}, {});
 }
 
 template <typename T>
