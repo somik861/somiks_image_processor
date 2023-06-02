@@ -25,20 +25,46 @@ class API {
 	API();
 
 	/**
+	 * Open file at **path**. If **rel_dir** is specified, the
+	 * LocalizedImage.location path is set relative to **rel_dir**.
+	 *
 	 * Detect format from extension are try to open it.
 	 * If failed, try every other supported format.
 	 */
 	std::vector<img::LocalizedImage>
-	load_image(const std::filesystem::path& path) const;
+	load_image(const std::filesystem::path& path,
+	           const std::filesystem::path& rel_dir = "") const;
+
+	/**
+	 * Load all files in directory as images. For search in subdirectories,
+	 * set **recurse** to *true*.
+	 * Relative location of specific image to **dir** can be found via
+	 * localizedImage.location.
+	 */
+	std::vector<img::LocalizedImage>
+	load_directory(const std::filesystem::path& dir, bool recurse = false);
+
+	/**
+	 * Save **img** to **path**.
+	 * If **format** is not set, it is detected from **path**.
+	 * Note that this still may change an extension if the **path** extension is
+	 * not set as the output extension of found format.
+	 */
+	void save_image(const img::ndImageBase& img,
+	                const std::filesystem::path& path,
+	                const std::string& format = "",
+	                const option_types::options_t& options = {});
 
 	/**
 	 * Save image to **output_dir/img.location** with extension
 	 * changed to respect **format** with **options**.
+	 *
+	 * TODO: change first arg to const-ref
 	 */
 	void save_image(img::LocalizedImage img,
 	                const std::filesystem::path& output_dir,
 	                const std::string& format,
-	                const option_types::options_t& options) const;
+	                const option_types::options_t& options = {}) const;
 
 	/**
 	 * Get properties of image located at **path**.
