@@ -1,5 +1,6 @@
 #include "jpeg.hpp"
 #include "common.hpp"
+#include <iostream>
 #include <optional>
 #include <ostream>
 #include <turbojpeg.h>
@@ -7,25 +8,23 @@
 namespace {
 class JpegMeta {
   public:
-	std::size_t width;
-	std::size_t height;
+	int width;
+	int height;
 	TJSAMP jpeg_subsampling;
 	TJCS jpeg_colorspace;
 };
 
 std::optional<JpegMeta> jpeg_info(tjhandle decompressor,
                                   std::span<const std::byte> bytes) {
-	int _width, _height, _jpeg_subsampling, _jpeg_colorspace;
+	int _jpeg_subsampling, _jpeg_colorspace;
 	JpegMeta out;
 
 	if (tjDecompressHeader3(
 	        decompressor, reinterpret_cast<const unsigned char*>(bytes.data()),
-	        bytes.size(), &_width, &_height, &_jpeg_subsampling,
+	        bytes.size(), &out.width, &out.height, &_jpeg_subsampling,
 	        &_jpeg_colorspace))
 		return {};
 
-	out.height = std::size_t(_height);
-	out.width = std::size_t(_width);
 	out.jpeg_subsampling = static_cast<TJSAMP>(_jpeg_subsampling);
 	out.jpeg_colorspace = static_cast<TJCS>(_jpeg_colorspace);
 	return out;
@@ -67,14 +66,86 @@ std::ostream& operator<<(std::ostream& os, TJCS samp) {
 	}
 }
 
+TJSAMP samp_from_string(std::string_view sv) {
+	if (sv == "4:4:4")
+		return TJSAMP_444;
+	if (sv == "4:2:2")
+		return TJSAMP_422;
+	if (sv == "4:2:0")
+		return TJSAMP_420;
+	if (sv == "GRAY")
+		return TJSAMP_GRAY;
+	if (sv == "4:4:0")
+		return TJSAMP_440;
+	if (sv == "4:1:1")
+		return TJSAMP_411;
+
+	throw std::runtime_error("Invalid value");
+}
+
+TJCS cs_from_string(std::string_view sv) {
+	if (sv == "RGB")
+		return TJCS_RGB;
+	if (sv == "YCbCr")
+		return TJCS_YCbCr;
+	if (sv == "GRAY")
+		return TJCS_GRAY;
+	if (sv == "CMYK")
+		return TJCS_CMYK;
+	if (sv == "YCCK")
+		return TJCS_YCCK;
+
+	throw std::runtime_error("Invalid value");
+}
+
+template <typename T>
+std::pair<ssimp::img::ndImageBase, unsigned char*> get_image(int width,
+                                                             int height) {
+	ssimp::img::ndImage<T> img(width, height);
+
+	return {img, reinterpret_cast<unsigned char*>(img.span().data())};
+}
 } // namespace
 
 namespace ssimp::formats {
 /* static */ std::vector<img::LocalizedImage>
 JPEG::load_image(const fs::path& path) {
 	tjhandle decompressor = tjInitDecompress();
+	auto bytes = details::read_file(path);
 
-	return {};
+	auto meta_data = jpeg_info(decompressor, bytes);
+	if (!meta_data) {
+		tjDestroy(decompressor);
+		return {};
+	}
+
+	bool gray = meta_data->jpeg_colorspace == TJCS_GRAY;
+
+	TJPF pixel_format = gray ? TJPF_GRAY : TJPF_RGB;
+
+	img::ndImageBase dest_img = img::ndImage<img::GRAY8>(1);
+	unsigned char* dest_ptr;
+	if (gray) {
+		auto [ndimg, ptr] =
+		    get_image<img::GRAY8>(meta_data->width, meta_data->height);
+		dest_img = ndimg;
+		dest_ptr = ptr;
+	} else {
+		auto [ndimg, ptr] =
+		    get_image<img::RGB8>(meta_data->width, meta_data->height);
+		dest_img = ndimg;
+		dest_ptr = ptr;
+	}
+
+	int rv = tjDecompress2(decompressor,
+	                       reinterpret_cast<const unsigned char*>(bytes.data()),
+	                       bytes.size(), dest_ptr, meta_data->width, 0,
+	                       meta_data->height, pixel_format, 0);
+	tjDestroy(decompressor);
+	if (rv)
+		return {};
+
+	return {{dest_img, path.filename()}};
 }
 
 /* static */
@@ -83,10 +154,13 @@ std::optional<ImageProperties> JPEG::get_information(const fs::path& path) {
 	auto bytes = details::read_file(path);
 
 	std::optional<JpegMeta> meta_data = jpeg_info(decompressor, bytes);
+	tjDestroy(decompressor);
 	if (!meta_data)
 		return {};
 
-	ImageProperties out(name, {meta_data->width, meta_data->height}, {});
+	ImageProperties out(
+	    name, {std::size_t(meta_data->width), std::size_t(meta_data->height)},
+	    {});
 	out.others["Chroma Subsampling"] = to_string(meta_data->jpeg_subsampling);
 	out.others["Colorspace"] = to_string(meta_data->jpeg_colorspace);
 

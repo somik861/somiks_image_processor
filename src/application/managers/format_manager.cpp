@@ -107,7 +107,7 @@ FormatManager::FormatManager() {
 std::vector<img::LocalizedImage>
 FormatManager::load_image(const fs::path& path,
                           const std::string& format) const {
-	return _image_loaders.at(format)(format);
+	return _image_loaders.at(format)(path);
 }
 
 void FormatManager::save_image(const fs::path& directory,
