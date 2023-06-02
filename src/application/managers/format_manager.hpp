@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../formats/jpeg.hpp"
 #include "../../formats/testing_sample.hpp"
 #include "../nd_image.hpp"
 #include "../utils.hpp"
@@ -14,7 +15,8 @@
 namespace ssimp {
 class FormatManager {
   private:
-	using _registered_formats = std::tuple<formats::TestingSample>;
+	using _registered_formats =
+	    std::tuple<formats::TestingSample, formats::JPEG>;
 
   public:
 	/**

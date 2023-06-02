@@ -1,5 +1,6 @@
 #include "api.hpp"
 #include <filesystem>
+#include <format>
 #include <iostream>
 
 namespace fs = std::filesystem;
@@ -9,11 +10,14 @@ int main() {
 	try {
 
 		ssimp::API api;
-		auto imgs = api.load_image("testing_image.img");
 
-		std::cout << "Image count: " << imgs.size() << '\n';
-		auto img = imgs[0];
-		std::cout << "Images[0]:\n" << img;
+		std::cout << api.get_properties("lenna.jpg");
+
+		auto img = api.load_image("lenna.jpg")[0];
+		img.location = "lenna2.tiff";
+
+		api.save_image(img, ".", "jpeg", {});
+
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << '\n';
 	}

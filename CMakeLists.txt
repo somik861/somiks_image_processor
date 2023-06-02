@@ -2,9 +2,21 @@ cmake_minimum_required(VERSION 3.23)
 
 project(somiks_image_processor CXX)
 
+# suppress no debug files linker warning
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "/ignore:4099")
+endif()
+
+
 # external packages
+## Boost
 find_package(Boost CONFIG REQUIRED)
 set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json)
+
+## Jpeg
+find_package(JPEG REQUIRED)
+set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
+
 
 # sources
 set(APP_NONMAIN_SOURCES

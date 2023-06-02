@@ -46,7 +46,7 @@ struct fill_supported_types<std::tuple<type_t, rest_t...>> {
 
 template <typename T>
 struct format_registerer {
-	static void register_format(auto&, auto&) {}
+	static void register_format(auto&, auto&, auto&, auto&) {}
 };
 
 template <typename first_t, typename... types_t>
@@ -89,8 +89,8 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 		fill_supported_types<typename first_t::supported_types>::fill(
 		    supported_types[first_t::name]);
 
-		format_registerer<std::tuple<types_t...>>::register_format(loaders,
-		                                                           savers);
+		format_registerer<std::tuple<types_t...>>::register_format(
+		    loaders, savers, info_getters, supported_types);
 	}
 };
 ;
@@ -107,7 +107,7 @@ FormatManager::FormatManager() {
 std::vector<img::LocalizedImage>
 FormatManager::load_image(const fs::path& path,
                           const std::string& format) const {
-	return _image_loaders.at(format)(format);
+	return _image_loaders.at(format)(path);
 }
 
 void FormatManager::save_image(const fs::path& directory,
