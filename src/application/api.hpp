@@ -1,7 +1,7 @@
 #pragma once
 
 #include "nd_image.hpp"
-#include "util_types.hpp"
+#include "utils.hpp"
 #include <filesystem>
 #include <memory>
 #include <vector>

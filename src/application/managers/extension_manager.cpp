@@ -1,4 +1,5 @@
 #include "extension_manager.hpp"
+#include "../utils.hpp"
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
@@ -130,7 +131,7 @@ std::string ExtensionManager::_get_extension(const fs::path& file) const {
 	auto ext = file.extension();
 	for (auto ch : std::basic_string_view(ext.c_str())) {
 		if (ch > 127)
-			throw std::invalid_argument(
+			throw exceptions::IOError(
 			    "File extension characters need to be ASCII symbols");
 
 		if (ch == '.' and out.empty())
