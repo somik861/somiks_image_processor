@@ -192,7 +192,7 @@ jobs:
         run: sed -i 's/compiler=.*/compiler=gcc/' $(conan profile path sip)
 
       - name: Update compiler version in conan profile
-        run: sed -i 's/compiler.version=.*/compiler.version=12.2/' $(conan profile path sip) && echo -e "[buildenv]\nCC=gcc-13\nCXX=g++-13" >> $(conan profile path sip)
+        run: sed -i 's/compiler.version=.*/compiler.version=13/' $(conan profile path sip) && echo -e "[buildenv]\nCC=gcc-13\nCXX=g++-13" >> $(conan profile path sip)
 
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
@@ -238,7 +238,7 @@ jobs:
         run: sed -i 's/compiler=.*/compiler=gcc/' $(conan profile path sip)
 
       - name: Update compiler version in conan profile
-        run: sed -i 's/compiler.version=.*/compiler.version=12.2/' $(conan profile path sip) && echo -e "[buildenv]\nCC=gcc-13\nCXX=g++-13" >> $(conan profile path sip)
+        run: sed -i 's/compiler.version=.*/compiler.version=13/' $(conan profile path sip) && echo -e "[buildenv]\nCC=gcc-13\nCXX=g++-13" >> $(conan profile path sip)
 
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
