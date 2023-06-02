@@ -10,7 +10,7 @@ class JpegMeta {
 	std::size_t width;
 	std::size_t height;
 	TJSAMP jpeg_subsampling;
-	int jpeg_colorspace;
+	TJCS jpeg_colorspace;
 };
 
 std::optional<JpegMeta> jpeg_info(tjhandle decompressor,
@@ -27,7 +27,7 @@ std::optional<JpegMeta> jpeg_info(tjhandle decompressor,
 	out.height = std::size_t(_height);
 	out.width = std::size_t(_width);
 	out.jpeg_subsampling = static_cast<TJSAMP>(_jpeg_subsampling);
-	out.jpeg_colorspace = _jpeg_colorspace;
+	out.jpeg_colorspace = static_cast<TJCS>(_jpeg_colorspace);
 	return out;
 }
 
@@ -45,6 +45,23 @@ std::ostream& operator<<(std::ostream& os, TJSAMP samp) {
 		return os << "4:4:0";
 	case TJSAMP_411:
 		return os << "4:1:1";
+	default:
+		return os << "unkown";
+	}
+}
+
+std::ostream& operator<<(std::ostream& os, TJCS samp) {
+	switch (samp) {
+	case TJCS_RGB:
+		return os << "RGB";
+	case TJCS_YCbCr:
+		return os << "YCbCr";
+	case TJCS_GRAY:
+		return os << "GRAY";
+	case TJCS_CMYK:
+		return os << "CMYK";
+	case TJCS_YCCK:
+		return os << "YCCK";
 	default:
 		return os << "unkown";
 	}
@@ -70,8 +87,8 @@ std::optional<ImageProperties> JPEG::get_information(const fs::path& path) {
 		return {};
 
 	ImageProperties out(name, {meta_data->width, meta_data->height}, {});
-	out.others["Chroma Subsampling"] = "";
-	out.others["Colorspace"] = "";
+	out.others["Chroma Subsampling"] = to_string(meta_data->jpeg_subsampling);
+	out.others["Colorspace"] = to_string(meta_data->jpeg_colorspace);
 
 	return out;
 }
