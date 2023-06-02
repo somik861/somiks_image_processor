@@ -1,6 +1,7 @@
 #include "jpeg.hpp"
 #include "common.hpp"
 #include <optional>
+#include <ostream>
 #include <turbojpeg.h>
 
 namespace {
@@ -8,7 +9,7 @@ class JpegMeta {
   public:
 	std::size_t width;
 	std::size_t height;
-	int jpegSubsamp;
+	TJSAMP jpegSubsamp;
 	int jpegColorspace;
 };
 
@@ -26,6 +27,25 @@ std::optional<JpegMeta> jpeg_info(tjhandle decompressor,
 	out.height = std::size_t(_height);
 	out.width = std::size_t(_width);
 	return out;
+}
+
+std::ostream& operator<<(std::ostream& os, TJSAMP samp) {
+	switch (samp) {
+	case TJSAMP_444:
+		return os << "4:4:4";
+	case TJSAMP_422:
+		return os << "4:2:2";
+	case TJSAMP_420:
+		return os << "4:2:0";
+	case TJSAMP_GRAY:
+		return os << "GRAY";
+	case TJSAMP_440:
+		return os << "4:4:0";
+	case TJSAMP_411:
+		return os << "4:1:1";
+	default:
+		return os << "unkown";
+	}
 }
 
 } // namespace
