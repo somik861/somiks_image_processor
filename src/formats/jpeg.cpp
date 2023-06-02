@@ -9,23 +9,25 @@ class JpegMeta {
   public:
 	std::size_t width;
 	std::size_t height;
-	TJSAMP jpegSubsamp;
-	int jpegColorspace;
+	TJSAMP jpeg_subsampling;
+	int jpeg_colorspace;
 };
 
 std::optional<JpegMeta> jpeg_info(tjhandle decompressor,
                                   std::span<const std::byte> bytes) {
-	int _width, _height;
+	int _width, _height, _jpeg_subsampling, _jpeg_colorspace;
 	JpegMeta out;
 
 	if (tjDecompressHeader3(
 	        decompressor, reinterpret_cast<const unsigned char*>(bytes.data()),
-	        bytes.size(), &_width, &_height, &out.jpegSubsamp,
-	        &out.jpegColorspace))
+	        bytes.size(), &_width, &_height, &_jpeg_subsampling,
+	        &_jpeg_colorspace))
 		return {};
 
 	out.height = std::size_t(_height);
 	out.width = std::size_t(_width);
+	out.jpeg_subsampling = static_cast<TJSAMP>(_jpeg_subsampling);
+	out.jpeg_colorspace = _jpeg_colorspace;
 	return out;
 }
 

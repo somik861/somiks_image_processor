@@ -52,5 +52,18 @@ class ImageProperties {
 	std::string format;
 	std::vector<std::size_t> dims;
 	std::unordered_map<std::string, std::string> others;
+
+	friend std::ostream& operator<<(std::ostream& os,
+	                                const ImageProperties& imgprop) {
+		os << "Format: " << imgprop.format << '\n';
+		os << "Dims: [ ";
+		for (std::size_t dim : imgprop.dims)
+			os << dim << " ";
+		os << "]\n";
+		for (const auto& [k, v] : imgprop.others)
+			os << k << ": " << v;
+		os << '\n';
+		return os;
+	}
 };
 } // namespace ssimp
