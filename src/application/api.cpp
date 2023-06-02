@@ -3,6 +3,7 @@
 #include "managers/extension_manager.hpp"
 #include "managers/format_manager.hpp"
 #include "managers/options_manager.hpp"
+#include <format>
 #include <iostream>
 
 namespace fs = std::filesystem;
@@ -34,7 +35,8 @@ std::vector<img::LocalizedImage> API::load_image(const fs::path& path) const {
 			return out;
 	}
 
-	return {};
+	throw exceptions::Unsupported(
+	    std::format("'{}' contains unsupported image", to_string(path)));
 }
 
 void API::save_image(img::LocalizedImage img,
@@ -43,10 +45,12 @@ void API::save_image(img::LocalizedImage img,
                      const option_types::options_t& options) const {
 
 	if (!_format_manager->is_type_supported(format, img.image.type()))
-		throw std::runtime_error(std::string("Unsupported type of format ") +
-		                         format);
+		throw exceptions::Unsupported(
+		    std::format("'{}' does not support type '{}'", format,
+		                to_string(img.image.type())));
 	if (!_options_manager->is_valid(format, options))
-		throw std::runtime_error("Unsupported options");
+		throw exceptions::Unsupported(std::format(
+		    "Given options are not supported for format '{}'", format));
 
 	img.location =
 	    _extension_manager->with_output_extension(format, img.location);
@@ -56,7 +60,7 @@ void API::save_image(img::LocalizedImage img,
 	    _options_manager->finalize_options(format, options));
 }
 
-ssimp::ImageProperties API::get_properties(const fs::path& path) const {
+ImageProperties API::get_properties(const fs::path& path) const {
 	for (const auto& format :
 	     _extension_manager->sorted_formats_by_priority(path)) {
 		auto out = _format_manager->get_image_information(path, format);
@@ -65,7 +69,8 @@ ssimp::ImageProperties API::get_properties(const fs::path& path) const {
 			return *out;
 	}
 
-	throw std::runtime_error("Unsupported file");
+	throw exceptions::Unsupported(
+	    std::format("'{}' contains unsupported image", to_string(path)));
 }
 
 API::~API() {}

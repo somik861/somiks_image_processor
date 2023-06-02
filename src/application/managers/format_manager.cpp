@@ -10,7 +10,9 @@ struct img_save_dispatcher {
 	static void save(const ssimp::img::ndImageBase& img,
 	                 const fs::path& path,
 	                 const ssimp::option_types::options_t& options) {
-		throw std::logic_error("Unsupported type");
+		throw ssimp::exceptions::Unsupported(
+		    std::format("Format '{}' does not support '{}'", format_t::name,
+		                ssimp::to_string(img.type())));
 	}
 };
 

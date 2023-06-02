@@ -38,6 +38,12 @@ enum class elem_type : int {
 	RGBA8,
 };
 
+inline std::ostream& operator<<(std::ostream& os, elem_type t) {
+	os << std::array{"GRAY8", "GRAY16", "GRAY32", "GRAY64",
+	                 "FLOAT", "DOUBLE", "RGB8",   "RGBA8"}[static_cast<int>(t)];
+	return os;
+}
+
 namespace type_aliases {
 /**
  * Type list of c++-types corresponding to the enumeration above
@@ -164,8 +170,7 @@ class ndImageBase {
 	}
 
 	friend std::ostream& operator<<(std::ostream& os, const ndImageBase& img) {
-		os << "Type: " << ndImageBase::_type_names[static_cast<int>(img.type())]
-		   << '\n';
+		os << "Type: " << img.type() << '\n';
 		os << "Dims: [ ";
 		for (auto n : img._dims)
 			os << n << " ";
@@ -178,11 +183,6 @@ class ndImageBase {
 	std::shared_ptr<std::vector<std::byte>> _data;
 	std::vector<std::size_t> _dims;
 	elem_type _type;
-
-  private:
-	static constexpr std::array _type_names = {"GRAY8",  "GRAY16", "GRAY32",
-	                                           "GRAY64", "FLOAT",  "DOUBLE",
-	                                           "RGB8",   "RGBA8"};
 };
 
 /**

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -7,6 +8,13 @@
 #include <vector>
 
 namespace ssimp {
+template <typename T>
+std::string to_string(const T& arg) {
+	std::stringstream ss;
+	ss << arg;
+	return ss.str();
+}
+
 namespace exceptions {
 class Exception : public std::exception {
   public:
