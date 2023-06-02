@@ -61,8 +61,7 @@ class ImageProperties {
 			os << dim << " ";
 		os << "]\n";
 		for (const auto& [k, v] : imgprop.others)
-			os << k << ": " << v;
-		os << '\n';
+			os << k << ": " << v << '\n';
 		return os;
 	}
 };
