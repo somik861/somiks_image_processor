@@ -1,5 +1,6 @@
 #include "format_manager.hpp"
 #include "../meta_types.hpp"
+#include <format>
 #include <stdexcept>
 
 namespace fs = std::filesystem;
