@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -45,6 +46,7 @@ using value_t = std::variant<bool, int32_t, double, std::string>;
  * Type representing a set of options
  */
 using options_t = std::unordered_map<std::string, value_t>;
+
 } // namespace option_types
 
 class ImageProperties {
@@ -66,3 +68,14 @@ class ImageProperties {
 	}
 };
 } // namespace ssimp
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const ssimp::option_types::options_t& options) {
+	os << "Options:\n";
+	for (const auto& [k, v] : options) {
+		os << "    " << k << ": ";
+		std::visit([&](auto x) { os << std::boolalpha << x; }, v);
+		os << '\n';
+	}
+	return os;
+}

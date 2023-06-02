@@ -13,11 +13,10 @@ int main() {
 
 		std::cout << api.get_properties("lenna.jpg");
 
-		auto img = api.load_image("lenna.jpg");
-		auto typed = img[0].image.as_typed<ssimp::img::RGB8>();
+		auto img = api.load_image("lenna.jpg")[0];
+		img.location = "lenna2.tiff";
 
-		auto [r, g, b] = typed(1, 0);
-		std::cout << std::format("r: {} g: {} b: {}", r, g, b) << std::endl;
+		api.save_image(img, ".", "jpeg", {});
 
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << '\n';

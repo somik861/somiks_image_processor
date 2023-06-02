@@ -171,7 +171,35 @@ template <typename T>
     requires mt::traits::is_any_of_tuple_v<T, JPEG::supported_types>
 /* static */ void JPEG::save_image(const img::ndImage<T>& img,
                                    const fs::path& path,
-                                   const option_types::options_t& options) {}
+                                   const option_types::options_t& options) {
+
+	tjhandle compressor = tjInitCompress();
+
+	unsigned char* jpeg_buffer = nullptr;
+	unsigned long jpeg_size;
+
+	bool gray = std::is_same_v<T, img::GRAY8>;
+
+	if (tjCompress2(
+	        compressor,
+	        reinterpret_cast<const unsigned char*>(img.span().data()),
+	        img.dims()[0], 0, img.dims()[1], gray ? TJPF_GRAY : TJPF_RGB,
+	        &jpeg_buffer, &jpeg_size,
+	        static_cast<int>(gray ? TJSAMP_GRAY
+	                              : samp_from_string(std::get<std::string>(
+	                                    options.at("subsampling")))),
+	        std::get<int32_t>(options.at("quality")), 0)) {
+		std::cerr << "Jpeg compressor error\n";
+	}
+
+	tjDestroy(compressor);
+	details::save_file(
+	    path, std::span<const std::byte>(
+	              reinterpret_cast<const std::byte*>(jpeg_buffer), jpeg_size));
+
+	tjFree(jpeg_buffer);
+}
 
 INSTANTIATE_SAVE_TEMPLATE(JPEG, img::GRAY8);
+INSTANTIATE_SAVE_TEMPLATE(JPEG, img::RGB8);
 } // namespace ssimp::formats

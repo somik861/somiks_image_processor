@@ -10,7 +10,7 @@
 namespace ssimp::formats {
 class JPEG {
   public:
-	using supported_types = std::tuple<img::GRAY8>;
+	using supported_types = std::tuple<img::GRAY8, img::RGB8>;
 	constexpr static const char* name = "jpeg";
 
 	static std::vector<img::LocalizedImage>
