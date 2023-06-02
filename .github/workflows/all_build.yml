@@ -25,7 +25,7 @@ jobs:
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
 
-      - name: Install relese dependencies
+      - name: Install dependencies
         run: conan install ${{github.workspace}} --output-folder=${{github.workspace}}/build --build=missing -pr:h=sip -pr:b=sip
 
       - name: Configure CMake
@@ -77,11 +77,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Update packages
+        run: sudo apt update && sudo apt upgrade -y
+
       - name: Update source
         run: sudo sed -i 's/jammy/lunar/g' '/etc/apt/sources.list' && echo "deb http://apt.llvm.org/lunar/ llvm-toolchain-lunar-16 main" | sudo tee -a /etc/apt/sources.list && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - && sudo apt update
 
       - name: Install clang
-        run: sudo apt install -y clang-16
+        run: sudo apt install -y clang-16 libc++-dev libstdc++-13-dev
 
       - name: Install conan
         id: conan
@@ -105,7 +108,7 @@ jobs:
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
 
-      - name: Install relese dependencies
+      - name: Install dependencies
         run: conan install ${{github.workspace}} --output-folder=${{github.workspace}}/build --build=missing -pr:h=sip -pr:b=sip
 
       - name: Configure CMake
@@ -123,11 +126,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Update packages
+        run: sudo apt update && sudo apt upgrade -y
+
       - name: Update source
         run: sudo sed -i 's/jammy/lunar/g' '/etc/apt/sources.list' && echo "deb http://apt.llvm.org/lunar/ llvm-toolchain-lunar-16 main" | sudo tee -a /etc/apt/sources.list && wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add - && sudo apt update
 
       - name: Install clang
-        run: sudo apt install -y clang-16
+        run: sudo apt install -y clang-16 libc++-dev libstdc++-13-dev
 
       - name: Install conan
         id: conan
@@ -151,7 +157,7 @@ jobs:
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
 
-      - name: Install relese dependencies
+      - name: Install dependencies
         run: conan install ${{github.workspace}} --output-folder=${{github.workspace}}/build --build=missing -pr:h=sip -pr:b=sip -s build_type=Debug
 
       - name: Configure CMake
@@ -169,6 +175,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Update packages
+        run: sudo apt update && sudo apt upgrade -y
+
       - name: Update source
         run: sudo sed -i 's/jammy/lunar/g' '/etc/apt/sources.list' && sudo apt update
 
@@ -197,11 +206,11 @@ jobs:
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
 
-      - name: Install relese dependencies
+      - name: Install dependencies
         run: conan install ${{github.workspace}} --output-folder=${{github.workspace}}/build --build=missing -pr:h=sip -pr:b=sip
 
       - name: Configure CMake
-        run: cmake --preset conan-release
+        run: CC=gcc-13 CXX=g++-13 cmake --preset conan-release
 
       - name: Build release
         run: cmake --build --preset conan-release
@@ -215,6 +224,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Update packages
+        run: sudo apt update && sudo apt upgrade -y
+
       - name: Update source
         run: sudo sed -i 's/jammy/lunar/g' '/etc/apt/sources.list' && sudo apt update
 
@@ -243,11 +255,11 @@ jobs:
       - name: Show conan profile
         run: conan profile show --profile:build=sip --profile:host=sip
 
-      - name: Install relese dependencies
+      - name: Install dependencies
         run: conan install ${{github.workspace}} --output-folder=${{github.workspace}}/build --build=missing -pr:h=sip -pr:b=sip -s build_type=Debug
 
       - name: Configure CMake
-        run: cmake --preset conan-debug
+        run: CC=gcc-13 CXX=g++-13 cmake --preset conan-debug
 
       - name: Build debug
         run: cmake --build --preset conan-debug
