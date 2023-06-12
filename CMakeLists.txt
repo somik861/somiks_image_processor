@@ -4,7 +4,7 @@ project(somiks_image_processor CXX)
 
 # suppress no debug files linker warning
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "/ignore:4099")
+    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
 endif()
 
 

@@ -36,13 +36,22 @@ class API {
 	           const std::filesystem::path& rel_dir = "") const;
 
 	/**
+	 * Convenience function for loading file with single image inside.
+	 * Look to **load_image(...)** for more info.
+	 */
+	img::LocalizedImage
+	load_one(const std::filesystem::path& path,
+	         const std::filesystem::path& rel_dir = "") const;
+
+	/**
 	 * Load all files in directory as images. For search in subdirectories,
 	 * set **recurse** to *true*.
 	 * Relative location of specific image to **dir** can be found via
 	 * localizedImage.location.
 	 */
 	std::vector<img::LocalizedImage>
-	load_directory(const std::filesystem::path& dir, bool recurse = false);
+	load_directory(const std::filesystem::path& dir,
+	               bool recurse = false) const;
 
 	/**
 	 * Save **img** to **path**.
@@ -53,15 +62,13 @@ class API {
 	void save_image(const img::ndImageBase& img,
 	                const std::filesystem::path& path,
 	                const std::string& format = "",
-	                const option_types::options_t& options = {});
+	                const option_types::options_t& options = {}) const;
 
 	/**
 	 * Save image to **output_dir/img.location** with extension
 	 * changed to respect **format** with **options**.
-	 *
-	 * TODO: change first arg to const-ref
 	 */
-	void save_image(img::LocalizedImage img,
+	void save_image(const img::LocalizedImage& img,
 	                const std::filesystem::path& output_dir,
 	                const std::string& format,
 	                const option_types::options_t& options = {}) const;
@@ -77,6 +84,11 @@ class API {
 	~API();
 
   private:
+	void _load_directory(std::vector<img::LocalizedImage>& images,
+	                     const std::filesystem::path& base_dir,
+	                     const std::filesystem::path& curr_dir,
+	                     bool recurse) const;
+
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;
 	std::unique_ptr<FormatManager> _format_manager;
