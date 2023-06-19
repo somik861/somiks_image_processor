@@ -90,6 +90,11 @@ class API {
 	std::set<std::string> supported_algorithms() const;
 
 	/**
+	 * Get predicted format from extension
+	 */
+	std::string predict_format(const std::filesystem::path& file) const;
+
+	/**
 	 * Custom destructor to enable destruction of managers
 	 */
 	~API();

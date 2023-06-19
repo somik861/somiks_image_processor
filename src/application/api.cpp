@@ -128,6 +128,15 @@ std::set<std::string> API::supported_formats() const {
 
 std::set<std::string> API::supported_algorithms() const { return {}; }
 
+std::string API::predict_format(const fs::path& file) const {
+	auto possibilites = _extension_manager->find_possible_formats(file);
+	if (possibilites.empty())
+		throw exceptions::Unsupported(
+		    std::format("No supported format found for file: '{}'",
+		                to_string(file.filename())));
+	return possibilites[0];
+}
+
 API::~API() {}
 
 void API::_load_directory(std::vector<img::LocalizedImage>& images,
