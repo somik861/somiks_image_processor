@@ -16,6 +16,7 @@ There is nothing to contribute to yet :D all the info about rules is just for me
 
 ### Cross-platform compatibility
 * All of the code has to be (at any time) compilable on Windows (using MSVC) and Linux (using clang 16 and gcc 13.0).
+* **Compatiblity with clang-16 is suspended due to the bug that does not allow clang to compile libstc++-13 ranges**.
 * Do not ever use compiler/os-specific code. (Not even when guarded with macros).
 
 ### C++ standard and project rules
@@ -103,7 +104,6 @@ CXX=clang++-16
 ```
 
 Conan config file for linux (gcc) should look like this:
-(conan does not recognize compiler.version 13 for gcc yet)
 ```
 [settings]
 arch=x86_64
@@ -111,7 +111,7 @@ build_type=Release
 compiler=gcc
 compiler.cppstd=23
 compiler.libcxx=libstdc++11
-compiler.version=12.2
+compiler.version=13
 os=Linux
 [buildenv]
 CC=gcc-13

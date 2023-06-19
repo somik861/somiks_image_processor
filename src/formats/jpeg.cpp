@@ -125,17 +125,12 @@ JPEG::load_image(const fs::path& path) {
 
 	img::ndImageBase dest_img = img::ndImage<img::GRAY8>(1);
 	unsigned char* dest_ptr;
-	if (gray) {
-		auto [ndimg, ptr] =
+	if (gray)
+		std::tie(dest_img, dest_ptr) =
 		    get_image<img::GRAY8>(meta_data->width, meta_data->height);
-		dest_img = ndimg;
-		dest_ptr = ptr;
-	} else {
-		auto [ndimg, ptr] =
+	else
+		std::tie(dest_img, dest_ptr) =
 		    get_image<img::RGB8>(meta_data->width, meta_data->height);
-		dest_img = ndimg;
-		dest_ptr = ptr;
-	}
 
 	int rv = tjDecompress2(decompressor,
 	                       reinterpret_cast<const unsigned char*>(bytes.data()),
