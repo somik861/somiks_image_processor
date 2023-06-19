@@ -121,6 +121,13 @@ ImageProperties API::get_properties(const fs::path& path) const {
 	    std::format("'{}' contains unsupported image", to_string(path)));
 }
 
+std::set<std::string> API::supported_formats() const {
+	auto formats = _format_manager->registered_formats();
+	return std::set(formats.begin(), formats.end());
+}
+
+std::set<std::string> API::supported_algorithms() const { return {}; }
+
 API::~API() {}
 
 void API::_load_directory(std::vector<img::LocalizedImage>& images,

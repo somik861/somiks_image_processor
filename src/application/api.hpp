@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include <filesystem>
 #include <memory>
+#include <set>
 #include <vector>
 
 namespace ssimp {
@@ -77,6 +78,16 @@ class API {
 	 * Get properties of image located at **path**.
 	 */
 	ImageProperties get_properties(const std::filesystem::path& path) const;
+
+	/*
+	 * Get supported formats
+	 */
+	std::set<std::string> supported_formats() const;
+
+	/*
+	 * Get supported algorithms
+	 */
+	std::set<std::string> supported_algorithms() const;
 
 	/**
 	 * Custom destructor to enable destruction of managers
