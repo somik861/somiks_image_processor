@@ -139,8 +139,6 @@ int main(int argc, const char** argv) {
 
 		// TODO: load options
 
-		fs::create_directories(_arg_output_path.parent_path());
-
 		if (!_arg_directory_mode) {
 			if (_arg_print_info) {
 				std::cout << _arg_input_path << ":\n";
@@ -149,11 +147,12 @@ int main(int argc, const char** argv) {
 			}
 
 			auto images = api.load_image(_arg_input_path);
-			if (images.size() == 1)
+			if (images.size() == 1) {
+				fs::create_directories(_arg_output_path.parent_path());
 				api.save_image(images[0].image, _arg_output_path, _arg_format,
 				               {});
-			else {
-				fs::create_directory(_arg_output_path);
+			} else {
+				fs::create_directories(_arg_output_path);
 				for (const auto& img : images) {
 					api.save_image(img, _arg_output_path, _arg_format, {});
 				}
@@ -165,7 +164,7 @@ int main(int argc, const char** argv) {
 			}
 
 			auto images = api.load_directory(_arg_input_path, _arg_recurse);
-			fs::create_directory(_arg_output_path);
+			fs::create_directories(_arg_output_path);
 			for (const auto& img : images) {
 				api.save_image(img, _arg_output_path, _arg_format, {});
 			}
