@@ -174,9 +174,11 @@ def check_extensions(extensions: list[Any], path: tuple[str, ...]) -> None:
 
 def check_root(config: dict[str, Any]) -> None:
     keys = set(config.keys())
-    opt = 'options'
-    if _contains(config, opt, tuple(), type_=list):
-        check_options(config[opt], (opt,))
+
+    for opt in ['loading_options', 'saving_options']:
+        keys -= {opt}
+        if _contains(config, opt, tuple(), type_=list):
+            check_options(config[opt], (opt,))
 
     ext = 'extensions'
     if _contains(config, ext, tuple(), type_=list):
@@ -185,7 +187,7 @@ def check_root(config: dict[str, Any]) -> None:
     if _contains(config, 'output_extension', tuple(), type_=str):
         _nonempty(config['output_extension'], ('output_extension',))
 
-    for key in keys - {opt, ext, 'output_extension'}:
+    for key in keys - {ext, 'output_extension'}:
         _report_ignored((key,))
 
 
