@@ -31,7 +31,7 @@ struct img_save_dispatcher<format_t, std::tuple<type_t, rest_t...>> {
 			std::vector<ssimp::img::ndImage<type_t>> typed;
 			typed.reserve(imgs.size());
 			for (const auto& img : imgs)
-				typed.push_back(img.as_typed<type_t>());
+				typed.push_back(img.template as_typed<type_t>());
 
 			format_t::save_image(typed, path, options);
 			return;
