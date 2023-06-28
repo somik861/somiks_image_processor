@@ -8,8 +8,8 @@ TEST_CASE("OptionManager") {
 		auto loaded = cfg.load_format("testing_sample");
 
 		OptionsManager options;
-		options.load_from_json("test",
-		                       loaded.get_object().at("options").get_array());
+		options.load_from_json(
+		    "test", loaded.get_object().at("saving_options").get_array());
 
 		// Basic option testing
 		REQUIRE(options.is_valid("test", {}));
