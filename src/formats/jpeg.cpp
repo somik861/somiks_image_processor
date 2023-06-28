@@ -1,8 +1,6 @@
 #include "jpeg.hpp"
-#include "common.hpp"
-#include <iostream>
-#include <optional>
-#include <ostream>
+#include "common_macro.hpp"
+
 #include <turbojpeg.h>
 
 namespace {
@@ -108,8 +106,16 @@ std::pair<ssimp::img::ndImageBase, unsigned char*> get_image(int width,
 } // namespace
 
 namespace ssimp::formats {
-/* static */ std::vector<img::LocalizedImage>
-JPEG::load_image(const fs::path& path) {
+/* static */
+bool JPEG::image_count_supported(std::size_t count) { return count == 1; }
+
+/* static */
+bool JPEG::image_dims_supported(std::span<const std::size_t> dims) {
+	return dims.size() == 2 && dims[0] > 0 && dims[1] > 0;
+}
+
+/* static */ std::optional<std::vector<img::LocalizedImage>>
+JPEG::load_image(const fs::path& path, const option_types::options_t&) {
 	tjhandle decompressor = tjInitDecompress();
 	auto bytes = details::read_file(path);
 
@@ -140,11 +146,12 @@ JPEG::load_image(const fs::path& path) {
 	if (rv)
 		return {};
 
-	return {{dest_img, path.filename()}};
+	return std::vector<img::LocalizedImage>{{dest_img, path.filename()}};
 }
 
 /* static */
-std::optional<ImageProperties> JPEG::get_information(const fs::path& path) {
+std::optional<ImageProperties>
+JPEG::get_information(const fs::path& path, const option_types::options_t&) {
 	tjhandle decompressor = tjInitDecompress();
 	auto bytes = details::read_file(path);
 
@@ -164,10 +171,10 @@ std::optional<ImageProperties> JPEG::get_information(const fs::path& path) {
 
 template <typename T>
     requires mt::traits::is_any_of_tuple_v<T, JPEG::supported_types>
-/* static */ void JPEG::save_image(const img::ndImage<T>& img,
+/* static */ void JPEG::save_image(const std::vector<img::ndImage<T>>& imgs,
                                    const fs::path& path,
                                    const option_types::options_t& options) {
-
+	auto& img = imgs[0];
 	tjhandle compressor = tjInitCompress();
 
 	unsigned char* jpeg_buffer = nullptr;

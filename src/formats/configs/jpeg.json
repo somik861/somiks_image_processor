@@ -1,5 +1,6 @@
 {
-  "options": [
+  "loading_options": [],
+  "saving_options": [
     {
       "type": "int",
       "text": "Quality",

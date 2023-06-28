@@ -3,6 +3,7 @@
 #include "managers/extension_manager.hpp"
 #include "managers/format_manager.hpp"
 #include "managers/options_manager.hpp"
+#include <algorithm>
 #include <format>
 #include <iostream>
 
@@ -22,26 +23,48 @@ API::API()
 		    format, config.at("extensions").get_array(),
 		    config.at("output_extension").get_string());
 
-		_options_manager->load_from_json(format,
-		                                 config.at("options").get_array());
+		_options_manager->load_from_json(
+		    format + "_loading", config.at("loading_options").get_array());
+
+		_options_manager->load_from_json(
+		    format + "_saving", config.at("saving_options").get_array());
 	}
 }
 
 std::vector<img::LocalizedImage>
 API::load_image(const fs::path& path,
-                const fs::path& rel_dir /* = "" */) const {
+                const fs::path& rel_dir /* = "" */,
+                const std::string& format /* = "" */,
+                const option_types::options_t& options /* = {} */) const {
 	fs::path img_prefix = "";
 	if (!rel_dir.empty())
 		img_prefix = fs::relative(path, rel_dir);
 
-	for (const auto& format :
-	     _extension_manager->sorted_formats_by_priority(path)) {
-		auto out = _format_manager->load_image(path, format);
-		if (!out.empty()) {
-			for (auto& img : out)
+	auto load_with_format = [&](const std::string& format,
+	                            const option_types::options_t& options) {
+		if (!_options_manager->is_valid(format + "_loading", options))
+			return std::optional<std::vector<img::LocalizedImage>>{};
+
+		auto out = _format_manager->load_image(
+		    path, format,
+		    _options_manager->finalize_options(format + "_loading", options));
+		if (out)
+			for (auto& img : *out)
 				img.location = img_prefix / img.location;
 
-			return out;
+		return out;
+	};
+
+	if (!format.empty()) {
+		auto out = load_with_format(format, options);
+		if (out)
+			return *out;
+	} else {
+		for (const auto& format :
+		     _extension_manager->sorted_formats_by_priority(path)) {
+			auto out = load_with_format(format, options);
+			if (out)
+				return *out;
 		}
 	}
 
@@ -49,9 +72,12 @@ API::load_image(const fs::path& path,
 	    std::format("'{}' contains unsupported image", to_string(path)));
 }
 
-img::LocalizedImage API::load_one(const fs::path& path,
-                                  const fs::path& rel_dir /* = "" */) const {
-	auto images = load_image(path, rel_dir);
+img::LocalizedImage
+API::load_one(const fs::path& path,
+              const fs::path& rel_dir /* = "" */,
+              const std::string& format /* = "" */,
+              const option_types::options_t& options /* = {} */) const {
+	auto images = load_image(path, rel_dir, format, options);
 	if (images.size() != 1)
 		throw exceptions::IOError(
 		    std::format("'{}' contains {} images, expected 1.", to_string(path),
@@ -60,58 +86,66 @@ img::LocalizedImage API::load_one(const fs::path& path,
 	return images[0];
 }
 
-std::vector<img::LocalizedImage>
-API::load_directory(const fs::path& dir, bool recurse /* = false */) const {
-	std::vector<img::LocalizedImage> out;
-	_load_directory(out, dir, dir, recurse);
+std::vector<std::vector<img::LocalizedImage>>
+API::load_directory(const fs::path& dir,
+                    bool recurse /* = false */,
+                    const std::string& format /* = "" */,
+                    const option_types::options_t& options /* = "" */) const {
+	std::vector<std::vector<img::LocalizedImage>> out;
+	_load_directory(out, dir, dir, recurse, format, options);
 	return out;
 }
 
-void API::save_image(const img::ndImageBase& img,
+void API::save_image(const std::vector<img::ndImageBase>& img,
                      const fs::path& path,
                      const std::string& format /* = "" */,
                      const option_types::options_t& options /* = {} */) const {
+	for (const auto& f :
+	     (format != "" ? std::vector{format}
+	                   : _extension_manager->find_possible_formats(path))) {
+		if (!img.empty() &&
+		    !_format_manager->is_type_supported(format, img[0].type()))
+			continue;
 
-	std::string final_format;
-	if (!format.empty())
-		final_format = format;
-	else {
-		auto formats = _extension_manager->find_possible_formats(path);
-		if (format.empty())
-			throw exceptions::Unsupported(
-			    std::format("No supported format found for file: '{}'",
-			                to_string(path.filename())));
-		final_format = formats[0];
+		if (!_format_manager->is_count_supported(format, img.size()))
+			continue;
+
+		if (std::ranges::any_of(img, [&](auto x) {
+			    return !_format_manager->is_dims_supported(format, x.dims());
+		    }))
+			continue;
+
+		if (!_options_manager->is_valid(format + "_saving", options))
+			throw exceptions::Unsupported(std::format(
+			    "Given options are not supported for format '{}'", format));
+
+		_format_manager->save_image(
+		    path, img, f,
+		    _options_manager->finalize_options(format + "_saving", options));
 	}
 
-	save_image({img, path.filename()}, path.parent_path(), final_format,
-	           options);
+	throw exceptions::Unsupported(
+	    std::format("No supported format found for given image and file: '{}'",
+	                to_string(path.filename())));
 }
 
-void API::save_image(const img::LocalizedImage& img,
-                     const std::filesystem::path& output_dir,
-                     const std::string& format,
-                     const option_types::options_t& options /* = {} */) const {
-
-	if (!_format_manager->is_type_supported(format, img.image.type()))
-		throw exceptions::Unsupported(
-		    std::format("'{}' does not support type '{}'", format,
-		                to_string(img.image.type())));
-	if (!_options_manager->is_valid(format, options))
-		throw exceptions::Unsupported(std::format(
-		    "Given options are not supported for format '{}'", format));
-
-	_format_manager->save_image(
-	    output_dir,
-	    {img.image,
-	     _extension_manager->with_output_extension(format, img.location)},
-	    format, _options_manager->finalize_options(format, options));
+void API::save_one(const img::ndImageBase& img,
+                   const std::filesystem::path& path,
+                   const std::string& format /* = "" */,
+                   const option_types::options_t& options /* = {} */) const {
+	save_image({img}, path, format, options);
 }
 
-ImageProperties API::get_properties(const fs::path& path) const {
+ImageProperties
+API::get_properties(const fs::path& path,
+                    const option_types::options_t& options /* = {} */) const {
 	for (const auto& format :
 	     _extension_manager->sorted_formats_by_priority(path)) {
-		auto out = _format_manager->get_image_information(path, format);
+		if (!_options_manager->is_valid(format + "_loading", options))
+			continue;
+		auto out = _format_manager->get_image_information(
+		    path, format,
+		    _options_manager->finalize_options(format + "_loading", options));
 
 		if (out)
 			return *out;
@@ -137,22 +171,42 @@ std::string API::predict_format(const fs::path& file) const {
 	return possibilites[0];
 }
 
+bool API::is_count_supported(const std::string& format,
+                             std::size_t count) const {
+	return _format_manager->is_count_supported(format, count);
+}
+
+bool API::is_dims_supported(const std::string& format,
+                            std::span<const std::size_t> dims) const {
+	return _format_manager->is_dims_supported(format, dims);
+}
+
+std::vector<img::ndImageBase>
+API::delocalize(const std::vector<img::LocalizedImage>& imgs) const {
+	std::vector<img::ndImageBase> out;
+	std::ranges::transform(imgs, std::back_inserter(out),
+	                       &ssimp::img::LocalizedImage::image);
+
+	return out;
+}
+
 API::~API() {}
 
-void API::_load_directory(std::vector<img::LocalizedImage>& images,
+void API::_load_directory(std::vector<std::vector<img::LocalizedImage>>& images,
                           const fs::path& base_dir,
                           const fs::path& curr_dir,
-                          bool recurse) const {
+                          bool recurse,
+                          const std::string& format,
+                          const option_types::options_t& options) const {
 
 	for (auto entry : fs::directory_iterator(curr_dir)) {
 		if (entry.is_directory() && recurse)
-			_load_directory(images, base_dir, entry.path(), recurse);
+			_load_directory(images, base_dir, entry.path(), recurse, format,
+			                options);
 
-		if (entry.is_regular_file()) {
-			auto entry_images = load_image(entry.path(), base_dir);
-			images.insert(images.end(), entry_images.begin(),
-			              entry_images.end());
-		}
+		if (entry.is_regular_file())
+			images.push_back(
+			    load_image(entry.path(), base_dir, format, options));
 	}
 }
 

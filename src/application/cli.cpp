@@ -1,4 +1,5 @@
 #include "api.hpp"
+#include <algorithm>
 #include <boost/json.hpp>
 #include <boost/program_options.hpp>
 #include <filesystem>
@@ -102,7 +103,7 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		return true;
 	}
 
-	// TODO uncomment
+	// TODO uncomment when preset implemented
 	/*
 	if (vm.contains("preset"))
 	    return true;
@@ -187,6 +188,24 @@ ssimp::option_types::options_t load_format_options() {
 	return _load_json_options(data.as_object());
 }
 
+void save_image(const std::vector<ssimp::img::LocalizedImage>& images,
+                const fs::path& path,
+                const std::string& format,
+                const ssimp::option_types::options_t& options,
+                const ssimp::API& api) {
+	if (api.is_count_supported(format, images.size()))
+		api.save_image(api.delocalize(images), path, format, options);
+	else if (api.is_count_supported(format, 1)) {
+		fs::create_directories(path);
+		for (const auto& img : images)
+			api.save_one(img.image, path / img.location.filename(), format,
+			             options);
+
+	} else
+		throw std::runtime_error(
+		    "Did not find suitable way to save an image(s)");
+}
+
 int main(int argc, const char** argv) {
 	ssimp::API api;
 	try {
@@ -206,28 +225,24 @@ int main(int argc, const char** argv) {
 			}
 
 			auto images = api.load_image(_arg_input_path);
-			if (images.size() == 1) {
-				fs::create_directories(_arg_output_path.parent_path());
-				api.save_image(images[0].image, _arg_output_path, _arg_format,
-				               format_options);
-			} else {
-				fs::create_directories(_arg_output_path);
-				for (const auto& img : images) {
-					api.save_image(img, _arg_output_path, _arg_format,
-					               format_options);
-				}
-			}
+			fs::create_directories(_arg_output_path.parent_path());
+			save_image(images, _arg_output_path, _arg_format, format_options,
+			           api);
+
 		} else { // _arg_directory_node == true
 			if (_arg_print_info) {
 				print_info_dir(api, _arg_input_path, _arg_recurse);
 				return 0;
 			}
 
-			auto images = api.load_directory(_arg_input_path, _arg_recurse);
+			auto all_images = api.load_directory(_arg_input_path, _arg_recurse);
 			fs::create_directories(_arg_output_path);
-			for (const auto& img : images) {
-				api.save_image(img, _arg_output_path, _arg_format,
-				               format_options);
+			for (auto& images : all_images) {
+				if (images.empty())
+					continue;
+				fs::path out_path =
+				    _arg_output_path / images[0].location.parent_path();
+				save_image(images, out_path, _arg_format, format_options, api);
 			}
 		}
 

@@ -1,5 +1,6 @@
 {
-  "options": [
+  "loading_options": [],
+  "saving_options": [
     {
       "text": "compression",
       "var_name": "compression",

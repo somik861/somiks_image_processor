@@ -16,7 +16,7 @@ int main() {
 		auto img = api.load_image("lenna.jpg")[0];
 		img.location = "lenna2.tiff";
 
-		api.save_image(img, ".", "jpeg", {});
+		api.save_image({img.image}, ".", "jpeg", {});
 
 	} catch (const std::exception& e) {
 		std::cerr << e.what() << '\n';
