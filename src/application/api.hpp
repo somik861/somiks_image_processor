@@ -34,7 +34,9 @@ class API {
 	 */
 	std::vector<img::LocalizedImage>
 	load_image(const std::filesystem::path& path,
-	           const std::filesystem::path& rel_dir = "") const;
+	           const std::filesystem::path& rel_dir = "",
+	           const std::string& format = "",
+	           const option_types::options_t& options = {}) const;
 
 	/**
 	 * Convenience function for loading file with single image inside.
@@ -42,7 +44,9 @@ class API {
 	 */
 	img::LocalizedImage
 	load_one(const std::filesystem::path& path,
-	         const std::filesystem::path& rel_dir = "") const;
+	         const std::filesystem::path& rel_dir = "",
+	         const std::string& format = "",
+	         const option_types::options_t& options = {}) const;
 
 	/**
 	 * Load all files in directory as images. For search in subdirectories,
@@ -50,9 +54,11 @@ class API {
 	 * Relative location of specific image to **dir** can be found via
 	 * localizedImage.location.
 	 */
-	std::vector<img::LocalizedImage>
+	std::vector<std::vector<img::LocalizedImage>>
 	load_directory(const std::filesystem::path& dir,
-	               bool recurse = false) const;
+	               bool recurse = false,
+	               const std::string& format = "",
+	               const option_types::options_t& options = {}) const;
 
 	/**
 	 * Save **img** to **path**.
@@ -60,24 +66,26 @@ class API {
 	 * Note that this still may change an extension if the **path** extension is
 	 * not set as the output extension of found format.
 	 */
-	void save_image(const img::ndImageBase& img,
+	void save_image(const std::vector<img::ndImageBase>& img,
 	                const std::filesystem::path& path,
 	                const std::string& format = "",
 	                const option_types::options_t& options = {}) const;
 
 	/**
-	 * Save image to **output_dir/img.location** with extension
-	 * changed to respect **format** with **options**.
+	 * Convenience function for saving file with single image inside
+	 * Look to **save_image(...)** for more info
 	 */
-	void save_image(const img::LocalizedImage& img,
-	                const std::filesystem::path& output_dir,
-	                const std::string& format,
-	                const option_types::options_t& options = {}) const;
+	void save_one(const img::ndImageBase& img,
+	              const std::filesystem::path& path,
+	              const std::string& format = "",
+	              const option_types::options_t& options = {}) const;
 
 	/**
 	 * Get properties of image located at **path**.
 	 */
-	ImageProperties get_properties(const std::filesystem::path& path) const;
+	ImageProperties
+	get_properties(const std::filesystem::path& path,
+	               const option_types::options_t& options = {}) const;
 
 	/*
 	 * Get supported formats
@@ -95,15 +103,34 @@ class API {
 	std::string predict_format(const std::filesystem::path& file) const;
 
 	/**
+	 * Return true if image count is supported by **format**
+	 */
+	bool is_count_supported(const std::string& format, std::size_t count) const;
+
+	/**
+	 * Return true if image dimensionality is supported by **format**
+	 */
+	bool is_dims_supported(const std::string& format,
+	                       std::span<const std::size_t> dims) const;
+
+	/**
+	 * Transform Localized images back to ndImageBase
+	 */
+	std::vector<img::ndImageBase>
+	delocalize(const std::vector<img::LocalizedImage>& imgs) const;
+
+	/**
 	 * Custom destructor to enable destruction of managers
 	 */
 	~API();
 
   private:
-	void _load_directory(std::vector<img::LocalizedImage>& images,
+	void _load_directory(std::vector<std::vector<img::LocalizedImage>>& images,
 	                     const std::filesystem::path& base_dir,
 	                     const std::filesystem::path& curr_dir,
-	                     bool recurse) const;
+	                     bool recurse,
+	                     const std::string& format,
+	                     const option_types::options_t& options) const;
 
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;
