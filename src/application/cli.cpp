@@ -1,6 +1,9 @@
 #include "api.hpp"
+#include <boost/json.hpp>
 #include <boost/program_options.hpp>
 #include <filesystem>
+#include <format>
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -11,10 +14,10 @@ namespace fs = std::filesystem;
 fs::path _arg_input_path;
 fs::path _arg_output_path;
 std::string _arg_format = "";
-fs::path _arg_options;
-fs::path _arg_preset;
+fs::path _arg_options = "";
+fs::path _arg_preset = "";
 std::vector<std::string> _arg_algorithms;
-fs::path _arg_algo_options;
+fs::path _arg_algo_options = "";
 
 bool _arg_recurse = false;
 bool _arg_directory_mode = false;
@@ -43,7 +46,9 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	     "algorithms to use") //
 	    ("options", po::value<fs::path>(&_arg_algo_options),
 	     "path to json file containing options for algorithms") //
-	    ("preset", po::value<fs::path>(&_arg_preset), "path json preset file");
+	    // TODO implement later
+	    ("preset", po::value<fs::path>(&_arg_preset),
+	     "path json preset file <NOT IMPLEMENTED>");
 
 	po::options_description all_options("All options");
 	all_options.add(hidden).add(generic);
@@ -97,9 +102,11 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		return true;
 	}
 
+	// TODO uncomment
+	/*
 	if (vm.contains("preset"))
-		return true;
-
+	    return true;
+	*/
 	if (_arg_directory_mode && !vm.contains("format"))
 		throw std::runtime_error(
 		    "--format is required when an input_path is a directory.");
@@ -131,13 +138,65 @@ void print_info_dir(const ssimp::API& api,
 	}
 }
 
+ssimp::option_types::options_t
+_load_json_options(const boost::json::object& data) {
+	ssimp::option_types::options_t options;
+	for (const auto& [key, value] : data) {
+		ssimp::option_types::value_t opt_value;
+		if (value.is_bool())
+			opt_value = value.get_bool();
+
+		else if (value.is_int64())
+			opt_value = int32_t(value.get_int64());
+
+		else if (value.is_double())
+			opt_value = value.get_double();
+
+		else if (value.is_string())
+			opt_value = std::string(value.get_string());
+
+		else
+			throw std::runtime_error(std::format("unknown type of key: '{}'",
+			                                     ssimp::to_string(key)));
+		options[key] = std::move(opt_value);
+	}
+
+	return options;
+}
+
+std::unordered_map<std::string, ssimp::option_types::options_t>
+load_algo_options() {
+	if (_arg_algo_options.empty())
+		return {};
+
+	std::unordered_map<std::string, ssimp::option_types::options_t> out;
+	std::ifstream f(_arg_algo_options);
+	boost::json::value data = boost::json::parse(f);
+	for (const auto& [algo, options] : data.as_object())
+		out[algo] = _load_json_options(options.as_object());
+
+	return out;
+}
+
+ssimp::option_types::options_t load_format_options() {
+	if (_arg_options.empty())
+		return {};
+
+	std::ifstream f(_arg_options);
+	boost::json::value data = boost::json::parse(f);
+	return _load_json_options(data.as_object());
+}
+
 int main(int argc, const char** argv) {
 	ssimp::API api;
 	try {
 		if (!option_parser(argc, argv, api))
 			return 0;
 
-		// TODO: load options
+		ssimp::option_types::options_t format_options = load_format_options();
+
+		std::unordered_map<std::string, ssimp::option_types::options_t>
+		    algo_options = load_algo_options();
 
 		if (!_arg_directory_mode) {
 			if (_arg_print_info) {
@@ -150,11 +209,12 @@ int main(int argc, const char** argv) {
 			if (images.size() == 1) {
 				fs::create_directories(_arg_output_path.parent_path());
 				api.save_image(images[0].image, _arg_output_path, _arg_format,
-				               {});
+				               format_options);
 			} else {
 				fs::create_directories(_arg_output_path);
 				for (const auto& img : images) {
-					api.save_image(img, _arg_output_path, _arg_format, {});
+					api.save_image(img, _arg_output_path, _arg_format,
+					               format_options);
 				}
 			}
 		} else { // _arg_directory_node == true
@@ -166,7 +226,8 @@ int main(int argc, const char** argv) {
 			auto images = api.load_directory(_arg_input_path, _arg_recurse);
 			fs::create_directories(_arg_output_path);
 			for (const auto& img : images) {
-				api.save_image(img, _arg_output_path, _arg_format, {});
+				api.save_image(img, _arg_output_path, _arg_format,
+				               format_options);
 			}
 		}
 
