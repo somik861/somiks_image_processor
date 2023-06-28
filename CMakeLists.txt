@@ -11,7 +11,7 @@ endif()
 # external packages
 ## Boost
 find_package(Boost CONFIG REQUIRED)
-set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json)
+set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json Boost::program_options)
 
 ## Jpeg
 find_package(JPEG REQUIRED)
@@ -80,6 +80,10 @@ endfunction()
 add_executable(app "src/application/main.cpp")
 target_link_libraries(app nonmain_files)
 target_add_config(app)
+
+add_executable(ssimp "src/application/cli.cpp")
+target_link_libraries(ssimp nonmain_files)
+target_add_config(ssimp)
 
 # tests
 enable_testing()
