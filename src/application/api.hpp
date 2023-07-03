@@ -17,6 +17,7 @@ class ConfigManager;
 class ExtensionManager;
 class FormatManager;
 class OptionsManager;
+class AlgorithmManager;
 
 class API {
   public:
@@ -134,7 +135,8 @@ class API {
 
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;
-	std::unique_ptr<FormatManager> _format_manager;
 	std::unique_ptr<OptionsManager> _options_manager;
+	std::unique_ptr<FormatManager> _format_manager;
+	std::unique_ptr<AlgorithmManager> _algorithm_manager;
 };
 } // namespace ssimp

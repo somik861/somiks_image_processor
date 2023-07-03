@@ -1,4 +1,5 @@
 #include "api.hpp"
+#include "managers/algorithm_manager.hpp"
 #include "managers/config_manager.hpp"
 #include "managers/extension_manager.hpp"
 #include "managers/format_manager.hpp"
@@ -13,8 +14,9 @@ namespace ssimp {
 API::API()
     : _config_manager(std::make_unique<ConfigManager>()),
       _extension_manager(std::make_unique<ExtensionManager>()),
+      _options_manager(std::make_unique<OptionsManager>()),
       _format_manager(std::make_unique<FormatManager>()),
-      _options_manager(std::make_unique<OptionsManager>()) {
+      _algorithm_manager(std::make_unique<AlgorithmManager>()) {
 
 	for (const std::string& format : _format_manager->registered_formats()) {
 		auto config = _config_manager->load_format(format).get_object();
@@ -28,6 +30,14 @@ API::API()
 
 		_options_manager->load_from_json(
 		    format + "_saving", config.at("saving_options").get_array());
+	}
+
+	for (const std::string& algorithm :
+	     _algorithm_manager->registered_algorithms()) {
+		auto config = _config_manager->load_algorithm(algorithm).get_object();
+
+		_options_manager->load_from_json(algorithm + "_algo",
+		                                 config.at("options").get_array());
 	}
 }
 
