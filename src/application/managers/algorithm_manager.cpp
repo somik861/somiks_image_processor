@@ -1,6 +1,5 @@
-#pragma once
-
 #include "algorithm_manager.hpp"
+#include <format>
 
 namespace {
 template <typename algorithm_t, typename supported_types>
