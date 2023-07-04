@@ -62,7 +62,7 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	          vm);
 
 	if (vm.contains("help")) {
-		std::cout << "Usage: ./ssimp input_path output_path [--help] "
+		std::cout << "Usage: ./ssimp input_path [output_path] [--help] "
 		             "[--recurse]\n\t[--preset "
 		             "<preset.json>]\n\t[--format <string> [--options "
 		             "<options.json>]]\n\t[{--algorithm <string>}... "
@@ -206,6 +206,33 @@ void save_image(const std::vector<ssimp::img::LocalizedImage>& images,
 		    "Did not find suitable way to save an image(s)");
 }
 
+std::vector<ssimp::img::LocalizedImage> _apply_algorithm(
+    const std::vector<ssimp::img::LocalizedImage>& images,
+    const std::string& algo,
+    const std::unordered_map<std::string, ssimp::option_types::options_t>&
+        algo_options,
+    const ssimp::API& api) {
+	ssimp::option_types::options_t options;
+
+	if (algo_options.contains(algo))
+		options = algo_options.at(algo);
+
+	return api.apply(images, algo, options);
+}
+
+std::vector<ssimp::img::LocalizedImage> apply_algorithms(
+    const std::vector<ssimp::img::LocalizedImage>& images,
+    const std::unordered_map<std::string, ssimp::option_types::options_t>&
+        algo_options,
+    const ssimp::API& api) {
+
+	auto out = images;
+	for (const auto& algo : _arg_algorithms) {
+		out = _apply_algorithm(images, algo, algo_options, api);
+	}
+	return out;
+}
+
 int main(int argc, const char** argv) {
 	ssimp::API api;
 	try {
@@ -225,6 +252,8 @@ int main(int argc, const char** argv) {
 			}
 
 			auto images = api.load_image(_arg_input_path);
+			images = apply_algorithms(images, algo_options, api);
+
 			fs::create_directories(_arg_output_path.parent_path());
 			save_image(images, _arg_output_path, _arg_format, format_options,
 			           api);
@@ -240,6 +269,7 @@ int main(int argc, const char** argv) {
 			for (auto& images : all_images) {
 				if (images.empty())
 					continue;
+				images = apply_algorithms(images, algo_options, api);
 				fs::path out_path =
 				    _arg_output_path / images[0].location.parent_path();
 				save_image(images, out_path, _arg_format, format_options, api);
