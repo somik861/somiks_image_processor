@@ -11,15 +11,17 @@ SplitChannels::image_dims_supported(std::span<const std::size_t> dims) {
 	return true;
 }
 
+/* static */ bool SplitChannels::same_dims_required() { return false; }
+
 template <typename T>
     requires mt::traits::is_any_of_tuple_v<T, SplitChannels::supported_types>
 /* static */ std::vector<img::LocalizedImage>
 SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
                      const option_types::options_t& options) {
 	std::vector<img::LocalizedImage> out;
-	const auto& img_ = imgs;
+	const auto& img_ = imgs[0];
 
-	img::ndImage<img::GRAY8> r(imgs.dims()), g(imgs.dims()), b(imgs.dims());
+	img::ndImage<img::GRAY8> r(img_.dims()), g(img_.dims()), b(img_.dims());
 
 	std::transform(img_.begin(), img_.end(), r.begin(),
 	               [](auto elem) { return elem[0]; });
@@ -33,7 +35,7 @@ SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
 	out.push_back({b, "b"});
 
 	if constexpr (std::is_same_v<T, img::RGBA8>) {
-		img::ndImage<img::GRAY8> a(imgs.dims());
+		img::ndImage<img::GRAY8> a(img_.dims());
 
 		std::transform(img_.begin(), img_.end(), a.begin(),
 		               [](auto elem) { return elem[3]; });

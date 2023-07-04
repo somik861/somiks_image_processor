@@ -10,6 +10,7 @@ class SplitChannels {
 
 	static bool image_count_supported(std::size_t count);
 	static bool image_dims_supported(std::span<const std::size_t> dims);
+	static bool same_dims_required();
 
 	template <typename T>
 	    requires mt::traits::is_any_of_tuple_v<T,
