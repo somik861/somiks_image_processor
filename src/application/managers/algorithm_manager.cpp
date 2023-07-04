@@ -33,8 +33,8 @@ struct img_dispatcher<algorithm_t, std::tuple<type_t, rest_t...>> {
 
 			return algorithm_t::apply(typed, options);
 		}
-		img_dispatcher<algorithm_t, std::tuple<rest_t...>>::apply(imgs,
-		                                                          options);
+		return img_dispatcher<algorithm_t, std::tuple<rest_t...>>::apply(
+		    imgs, options);
 	}
 };
 
@@ -88,13 +88,17 @@ struct algorithm_registerer<std::tuple<first_t, types_t...>> {
 		    supported_types[first_t::name]);
 
 		algorithm_registerer<std::tuple<types_t...>>::register_algorithm(
-		    appliers, count_verifs, dims_verifs, supported_types);
+		    appliers, count_verifs, dims_verifs, same_dims, supported_types);
 	}
 };
 } // namespace
 
 namespace ssimp {
-AlgorithmManager::AlgorithmManager(){};
+AlgorithmManager::AlgorithmManager() {
+	algorithm_registerer<_registered_algorithms>::register_algorithm(
+	    _appliers, _count_verifiers, _dims_verifiers, _same_dims_required,
+	    _supported_types);
+};
 
 std::unordered_set<std::string>
 AlgorithmManager::registered_algorithms() const {
