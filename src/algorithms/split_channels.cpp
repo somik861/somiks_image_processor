@@ -42,4 +42,7 @@ SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
 
 	return out;
 }
+
+INSTANTIATE_TEMPLATE(SplitChannels, img::RGB8);
+INSTANTIATE_TEMPLATE(SplitChannels, img::RGBA8);
 } // namespace ssimp::algorithms
