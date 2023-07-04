@@ -131,7 +131,7 @@ void API::save_image(const std::vector<img::ndImageBase>& img,
 			    "Given options are not supported for format '{}'", format));
 
 		_format_manager->save_image(
-		    path, img, f,
+		    _extension_manager->with_output_extension(f, path), img, f,
 		    _options_manager->finalize_options(format + "_saving", options));
 		return;
 	}
