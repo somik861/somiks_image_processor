@@ -245,8 +245,7 @@ bool API::is_dims_supported_format(const std::string& format,
 }
 
 bool API::is_same_dims_required_format(const std::string& format) const {
-	// TODO
-	return false;
+	return _format_manager->is_same_dims_required(format);
 }
 
 bool API::is_count_supported_algorithm(const std::string& algorithm,

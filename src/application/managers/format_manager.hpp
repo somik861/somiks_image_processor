@@ -58,6 +58,11 @@ class FormatManager {
 	                       std::span<const std::size_t> dims) const;
 
 	/**
+	 * Return true if same dims of multiple input images are required
+	 */
+	bool is_same_dims_required(const std::string& format) const;
+
+	/**
 	 * Get image information
 	 */
 	std::optional<ImageProperties>
@@ -98,5 +103,6 @@ class FormatManager {
 
 	std::unordered_map<std::string, std::unordered_set<img::elem_type>>
 	    _format_supported_types;
+	std::unordered_map<std::string, bool> _same_dims_required;
 };
 } // namespace ssimp
