@@ -23,7 +23,7 @@ class AlgorithmManager {
 	/**
 	 * Apply **algorithm** to images.
 	 */
-	std::vector<img::ndImageBase>
+	std::vector<img::LocalizedImage>
 	apply(const std::vector<img::ndImageBase>& images,
 	      const std::string& algorithm,
 	      const option_types::options_t& options) const;
@@ -43,8 +43,13 @@ class AlgorithmManager {
 	/**
 	 * Return true if image dimensionality is supported
 	 */
-	bool is_dims_supported(const std::string& format,
+	bool is_dims_supported(const std::string& algorithm,
 	                       std::span<const std::size_t> dims) const;
+
+	/**
+	 * Return true if same dims of multiple input images are required
+	 */
+	bool is_same_dims_required(const std::string& algorithm) const;
 
 	/**
 	 * Get names of registered algorithms
@@ -67,5 +72,6 @@ class AlgorithmManager {
 
 	std::unordered_map<std::string, std::unordered_set<img::elem_type>>
 	    _supported_types;
+	std::unordered_map<std::string, bool> _same_dims_required;
 };
 } // namespace ssimp

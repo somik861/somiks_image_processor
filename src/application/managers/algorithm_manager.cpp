@@ -53,7 +53,7 @@ struct fill_supported_types<std::tuple<type_t, rest_t...>> {
 
 template <typename T>
 struct algorithm_registerer {
-	static void register_algorithm(auto&, auto&, auto&, auto&) {}
+	static void register_algorithm(auto&, auto&, auto&, auto&, auto&) {}
 };
 
 template <typename first_t, typename... types_t>
@@ -61,6 +61,7 @@ struct algorithm_registerer<std::tuple<first_t, types_t...>> {
 	static void register_algorithm(auto& appliers,
 	                               auto& count_verifs,
 	                               auto& dims_verifs,
+	                               auto& same_dims,
 	                               auto& supported_types) {
 		static_assert(
 		    ssimp::mt::traits::is_subset_of_v<typename first_t::supported_types,
@@ -80,6 +81,8 @@ struct algorithm_registerer<std::tuple<first_t, types_t...>> {
 		dims_verifs[first_t::name] = [](auto dims) {
 			return first_t::image_dims_supported(dims);
 		};
+
+		same_dims[first_t::name] = first_t::same_dims_required();
 
 		fill_supported_types<typename first_t::supported_types>::fill(
 		    supported_types[first_t::name]);
@@ -119,4 +122,17 @@ bool AlgorithmManager::is_dims_supported(
     const std::string& algorithm, std::span<const std::size_t> dims) const {
 	return _dims_verifiers.at(algorithm)(dims);
 }
+
+bool AlgorithmManager::is_same_dims_required(
+    const std::string& algorithm) const {
+	return _same_dims_required.at(algorithm);
+}
+
+std::vector<img::LocalizedImage>
+AlgorithmManager::apply(const std::vector<img::ndImageBase>& images,
+                        const std::string& algorithm,
+                        const option_types::options_t& options) const {
+	return _appliers.at(algorithm)(images, options);
+}
+
 } // namespace ssimp
