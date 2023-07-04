@@ -9,6 +9,7 @@
 #include <iostream>
 
 namespace fs = std::filesystem;
+using namespace std::literals;
 
 namespace ssimp {
 API::API()
@@ -165,6 +166,58 @@ API::get_properties(const fs::path& path,
 	    std::format("'{}' contains unsupported image", to_string(path)));
 }
 
+std::vector<img::LocalizedImage>
+API::apply(const std::vector<img::ndImageBase>& images,
+           const std::string& algorithm,
+           const option_types::options_t& options /* = {} */) const {
+
+	if (!is_count_supported_algorithm(algorithm, images.size()))
+		throw exceptions::Unsupported(
+		    std::format("Algorithm '{}' does not support '{}' images",
+		                algorithm, images.size()));
+
+	for (const auto& img : images) {
+		if (!is_dims_supported_algorithm(algorithm, img.dims()))
+			throw exceptions::Unsupported(std::format(
+			    "Algorithm '{}' does not support image of given dimensionality",
+			    algorithm));
+	}
+
+	if (!images.empty() && is_same_dims_required_algorithm(algorithm)) {
+		auto dims = images[0].dims();
+		if (!std::ranges::all_of(images,
+		                         [&](auto x) { return x.dims() == dims; }))
+			throw exceptions::Unsupported(
+			    std::format("Algorithm '{}' requires that images have the same "
+			                "dimensionality.",
+			                algorithm));
+	}
+
+	if (!_options_manager->is_valid(algorithm + "_algo", options))
+		throw exceptions::Unsupported(std::format(
+		    "Given options are not supported for algorithm '{}'", algorithm));
+
+	return _algorithm_manager->apply(
+	    images, algorithm,
+	    _options_manager->finalize_options(algorithm + "_algo", options));
+}
+
+std::vector<img::LocalizedImage>
+API::apply(const std::vector<img::LocalizedImage>& images,
+           const std::string& algorithm,
+           const option_types::options_t& options /* = {} */) const {
+	std::vector<img::LocalizedImage> out;
+	for (const auto& img : images) {
+		auto res = apply({img.image}, algorithm, options);
+		for (auto& res_img : res) {
+			auto cpy = img.location;
+			res_img.location = cpy.concat("_").concat(res_img.location.c_str());
+		}
+	}
+
+	return out;
+}
+
 std::set<std::string> API::supported_formats() const {
 	auto formats = _format_manager->registered_formats();
 	return std::set(formats.begin(), formats.end());
@@ -181,14 +234,33 @@ std::string API::predict_format(const fs::path& file) const {
 	return possibilites[0];
 }
 
-bool API::is_count_supported(const std::string& format,
-                             std::size_t count) const {
+bool API::is_count_supported_format(const std::string& format,
+                                    std::size_t count) const {
 	return _format_manager->is_count_supported(format, count);
 }
 
-bool API::is_dims_supported(const std::string& format,
-                            std::span<const std::size_t> dims) const {
+bool API::is_dims_supported_format(const std::string& format,
+                                   std::span<const std::size_t> dims) const {
 	return _format_manager->is_dims_supported(format, dims);
+}
+
+bool API::is_same_dims_required_format(const std::string& format) const {
+	// TODO
+	return false;
+}
+
+bool API::is_count_supported_algorithm(const std::string& algorithm,
+                                       std::size_t count) const {
+	return _algorithm_manager->is_count_supported(algorithm, count);
+}
+
+bool API::is_dims_supported_algorithm(const std::string& algorithm,
+                                      std::span<const std::size_t> dims) const {
+	return _algorithm_manager->is_dims_supported(algorithm, dims);
+}
+
+bool API::is_same_dims_required_algorithm(const std::string& algorithm) const {
+	return _algorithm_manager->is_same_dims_required(algorithm);
 }
 
 std::vector<img::ndImageBase>

@@ -193,9 +193,9 @@ void save_image(const std::vector<ssimp::img::LocalizedImage>& images,
                 const std::string& format,
                 const ssimp::option_types::options_t& options,
                 const ssimp::API& api) {
-	if (api.is_count_supported(format, images.size()))
+	if (api.is_count_supported_format(format, images.size()))
 		api.save_image(api.delocalize(images), path, format, options);
-	else if (api.is_count_supported(format, 1)) {
+	else if (api.is_count_supported_format(format, 1)) {
 		fs::create_directories(path);
 		for (const auto& img : images)
 			api.save_one(img.image, path / img.location.filename(), format,
