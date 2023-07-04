@@ -24,6 +24,7 @@ set(APP_NONMAIN_SOURCES
     "src/application/managers/config_manager.cpp"
     "src/application/managers/options_manager.cpp"
     "src/application/managers/format_manager.cpp"
+    "src/application/managers/algorithm_manager.cpp"
     "src/application/api.cpp")
 
 # formats
@@ -31,8 +32,13 @@ file(GLOB FORMAT_SOURCES ${CMAKE_SOURCE_DIR}/src/formats/*.cpp)
 foreach(FILE ${FORMAT_SOURCES})
   message("Found format source: ${FILE}")
 endforeach()
+# algorithms
+file(GLOB ALGO_SOURCES ${CMAKE_SOURCE_DIR}/src/algorithms/*.cpp)
+foreach(FILE ${ALGO_SOURCES})
+  message("Found algorithm source: ${FILE}")
+endforeach()
 
-add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES})
+add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES} ${ALGO_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})
 
 # configuration files

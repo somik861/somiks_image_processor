@@ -17,6 +17,7 @@ class ConfigManager;
 class ExtensionManager;
 class FormatManager;
 class OptionsManager;
+class AlgorithmManager;
 
 class API {
   public:
@@ -87,6 +88,23 @@ class API {
 	get_properties(const std::filesystem::path& path,
 	               const option_types::options_t& options = {}) const;
 
+	/**
+	 * Apply **algorithm** on image(s).
+	 */
+	std::vector<img::LocalizedImage>
+	apply(const std::vector<img::ndImageBase>& images,
+	      const std::string& algorithm,
+	      const option_types::options_t& options = {}) const;
+
+	/**
+	 * Apply **algorithm** on image(s) one by one and use location information
+	 * to mark their source.
+	 */
+	std::vector<img::LocalizedImage>
+	apply(const std::vector<img::LocalizedImage>& images,
+	      const std::string& algorithm,
+	      const option_types::options_t& options = {}) const;
+
 	/*
 	 * Get supported formats
 	 */
@@ -105,13 +123,36 @@ class API {
 	/**
 	 * Return true if image count is supported by **format**
 	 */
-	bool is_count_supported(const std::string& format, std::size_t count) const;
+	bool is_count_supported_format(const std::string& format,
+	                               std::size_t count) const;
 
 	/**
 	 * Return true if image dimensionality is supported by **format**
 	 */
-	bool is_dims_supported(const std::string& format,
-	                       std::span<const std::size_t> dims) const;
+	bool is_dims_supported_format(const std::string& format,
+	                              std::span<const std::size_t> dims) const;
+
+	/**
+	 * Return true if same dimensionality of images is required by **format**
+	 */
+	bool is_same_dims_required_format(const std::string& format) const;
+
+	/**
+	 * Return true if image count is supported by **algorithm**
+	 */
+	bool is_count_supported_algorithm(const std::string& algorithm,
+	                                  std::size_t count) const;
+
+	/**
+	 * Return true if image dimensionality is supported by **algorithm**
+	 */
+	bool is_dims_supported_algorithm(const std::string& algorithm,
+	                                 std::span<const std::size_t> dims) const;
+
+	/**
+	 * Return true if same dimensionality of images is required by **algorithm**
+	 */
+	bool is_same_dims_required_algorithm(const std::string& algorithm) const;
 
 	/**
 	 * Transform Localized images back to ndImageBase
@@ -134,7 +175,8 @@ class API {
 
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;
-	std::unique_ptr<FormatManager> _format_manager;
 	std::unique_ptr<OptionsManager> _options_manager;
+	std::unique_ptr<FormatManager> _format_manager;
+	std::unique_ptr<AlgorithmManager> _algorithm_manager;
 };
 } // namespace ssimp

@@ -56,7 +56,8 @@ struct fill_supported_types<std::tuple<type_t, rest_t...>> {
 
 template <typename T>
 struct format_registerer {
-	static void register_format(auto&, auto&, auto&, auto&, auto&, auto&) {}
+	static void
+	register_format(auto&, auto&, auto&, auto&, auto&, auto&, auto&) {}
 };
 
 template <typename first_t, typename... types_t>
@@ -66,6 +67,7 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 	                            auto& info_getters,
 	                            auto& count_verifs,
 	                            auto& dims_verifs,
+	                            auto& same_dims,
 	                            auto& supported_types) {
 		static_assert(
 		    ssimp::mt::traits::is_subset_of_v<typename first_t::supported_types,
@@ -96,11 +98,13 @@ struct format_registerer<std::tuple<first_t, types_t...>> {
 			return first_t::image_dims_supported(dims);
 		};
 
+		same_dims[first_t::name] = first_t::same_dims_required();
+
 		fill_supported_types<typename first_t::supported_types>::fill(
 		    supported_types[first_t::name]);
 
 		format_registerer<std::tuple<types_t...>>::register_format(
-		    loaders, savers, info_getters, count_verifs, dims_verifs,
+		    loaders, savers, info_getters, count_verifs, dims_verifs, same_dims,
 		    supported_types);
 	}
 };
@@ -111,7 +115,7 @@ namespace ssimp {
 FormatManager::FormatManager() {
 	format_registerer<_registered_formats>::register_format(
 	    _image_loaders, _image_savers, _information_getters, _count_verifiers,
-	    _dims_verifiers, _format_supported_types);
+	    _dims_verifiers, _same_dims_required, _format_supported_types);
 }
 
 std::optional<std::vector<img::LocalizedImage>>
@@ -151,6 +155,10 @@ bool FormatManager::is_count_supported(const std::string& format,
 bool FormatManager::is_dims_supported(const std::string& format,
                                       std::span<const std::size_t> dims) const {
 	return _dims_verifiers.at(format)(dims);
+}
+
+bool FormatManager::is_same_dims_required(const std::string& format) const {
+	return _same_dims_required.at(format);
 }
 
 std::optional<ssimp::ImageProperties> FormatManager::get_image_information(
