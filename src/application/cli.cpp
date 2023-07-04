@@ -238,7 +238,7 @@ std::vector<ssimp::img::LocalizedImage> apply_algorithms(
 	auto out = images;
 	for (const auto& algo : _arg_algorithms) {
 		print_debug("applying {} on {} images", algo, out.size());
-		out = _apply_algorithm(images, algo, algo_options, api);
+		out = _apply_algorithm(out, algo, algo_options, api);
 		print_debug("got {} images", out.size());
 	}
 	return out;

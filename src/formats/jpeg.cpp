@@ -146,7 +146,7 @@ JPEG::load_image(const fs::path& path, const option_types::options_t&) {
 	if (rv)
 		return {};
 
-	return std::vector<img::LocalizedImage>{{dest_img, path.filename()}};
+	return std::vector<img::LocalizedImage>{{dest_img}};
 }
 
 /* static */

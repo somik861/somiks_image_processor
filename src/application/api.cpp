@@ -214,9 +214,12 @@ API::apply(const std::vector<img::LocalizedImage>& images,
 	for (const auto& img : images) {
 		auto res = apply({img.image}, algorithm, options);
 		for (auto& res_img : res) {
-			auto cpy = img.location;
-			res_img.location = cpy.concat("_").concat(res_img.location.c_str());
+			res_img.location = img.location.stem()
+			                       .concat("_")
+			                       .concat(res_img.location.c_str())
+			                       .replace_extension(img.location.extension());
 		}
+		out.insert(out.end(), res.begin(), res.end());
 	}
 
 	return out;
