@@ -8,6 +8,10 @@
 #include <iostream>
 #include <string>
 
+#define print_debug(...)                                                       \
+	if (_arg_debug)                                                            \
+		std::cerr << "[DEBUG] " << std::format(__VA_ARGS__) << '\n';
+
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
@@ -23,6 +27,7 @@ fs::path _arg_algo_options = "";
 bool _arg_recurse = false;
 bool _arg_directory_mode = false;
 bool _arg_print_info = false;
+bool _arg_debug = false;
 
 bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	po::positional_options_description positional;
@@ -38,6 +43,7 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	po::options_description generic("Generic options");
 	generic.add_options()                                                   //
 	    ("help,h", "produce help message")                                  //
+	    ("debug", "produce debug messages")                                 //
 	    ("print_info", "only print information about image")                //
 	    ("format,f", po::value<std::string>(&_arg_format), "output format") //
 	    ("recurse,r", "Recurse into subdirectories")                        //
@@ -81,6 +87,9 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	}
 
 	po::notify(vm);
+
+	if (vm.contains("debug"))
+		_arg_debug = true;
 
 	if (!vm.contains("input_path"))
 		throw std::runtime_error("Input path is required");
@@ -228,56 +237,86 @@ std::vector<ssimp::img::LocalizedImage> apply_algorithms(
 
 	auto out = images;
 	for (const auto& algo : _arg_algorithms) {
+		print_debug("applying {} on {} images", algo, out.size());
 		out = _apply_algorithm(images, algo, algo_options, api);
+		print_debug("got {} images", out.size());
 	}
 	return out;
 }
 
 int main(int argc, const char** argv) {
 	ssimp::API api;
+
 	try {
 		if (!option_parser(argc, argv, api))
 			return 0;
 
+		print_debug("api loaded") print_debug("program options parsed");
+
 		ssimp::option_types::options_t format_options = load_format_options();
+		print_debug("format options loaded");
 
 		std::unordered_map<std::string, ssimp::option_types::options_t>
 		    algo_options = load_algo_options();
+		print_debug("algo options loaded");
 
 		if (!_arg_directory_mode) {
+			print_debug("directory mode disabled");
 			if (_arg_print_info) {
-				std::cout << _arg_input_path << ":\n";
+				print_debug("printing file information") std::cout
+				    << _arg_input_path << ":\n";
 				std::cout << api.get_properties(_arg_input_path) << '\n';
+				print_debug("exiting ... (location 0)");
 				return 0;
 			}
 
 			auto images = api.load_image(_arg_input_path);
+			print_debug("{} loaded, got {} images",
+			            ssimp::to_string(_arg_input_path), images.size());
 			images = apply_algorithms(images, algo_options, api);
+			print_debug("all algorithms applied, got {} images", images.size());
 
 			fs::create_directories(_arg_output_path.parent_path());
+			print_debug("{} created",
+			            ssimp::to_string(_arg_output_path.parent_path()));
+			print_debug("saving {} ...", ssimp::to_string(_arg_output_path));
 			save_image(images, _arg_output_path, _arg_format, format_options,
 			           api);
+			print_debug("saved");
 
 		} else { // _arg_directory_node == true
+			print_debug("directory mode enabled");
 			if (_arg_print_info) {
+				print_debug("printing directory info");
 				print_info_dir(api, _arg_input_path, _arg_recurse);
+				print_debug("exiting ... (location 1)");
 				return 0;
 			}
 
 			auto all_images = api.load_directory(_arg_input_path, _arg_recurse);
+			print_debug("images loaded, loaded {} files", all_images.size());
 			fs::create_directories(_arg_output_path);
 			for (auto& images : all_images) {
 				if (images.empty())
 					continue;
+				print_debug("appling algorithms on {} images", images.size());
 				images = apply_algorithms(images, algo_options, api);
+				print_debug("all algorithms applied, got {} images",
+				            images.size());
+
 				fs::path out_path =
 				    _arg_output_path / images[0].location.parent_path();
+				print_debug("saving {} ...", ssimp::to_string(out_path));
 				save_image(images, out_path, _arg_format, format_options, api);
+				print_debug("saved", ssimp::to_string(out_path));
 			}
 		}
 
 	} catch (std::exception& e) {
+		print_debug("printing error info");
 		std::cerr << "Error: " << e.what() << '\n';
+		print_debug("exiting ... (location 2)");
 		return 1;
 	}
+	print_debug("exiting ... (location 3)");
 }
