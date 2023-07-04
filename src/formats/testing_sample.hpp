@@ -10,6 +10,7 @@ class TestingSample {
 
 	static bool image_count_supported(std::size_t count);
 	static bool image_dims_supported(std::span<const std::size_t> dims);
+	static constexpr bool same_dims_required() { return true; }
 
 	static std::optional<std::vector<img::LocalizedImage>>
 	load_image(const std::filesystem::path&,
