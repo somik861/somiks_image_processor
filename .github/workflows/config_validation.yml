@@ -16,4 +16,19 @@ jobs:
               run: find ${{github.workspace}}/src/formats -name "*.json" | tee ${{github.workspace}}/filelist.txt
 
             - name: Main validation
-              run: for FILE in $(cat ${{github.workspace}}/filelist.txt); do echo Processing ${FILE}; python ${{github.workspace}}/src/utils/check_format_config.py ${FILE} |& tee ${{github.workspace}}/out ; test "$(cat ${{github.workspace}}/out)" = ""; done
+              run: for FILE in $(cat ${{github.workspace}}/filelist.txt); do echo Processing ${FILE}; python ${{github.workspace}}/src/utils/check_format_config.py ${FILE} |& tee ${{github.workspace}}/format_check_out ; test "$(cat ${{github.workspace}}/format_check_out)" = ""; done
+
+    validate-algo-configs:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Verify python version
+              run: python --version
+
+            - name: Find configs to validate
+              run: find ${{github.workspace}}/src/algorithms -name "*.json" | tee ${{github.workspace}}/filelist.txt
+
+            - name: Main validation
+              run: for FILE in $(cat ${{github.workspace}}/filelist.txt); do echo Processing ${FILE}; python ${{github.workspace}}/src/utils/check_algo_config.py ${FILE} |& tee ${{github.workspace}}/algo_check_out ; test "$(cat ${{github.workspace}}/algo_check_out)" = ""; done
