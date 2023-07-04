@@ -60,9 +60,12 @@ API::load_image(const fs::path& path,
 		    path, format,
 		    _options_manager->finalize_options(format + "_loading", options));
 		if (out)
-			for (auto& img : *out)
-				img.location = img_prefix / img.location;
+			for (auto& img : *out) {
 
+				if (img.location.empty())
+					img.location = path.stem();
+				img.location = img_prefix / img.location;
+			}
 		return out;
 	};
 
