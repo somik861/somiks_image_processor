@@ -16,7 +16,7 @@ namespace ssimp {
 class FormatManager {
   private:
 	using _registered_formats =
-	    std::tuple<formats::TestingSample, formats::JPEG>;
+	    std::tuple</* formats::TestingSample, */ formats::JPEG>;
 
   public:
 	/**
