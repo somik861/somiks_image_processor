@@ -28,24 +28,24 @@ void finalize_options_rec(const boost::json::array& option_cfgs,
 		if (type == "header")
 			continue;
 
-		std::string var_name = std::string(obj.at("var_name").get_string());
-		if (!options.contains(var_name)) {
+		std::string id = std::string(obj.at("id").get_string());
+		if (!options.contains(id)) {
 			if (type == "int")
-				options[var_name] = int32_t(obj.at("default").get_int64());
+				options[id] = int32_t(obj.at("default").get_int64());
 
 			if (type == "double")
-				options[var_name] = obj.at("default").get_double();
+				options[id] = obj.at("default").get_double();
 
 			if (type == "text" || type == "choice")
-				options[var_name] = std::string(obj.at("default").get_string());
+				options[id] = std::string(obj.at("default").get_string());
 
 			if (type == "checkbox")
-				options[var_name] = obj.at("defualt").get_bool();
+				options[id] = obj.at("defualt").get_bool();
 
 			if (type == "subsection")
-				options[var_name] = obj.at("default").get_bool();
+				options[id] = obj.at("default").get_bool();
 		}
-		if (type == "subsection" && std::get<bool>(options[var_name]))
+		if (type == "subsection" && std::get<bool>(options[id]))
 			finalize_options_rec(obj.at("options").get_array(), options);
 	}
 }
@@ -53,7 +53,7 @@ void finalize_options_rec(const boost::json::array& option_cfgs,
 void get_option_and_deps_rec(std::optional<boost::json::object>& option,
                              std::unordered_set<std::string>& deps,
                              const boost::json::array& array,
-                             const std::string& var_name) {
+                             const std::string& id) {
 	for (boost::json::value value : array) {
 
 		boost::json::object obj = value.get_object();
@@ -62,19 +62,19 @@ void get_option_and_deps_rec(std::optional<boost::json::object>& option,
 		if (type == "header")
 			continue;
 
-		auto obj_var_name = std::string(obj.at("var_name").get_string());
-		if (obj_var_name == var_name) {
+		auto obj_id = std::string(obj.at("id").get_string());
+		if (obj_id == id) {
 			option = obj;
 			return;
 		}
 
 		if (type == "subsection") {
-			deps.insert(obj_var_name);
+			deps.insert(obj_id);
 			get_option_and_deps_rec(option, deps, obj.at("options").get_array(),
-			                        var_name);
+			                        id);
 			if (option)
 				return;
-			deps.erase(obj_var_name);
+			deps.erase(obj_id);
 		}
 	}
 }
@@ -166,13 +166,13 @@ bool OptionsManager::is_valid(const std::string& identifier,
 
 std::pair<std::optional<boost::json::object>, std::unordered_set<std::string>>
 OptionsManager::_get_option_and_deps(const std::string& identifier,
-                                     const std::string& var_name) const {
+                                     const std::string& option_id) const {
 
 	std::optional<boost::json::object> option;
 	std::unordered_set<std::string> deps;
 
 	get_option_and_deps_rec(option, deps, _loaded_configs.at(identifier),
-	                        var_name);
+	                        option_id);
 
 	return {option, deps};
 }

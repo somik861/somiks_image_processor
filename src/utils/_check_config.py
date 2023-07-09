@@ -53,8 +53,8 @@ def _contains(dct: dict[str, Any], key: str, path: tuple[str, ...], *args: str, 
     return True
 
 
-def check_options(options: list[Any], path: tuple[str, ...], var_names_base: list[str] | None = None) -> None:
-    var_names = [] if var_names_base is None else var_names_base
+def check_options(options: list[Any], path: tuple[str, ...], opt_ids_base: list[str] | None = None) -> None:
+    opt_ids = [] if opt_ids_base is None else opt_ids_base
     for i, opt in enumerate(options):
         new_path = (*path, str(i))
         if not _is_valid_type(opt, dict, new_path):
@@ -68,10 +68,10 @@ def check_options(options: list[Any], path: tuple[str, ...], var_names_base: lis
                 opt['type'], ['header', 'int', 'double', 'checkbox', 'text', 'choice', 'subsection'], new_path, 'type'):
 
             if opt['type'] != 'header':
-                if _contains(opt, 'var_name', new_path, type_=str):
-                    unused -= {'var_name'}
-                    if _nonempty(opt['var_name'], new_path, 'var_name'):
-                        var_names.append
+                if _contains(opt, 'id', new_path, type_=str):
+                    unused -= {'id'}
+                    if _nonempty(opt['id'], new_path, 'id'):
+                        opt_ids.append(opt['id'])
 
             match opt['type']:
                 case 'int':
@@ -137,14 +137,14 @@ def check_options(options: list[Any], path: tuple[str, ...], var_names_base: lis
                     unused -= {'options', 'default'}
                     if _contains(opt, 'options', new_path, type_=list):
                         check_options(opt['options'],
-                                      new_path + ('',), var_names)
+                                      new_path + ('',), opt_ids)
 
                     _contains(opt, 'default', new_path, type_=bool)
 
-        if len(set(var_names)) != len(var_names):
-            for var_name in set(var_names):
-                if var_names.count(var_name) > 1:
-                    _error(f'Var_name: {var_name} is not unique')
+        if len(set(opt_ids)) != len(opt_ids):
+            for opt_id in set(opt_ids):
+                if opt_ids.count(opt_id) > 1:
+                    _error(f'ID: {opt_id} is not unique')
 
         for key in unused:
             _report_ignored(new_path, key)
