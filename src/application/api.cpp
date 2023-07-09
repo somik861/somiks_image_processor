@@ -230,7 +230,10 @@ std::set<std::string> API::supported_formats() const {
 	return std::set(formats.begin(), formats.end());
 }
 
-std::set<std::string> API::supported_algorithms() const { return {}; }
+std::set<std::string> API::supported_algorithms() const {
+	auto algos = _algorithm_manager->registered_algorithms();
+	return std::set(algos.begin(), algos.end());
+}
 
 std::string API::predict_format(const fs::path& file) const {
 	auto possibilites = _extension_manager->find_possible_formats(file);
