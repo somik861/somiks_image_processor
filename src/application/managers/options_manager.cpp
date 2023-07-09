@@ -8,87 +8,136 @@
 	if (!(x))                                                                  \
 		return false;
 
+using namespace std::literals;
+
 namespace {
-std::unordered_set<std::string>
-string_array_to_set(const boost::json::array& arr) {
-	std::unordered_set<std::string> out;
+std::vector<std::string> string_array_to_vector(const boost::json::array& arr) {
+	std::vector<std::string> out;
 
 	for (auto value : arr)
-		out.emplace(value.get_string());
+		out.emplace_back(value.get_string());
 	return out;
 }
 
-void finalize_options_rec(const boost::json::array& option_cfgs,
-                          ssimp::option_types::options_t& options) {
+void finalize_options_rec(
+    const std::vector<ssimp::option_types::OptionConfig>& option_cfgs,
+    ssimp::option_types::options_t& options) {
 
 	for (const auto& cfg : option_cfgs) {
-		const auto& obj = cfg.get_object();
-		std::string_view type = obj.at("type").get_string();
-
-		if (type == "header")
+		if (cfg.type() == "header")
 			continue;
 
-		std::string id = std::string(obj.at("id").get_string());
-		if (!options.contains(id)) {
-			if (type == "int")
-				options[id] = int32_t(obj.at("default").get_int64());
+		if (!options.contains(cfg.id())) {
+			if (cfg.type() == "int")
+				options[cfg.id()] = cfg.default_as<int32_t>();
 
-			if (type == "double")
-				options[id] = obj.at("default").get_double();
+			if (cfg.type() == "double")
+				options[cfg.id()] = cfg.default_as<double>();
 
-			if (type == "text" || type == "choice")
-				options[id] = std::string(obj.at("default").get_string());
+			if (cfg.type() == "text" || cfg.type() == "choice")
+				options[cfg.id()] = cfg.default_as<std::string>();
 
-			if (type == "checkbox")
-				options[id] = obj.at("defualt").get_bool();
-
-			if (type == "subsection")
-				options[id] = obj.at("default").get_bool();
+			if (cfg.type() == "checkbox" || cfg.type() == "subsection")
+				options[cfg.id()] = cfg.default_as<bool>();
 		}
-		if (type == "subsection" && std::get<bool>(options[id]))
-			finalize_options_rec(obj.at("options").get_array(), options);
+		if (cfg.type() == "subsection" && std::get<bool>(options[cfg.id()]))
+			finalize_options_rec(cfg.options(), options);
 	}
 }
 
-void get_option_and_deps_rec(std::optional<boost::json::object>& option,
-                             std::unordered_set<std::string>& deps,
-                             const boost::json::array& array,
-                             const std::string& id) {
-	for (boost::json::value value : array) {
-
-		boost::json::object obj = value.get_object();
-		std::string_view type = obj.at("type").get_string();
-
-		if (type == "header")
+void get_option_and_deps_rec(
+    std::optional<ssimp::option_types::OptionConfig>& option,
+    std::unordered_set<std::string>& deps,
+    const std::vector<ssimp::option_types::OptionConfig> configs,
+    const std::string& id) {
+	for (const ssimp::option_types::OptionConfig& config : configs) {
+		if (config.type() == "header")
 			continue;
 
-		auto obj_id = std::string(obj.at("id").get_string());
-		if (obj_id == id) {
-			option = obj;
+		if (config.id() == id) {
+			option = config;
 			return;
 		}
 
-		if (type == "subsection") {
-			deps.insert(obj_id);
-			get_option_and_deps_rec(option, deps, obj.at("options").get_array(),
-			                        id);
+		if (config.type() == "subsection") {
+			deps.insert(config.id());
+			get_option_and_deps_rec(option, deps, config.options(), id);
 			if (option)
 				return;
-			deps.erase(obj_id);
+			deps.erase(config.id());
 		}
 	}
 }
 
-} // namespace
+std::vector<ssimp::option_types::OptionConfig>
+load_from_json_rec(const boost::json::array& json) {
 
-using namespace std::literals;
+	std::vector<ssimp::option_types::OptionConfig> configs;
+
+	for (const auto& option_ : json) {
+		boost::json::object option = option_.get_object();
+		ssimp::option_types::OptionConfig option_config;
+
+		std::string opt_type(option.at("type").get_string());
+		option_config.type() = opt_type;
+		option_config.text() = option.at("text").get_string();
+
+		if (opt_type != "header")
+			option_config.id() = option.at("id").get_string();
+
+		auto opt_default = option.at("default");
+
+		if (opt_type == "choice") {
+			option_config.default_() = std::string(opt_default.get_string());
+			option_config.values() =
+			    string_array_to_vector(option.at("values").as_array());
+		}
+
+		if (opt_type == "checkbox")
+			option_config.default_() = opt_default.get_bool();
+
+		if (opt_type == "subsection") {
+			option_config.default_() = opt_default.get_bool();
+			option_config.options() =
+			    load_from_json_rec(option.at("options").get_array());
+		}
+
+		if (opt_type == "int" || opt_type == "double" || opt_type == "text") {
+			auto opt_range_0 = option.at("range").get_array()[0];
+			auto opt_range_1 = option.at("range").get_array()[1];
+
+			if (opt_type == "int") {
+				option_config.default_() = int32_t(opt_default.get_int64());
+				option_config.range()[0] = int32_t(opt_range_0.get_int64());
+				option_config.range()[1] = int32_t(opt_range_1.get_int64());
+			}
+
+			if (opt_type == "double") {
+				option_config.default_() = opt_default.get_double();
+				option_config.range() = {opt_range_0.get_double(),
+				                         opt_range_1.get_double()};
+			}
+
+			if (opt_type == "text") {
+				option_config.default_() =
+				    std::string(opt_default.get_string());
+				option_config.range()[0] = int32_t(opt_range_0.get_int64());
+				option_config.range()[1] = int32_t(opt_range_1.get_int64());
+			}
+		}
+		configs.push_back(option_config);
+	}
+
+	return configs;
+}
+
+} // namespace
 
 namespace ssimp {
 void OptionsManager::load_from_json(const std::string& identifier,
                                     const boost::json::array& json) {
 	assert(!_loaded_configs.contains(identifier));
-
-	_loaded_configs[identifier] = json;
+	_loaded_configs[identifier] = load_from_json_rec(json);
 }
 
 option_types::options_t
@@ -103,6 +152,7 @@ OptionsManager::finalize_options(const std::string& identifier,
 
 bool OptionsManager::is_valid(const std::string& identifier,
                               const option_types::options_t& options) const {
+
 	for (const auto& [name, value] : options) {
 		const auto& [option, deps] = _get_option_and_deps(identifier, name);
 		CHECK(option);
@@ -112,63 +162,58 @@ bool OptionsManager::is_valid(const std::string& identifier,
 			       std::holds_alternative<bool>(options.at(dep)) &&
 			       std::get<bool>(options.at(dep))) ||
 			      _get_option_and_deps(identifier, dep)
-			          .first->at("default")
-			          .get_bool());
+			          .first->default_as<bool>());
 		}
 
-		std::string_view type = option->at("type").get_string();
-		if (type == "int") {
+		if (option->type() == "int") {
 			CHECK(std::holds_alternative<int32_t>(value));
 
 			int32_t raw_value = std::get<int32_t>(value);
-			auto value_range = option->at("range").get_array();
-			int32_t lower_bound = int32_t(value_range.at(0).get_int64());
-			int32_t upper_bound = int32_t(value_range.at(1).get_int64());
+			auto value_range = option->range_as<int32_t>();
 
-			CHECK(lower_bound <= raw_value);
-			CHECK(raw_value <= upper_bound);
-		} else if (type == "double") {
+			CHECK(value_range[0] <= raw_value);
+			CHECK(raw_value <= value_range[1]);
+		} else if (option->type() == "double") {
 			CHECK(std::holds_alternative<double>(value));
 
 			double raw_value = std::get<double>(value);
-			auto value_range = option->at("range").get_array();
-			double lower_bound = value_range.at(0).get_double();
-			double upper_bound = value_range.at(1).get_double();
+			auto value_range = option->range_as<double>();
 
-			CHECK(lower_bound <= raw_value);
-			CHECK(raw_value <= upper_bound);
-		} else if (type == "text") {
+			CHECK(value_range[0] <= raw_value);
+			CHECK(raw_value <= value_range[1]);
+		} else if (option->type() == "text") {
 			CHECK(std::holds_alternative<std::string>(value));
 
-			std::size_t value_size = std::get<std::string>(value).size();
-			auto value_range = option->at("range").get_array();
-			auto lower_bound = value_range.at(0).get_uint64();
-			auto upper_bound = value_range.at(1).get_uint64();
+			int32_t value_size = int32_t(std::get<std::string>(value).size());
+			auto value_range = option->range_as<int32_t>();
 
-			CHECK(lower_bound <= value_size);
-			CHECK(value_size <= upper_bound);
-		} else if (type == "choice") {
+			CHECK(value_range[0] <= value_size);
+			CHECK(value_size <= value_range[1]);
+		} else if (option->type() == "choice") {
 			CHECK(std::holds_alternative<std::string>(value));
 
 			const std::string& raw_value = std::get<std::string>(value);
-			CHECK(string_array_to_set(option->at("values").get_array())
-			          .contains(raw_value));
-		} else if (type == "checkbox") {
+			CHECK(std::ranges::count(option->values(), raw_value));
+		} else if (option->type() == "checkbox") {
 			CHECK(std::holds_alternative<bool>(value));
-		} else if (type == "subsection") {
+		} else if (option->type() == "subsection") {
 			CHECK(std::holds_alternative<bool>(value));
 		} else
 			return false;
 	}
-
 	return true;
 }
 
-std::pair<std::optional<boost::json::object>, std::unordered_set<std::string>>
+const std::vector<option_types::OptionConfig>&
+OptionsManager::option_configs(const std::string& identifier) const {
+	return _loaded_configs.at(identifier);
+}
+
+std::pair<std::optional<option_types::OptionConfig>,
+          std::unordered_set<std::string>>
 OptionsManager::_get_option_and_deps(const std::string& identifier,
                                      const std::string& option_id) const {
-
-	std::optional<boost::json::object> option;
+	std::optional<option_types::OptionConfig> option;
 	std::unordered_set<std::string> deps;
 
 	get_option_and_deps_rec(option, deps, _loaded_configs.at(identifier),

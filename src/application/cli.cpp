@@ -52,7 +52,7 @@ void _load_preset() {
 			                       return std::string(x.as_string());
 		                       });
 
-	_arg_format = preset.at("preset").as_string();
+	_arg_format = preset.at("format").as_string();
 }
 
 bool option_parser(int argc, const char** argv, const ssimp::API& api) {

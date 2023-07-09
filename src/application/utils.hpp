@@ -87,8 +87,8 @@ class OptionConfig {
 	const std::string& type() const { return _type; }
 	std::string& text() { return _text; }
 	const std::string& text() const { return _text; }
-	value_t default_() { return _default; }
-	const value_t default_() const { return _default; }
+	value_t& default_() { return _default; }
+	const value_t& default_() const { return _default; }
 	const std::vector<std::string>& values() const {
 		assert(_type == "choice");
 		return _values;
@@ -111,14 +111,14 @@ class OptionConfig {
 	template <typename T>
 	    requires mt::concepts::
 	        TupleType<T, mt::traits::variant_to_tuple_t<option_types::value_t>>
-	    const T& default_as() {
+	    const T& default_as() const {
 		return std::get<T>(_default);
 	}
 
 	template <typename T>
 	    requires mt::concepts::
 	        TupleType<T, mt::traits::variant_to_tuple_t<option_types::value_t>>
-	    std::array<T, 2> range_as() {
+	    std::array<T, 2> range_as() const {
 		return {std::get<T>(_range[0]), std::get<T>(_range[1])};
 	}
 

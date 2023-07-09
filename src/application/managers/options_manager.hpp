@@ -35,12 +35,19 @@ class OptionsManager {
 	bool is_valid(const std::string& identifier,
 	              const option_types::options_t& options) const;
 
+	/**
+	 * Return option configs
+	 */
+	const std::vector<option_types::OptionConfig>&
+	option_configs(const std::string& identifier) const;
+
   private:
-	std::pair<std::optional<boost::json::object>,
+	std::pair<std::optional<option_types::OptionConfig>,
 	          std::unordered_set<std::string>>
 	_get_option_and_deps(const std::string& identifier,
 	                     const std::string& var_name) const;
 
-	std::unordered_map<std::string, boost::json::array> _loaded_configs;
+	std::unordered_map<std::string, std::vector<option_types::OptionConfig>>
+	    _loaded_configs;
 };
 } // namespace ssimp
