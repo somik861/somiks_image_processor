@@ -1,3 +1,0 @@
-./ssimp path/input_file.jpg path2/output_file.png [--format;-f <string> [--options options.json]] [{--algorithm;-a algo}... --algo_option options.json]
-./ssimp input_dir output_dir --format;-f png [--options options.json] [--recurse] [{--algorithm;-a algo}... --algo_option options.json]...
-./ssimp input_path output_path --preset preset.json
