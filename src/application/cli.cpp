@@ -24,6 +24,9 @@ fs::path _arg_saving_options = "";
 fs::path _arg_preset = "";
 std::vector<std::string> _arg_algorithms;
 fs::path _arg_algo_options = "";
+std::string _arg_saving_options_string = "";
+std::string _arg_loading_options_string = "";
+std::string _arg_algo_options_string = "";
 
 bool _arg_recurse = false;
 bool _arg_directory_mode = false;
@@ -43,10 +46,11 @@ void _load_preset() {
 	_arg_print_info =
 	    preset.contains("print_info") && preset.at("print_info").as_bool();
 
-	if (preset.contains("algorithms")) {
-		auto algs = preset.at("algorithms").as_array();
-		_arg_algorithms.insert(_arg_algorithms.end(), algs.begin(), algs.end());
-	}
+	if (preset.contains("algorithms"))
+		std::ranges::transform(preset.at("algorithms").as_array(),
+		                       std::back_inserter(_arg_algorithms), [](auto x) {
+			                       return std::string(x.as_string());
+		                       });
 
 	_arg_format = preset.at("preset").as_string();
 }
@@ -68,15 +72,23 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	    ("debug", "produce debug messages")                  //
 	    ("print_info", "only print information about image") //
 	    ("loading_options", po::value<fs::path>(&_arg_loading_options),
-	     "path to json file containing options for loading files")          //
+	     "path to json file containing options for loading files") //
+	    ("loading_opt_string",
+	     po::value<std::string>(&_arg_loading_options_string),
+	     "json string (can be used instead of loading_options)")            //
 	    ("format,f", po::value<std::string>(&_arg_format), "output format") //
 	    ("recurse,r", "Recurse into subdirectories")                        //
 	    ("saving_options", po::value<fs::path>(&_arg_saving_options),
 	     "path to json file containing saving options for format") //
+	    ("saving_opt_string",
+	     po::value<std::string>(&_arg_saving_options_string),
+	     "json string (can be used instead of saving_options)") //
 	    ("algorithm,a", po::value<std::vector<std::string>>(&_arg_algorithms),
 	     "algorithms to use") //
-	    ("options", po::value<fs::path>(&_arg_algo_options),
+	    ("algo_options", po::value<fs::path>(&_arg_algo_options),
 	     "path to json file containing options for algorithms") //
+	    ("algo_opt_string", po::value<std::string>(&_arg_algo_options_string),
+	     "json string (can be used instead of algo_options)") //
 	    ("preset", po::value<fs::path>(&_arg_preset),
 	     "path json preset file  !!!All other arguments will be ignored"
 	     "!!!") //
@@ -96,9 +108,12 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		std::cout << "Usage: ./ssimp input_path [output_path] [--help] "
 		             "[--recurse]\n\t[--preset "
 		             "<preset.json>]\n\t[--loading_options "
-		             "<lopt.json>]\n\t[--format <string> [--saving_options "
-		             "<sopt.json>]]\n\t[{--algorithm <string>}... "
-		             "[--algo_options <algo_options.json>]]\n\n";
+		             "<lopt.json>] [--loading_opt_string "
+		             "<string>]\n\t[--format <string> [--saving_options "
+		             "<sopt.json>] [--saving_opt_string "
+		             "<string>]]\n\t[{--algorithm <string>}... "
+		             "[--algo_options <algo_options.json>] [--algo_opt_string "
+		             "<string>]]\n\n";
 		std::cout << generic << "\n";
 		std::cout << "Supported formats:\n";
 		for (const auto& f : api.supported_formats())
@@ -156,6 +171,18 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	if (vm.contains("algo_options") && !vm.contains("algorithm"))
 		throw std::runtime_error(
 		    "can not specify algo_options without algorithm");
+
+	if (vm.contains("loading_opt_string") && vm.contains("loading_options"))
+		throw std::runtime_error("Only one of 'loading_options' and "
+		                         "'loading_opt_string' can be used.");
+
+	if (vm.contains("saving_opt_string") && vm.contains("saving_options"))
+		throw std::runtime_error("Only one of 'saving_options' and "
+		                         "'saving_opt_string' can be used.");
+
+	if (vm.contains("algo_opt_string") && vm.contains("algo_options"))
+		throw std::runtime_error("Only one of 'algo_options' and "
+		                         "'algo_opt_string' can be used.");
 
 	return true;
 }
@@ -220,10 +247,14 @@ load_algo_options() {
 		                           .at("algo_options")
 		                           .as_object());
 
-	if (_arg_loading_options.empty())
-		return {};
+	if (!_arg_algo_options.empty())
+		return _load_algo_json(_load_json_file(_arg_algo_options).as_object());
 
-	return _load_algo_json(_load_json_file(_arg_algo_options).as_object());
+	if (!_arg_algo_options_string.empty())
+		return _load_algo_json(
+		    boost::json::parse(_arg_algo_options_string).as_object());
+
+	return {};
 }
 
 ssimp::option_types::options_t load_loading_options() {
@@ -233,11 +264,15 @@ ssimp::option_types::options_t load_loading_options() {
 		                       .at("loading_options")
 		                       .as_object());
 
-	if (_arg_loading_options.empty())
-		return {};
+	if (!_arg_loading_options.empty())
+		return _load_json_options(
+		    _load_json_file(_arg_loading_options).as_object());
 
-	return _load_json_options(
-	    _load_json_file(_arg_loading_options).as_object());
+	if (!_arg_loading_options_string.empty())
+		return _load_json_options(
+		    boost::json::parse(_arg_loading_options_string).as_object());
+
+	return {};
 }
 
 ssimp::option_types::options_t load_saving_options() {
@@ -247,10 +282,15 @@ ssimp::option_types::options_t load_saving_options() {
 		                       .at("saving_options")
 		                       .as_object());
 
-	if (_arg_saving_options.empty())
-		return {};
+	if (!_arg_saving_options.empty())
+		return _load_json_options(
+		    _load_json_file(_arg_saving_options).as_object());
 
-	return _load_json_options(_load_json_file(_arg_saving_options).as_object());
+	if (!_arg_saving_options_string.empty())
+		return _load_json_options(
+		    boost::json::parse(_arg_saving_options_string).as_object());
+
+	return {};
 }
 
 void save_image(const std::vector<ssimp::img::LocalizedImage>& images,
