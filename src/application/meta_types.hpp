@@ -2,6 +2,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include <variant>
 
 namespace ssimp::mt {
 namespace traits {
@@ -59,6 +60,50 @@ struct is_subset_of<std::tuple<types_t...>, haystack_t>
 
 template <typename needle_t, typename haystack_t>
 constexpr bool is_subset_of_v = is_subset_of<needle_t, haystack_t>::value;
+
+template <typename variant_t, typename T>
+struct variant_append;
+
+template <typename... types_t, typename T>
+struct variant_append<std::variant<types_t...>, T> {
+	using type = std::variant<types_t..., T>;
+};
+
+template <typename variant_t, typename T>
+using variant_append_t = variant_append<variant_t, T>::type;
+
+template <typename T, typename variant_t>
+struct variant_prepend;
+
+template <typename T, typename... types_t>
+struct variant_prepend<T, std::variant<types_t...>> {
+	using type = std::variant<T, types_t...>;
+};
+
+template <typename T, typename variant_t>
+using variant_prepend_t = variant_prepend<T, variant_t>::type;
+
+template <typename variant_t>
+struct variant_to_tuple;
+
+template <typename... types_t>
+struct variant_to_tuple<std::variant<types_t...>> {
+	using type = std::tuple<types_t...>;
+};
+
+template <typename variant_t>
+using variant_to_tuple_t = variant_to_tuple<variant_t>::type;
+
+template <typename tuple_t>
+struct tuple_to_variant;
+
+template <typename... types_t>
+struct tuple_to_variant<std::tuple<types_t...>> {
+	using type = std::variant<types_t...>;
+};
+
+template <typename tuple_t>
+using tuple_to_variant_t = tuple_to_variant<tuple_t>::type;
 } // namespace traits
 
 namespace concepts {
