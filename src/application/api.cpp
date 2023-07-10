@@ -272,6 +272,21 @@ bool API::is_same_dims_required_algorithm(const std::string& algorithm) const {
 	return _algorithm_manager->is_same_dims_required(algorithm);
 }
 
+const std::vector<ssimp::option_types::OptionConfig>&
+API::loading_options_configuration(const std::string& format) const {
+	return _options_manager->option_configs(format + "_loading");
+}
+
+const std::vector<ssimp::option_types::OptionConfig>&
+API::saving_options_configuration(const std::string& format) const {
+	return _options_manager->option_configs(format + "_saving");
+}
+
+const std::vector<ssimp::option_types::OptionConfig>&
+API::algorithm_options_configuration(const std::string& algorithm) const {
+	return _options_manager->option_configs(algorithm + "_algo");
+}
+
 std::vector<img::ndImageBase>
 API::delocalize(const std::vector<img::LocalizedImage>& imgs) const {
 	std::vector<img::ndImageBase> out;

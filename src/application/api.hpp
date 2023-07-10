@@ -155,6 +155,24 @@ class API {
 	bool is_same_dims_required_algorithm(const std::string& algorithm) const;
 
 	/**
+	 * Get loading option configuration of **format**
+	 */
+	const std::vector<ssimp::option_types::OptionConfig>&
+	loading_options_configuration(const std::string& format) const;
+
+	/**
+	 * Get saving option configuration of **format**
+	 */
+	const std::vector<ssimp::option_types::OptionConfig>&
+	saving_options_configuration(const std::string& format) const;
+
+	/**
+	 * Get option configuration of **algorithm**
+	 */
+	const std::vector<ssimp::option_types::OptionConfig>&
+	algorithm_options_configuration(const std::string& algorithm) const;
+
+	/**
 	 * Transform Localized images back to ndImageBase
 	 */
 	std::vector<img::ndImageBase>
