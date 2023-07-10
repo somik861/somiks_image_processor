@@ -92,6 +92,11 @@ add_executable(ssimp "src/application/cli.cpp")
 target_link_libraries(ssimp nonmain_files)
 target_add_config(ssimp)
 
+# instalation
+install(TARGETS ssimp RUNTIME DESTINATION bin)
+install(FILES ${APP_FORMAT_CONFIGS} DESTINATION bin/formats)
+install(FILES ${APP_ALGO_CONFIGS} DESTINATION bin/algorithms)
+
 # tests
 enable_testing()
 
