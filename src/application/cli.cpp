@@ -78,6 +78,7 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	po::options_description generic("Generic options");
 	generic.add_options()                  //
 	    ("help,h", "produce help message") //
+	    ("version", "show version")        //
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
@@ -116,7 +117,8 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	          vm);
 
 	if (vm.contains("help")) {
-		std::cout << "Usage: ./ssimp input_path [output_path]\n\t[--help] "
+		std::cout << "Usage: ./ssimp input_path [output_path] "
+		             "[--version]\n\t[--help] "
 		             "[--help_format <string>] [--help_algo <string>]\n\t"
 		             "[--recurse] [--preset "
 		             "<preset.json>]\n\t[--loading_options "
@@ -153,6 +155,11 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		std::cout << _arg_help_algo << " options configuration:\n";
 		_print_options(api.algorithm_options_configuration(_arg_help_algo));
 
+		return false;
+	}
+
+	if (vm.contains("version")) {
+		std::cout << "API version: " << api.version() << '\n';
 		return false;
 	}
 	po::notify(vm);

@@ -26,6 +26,8 @@ class API {
 	 */
 	API();
 
+	std::string version() const;
+
 	/**
 	 * Open file at **path**. If **rel_dir** is specified, the
 	 * LocalizedImage.location path is set relative to **rel_dir**.
