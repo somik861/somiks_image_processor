@@ -204,7 +204,7 @@ inline std::ostream& operator<<(std::ostream& os,
 	}
 
 	os << '\t' << ((cfg.type() == "text") ? "size " : "") << "range: < ";
-	std::visit([&](auto x, auto y) -> void { os << x << " : " << y << ">\n"; },
+	std::visit([&](auto x, auto y) -> void { os << x << " : " << y << " >\n"; },
 	           cfg.range()[0], cfg.range()[1]);
 
 	return os;

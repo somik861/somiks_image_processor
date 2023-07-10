@@ -9,14 +9,17 @@ Therefore, I strongly recommend reading this manual before usage and to strictly
 ## Example help output
 ``` pwsh
 PS> ssimp --help
-Usage: ./ssimp input_path [output_path] [--help] [--recurse]
-        [--preset <preset.json>]
+Usage: ./ssimp input_path [output_path]
+        [--help] [--help_format <string>] [--help_algo <string>]
+        [--recurse] [--preset <preset.json>]
         [--loading_options <lopt.json>] [--loading_opt_string <string>]
         [--format <string> [--saving_options <sopt.json>] [--saving_opt_string <string>]]
         [{--algorithm <string>}... [--algo_options <algo_options.json>] [--algo_opt_string <string>]]
 
 Generic options:
   -h [ --help ]            produce help message
+  --help_format arg        show options config for format
+  --help_algo arg          show options config for algorithm
   --debug                  produce debug messages
   --print_info             only print information about image
   --loading_options arg    path to json file containing options for loading
@@ -49,6 +52,12 @@ Output path of the same type as `input_path`. If `print_info` is also provided, 
 
 ### help
 Produces help message (shown above).
+
+### help_format
+Show configuration of available loading and saving options for given format.
+
+### help_algo
+Show configuration of available algorithm options.
 
 ### recurse
 Can be only used when type of `input_path` is directory. Tells the program to also search all subdirectories.
@@ -110,9 +119,5 @@ File needs to have the following structure (same as `preset["algo_options"]`):
 ### algo_opt_string
 Convenient option to pass the json string instead of file.
 
-
 ## Supported formats and algorithms
 All supported formats (for both, loading and saving) and algorithms are printed at the bottom of `help` output.
-
-The list of supported options is not yet avaiable from CLI,
-but can be found in the instalation directory in *formats* and *algorithms* in a form of json files.

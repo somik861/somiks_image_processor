@@ -1,6 +1,7 @@
 #include "options_manager.hpp"
 
 #include <cassert>
+#include <iostream>
 #include <string_view>
 #include <unordered_set>
 
