@@ -115,7 +115,7 @@ namespace ssimp {
 FormatManager::FormatManager() {
 	format_registerer<_registered_formats>::register_format(
 	    _image_loaders, _image_savers, _information_getters, _count_verifiers,
-	    _dims_verifiers, _same_dims_required, _format_supported_types);
+	    _dims_verifiers, _same_dims_required, _supported_types);
 }
 
 std::optional<std::vector<img::LocalizedImage>>
@@ -130,35 +130,6 @@ void FormatManager::save_image(const fs::path& path,
                                const std::string& format,
                                const option_types::options_t& options) const {
 	_image_savers.at(format)(image, path, options);
-}
-
-std::unordered_set<std::string> FormatManager::registered_formats() const {
-	std::unordered_set<std::string> formats;
-	formats.reserve(_image_loaders.size());
-	for (const auto& [k, _] : _image_loaders) {
-		formats.insert(k);
-	}
-
-	return formats;
-}
-
-bool FormatManager::is_type_supported(const std::string& format,
-                                      img::elem_type type) const {
-	return _format_supported_types.at(format).contains(type);
-}
-
-bool FormatManager::is_count_supported(const std::string& format,
-                                       std::size_t count) const {
-	return _count_verifiers.at(format)(count);
-}
-
-bool FormatManager::is_dims_supported(const std::string& format,
-                                      std::span<const std::size_t> dims) const {
-	return _dims_verifiers.at(format)(dims);
-}
-
-bool FormatManager::is_same_dims_required(const std::string& format) const {
-	return _same_dims_required.at(format);
 }
 
 std::optional<ssimp::ImageProperties> FormatManager::get_image_information(

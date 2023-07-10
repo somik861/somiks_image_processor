@@ -99,38 +99,6 @@ AlgorithmManager::AlgorithmManager() {
 	    _supported_types);
 };
 
-std::unordered_set<std::string>
-AlgorithmManager::registered_algorithms() const {
-	std::unordered_set<std::string> algorithms;
-	algorithms.reserve(_appliers.size());
-
-	for (const auto& [k, _] : _appliers) {
-		algorithms.insert(k);
-	}
-
-	return algorithms;
-}
-
-bool AlgorithmManager::is_type_supported(const std::string& algorithm,
-                                         img::elem_type type) const {
-	return _supported_types.at(algorithm).contains(type);
-}
-
-bool AlgorithmManager::is_count_supported(const std::string& algorithm,
-                                          std::size_t count) const {
-	return _count_verifiers.at(algorithm)(count);
-}
-
-bool AlgorithmManager::is_dims_supported(
-    const std::string& algorithm, std::span<const std::size_t> dims) const {
-	return _dims_verifiers.at(algorithm)(dims);
-}
-
-bool AlgorithmManager::is_same_dims_required(
-    const std::string& algorithm) const {
-	return _same_dims_required.at(algorithm);
-}
-
 std::vector<img::LocalizedImage>
 AlgorithmManager::apply(const std::vector<img::ndImageBase>& images,
                         const std::string& algorithm,
