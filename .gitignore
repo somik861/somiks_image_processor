@@ -12,6 +12,9 @@ __pycache__
 # build directories
 /build*
 
+# release builds
+/ssimp_release
+
 # conan presets
 /CMakeUserPresets.json
 

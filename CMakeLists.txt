@@ -1,26 +1,23 @@
 cmake_minimum_required(VERSION 3.23)
 
-
 project(somiks_image_processor CXX)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-set(SSIMP_INLINE_CONFIGS ON)
+option(SSIMP_INLINE_CONFIGS "Compile configs directly to the code" OFF)
 
 # suppress no debug files linker warning
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
 endif()
 
-
-# external packages
-## Boost
+# external packages Boost
 find_package(Boost CONFIG REQUIRED)
-set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json Boost::program_options)
+set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json
+         Boost::program_options)
 
-## Jpeg
+# Jpeg
 find_package(JPEG REQUIRED)
 set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
-
 
 # sources
 set(APP_NONMAIN_SOURCES
@@ -43,11 +40,12 @@ foreach(FILE ${ALGO_SOURCES})
   message("Found algorithm source: ${FILE}")
 endforeach()
 
-add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES} ${ALGO_SOURCES})
+add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES}
+                                 ${ALGO_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})
 
-if (${SSIMP_INLINE_CONFIGS})
-target_compile_definitions(nonmain_files PUBLIC INLINE_CONFIGS)
+if(${SSIMP_INLINE_CONFIGS})
+  target_compile_definitions(nonmain_files PUBLIC INLINE_CONFIGS)
 endif()
 
 # configuration files
@@ -92,12 +90,12 @@ function(_copy_config_files dest)
 endfunction()
 
 add_custom_target(
-        generate_inlined_configs ALL
-        DEPENDS ${CMAKE_SOURCE_DIR}/src/application/managers/inlined_configs.hpp
-)
+  generate_inlined_configs ALL
+  DEPENDS ${CMAKE_SOURCE_DIR}/src/application/managers/inlined_configs.hpp)
 
-add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/application/managers/inlined_configs.hpp
-                COMMAND python ${CMAKE_SOURCE_DIR}/src/utils/inline_configs.py)
+add_custom_command(
+  OUTPUT ${CMAKE_SOURCE_DIR}/src/application/managers/inlined_configs.hpp
+  COMMAND python ${CMAKE_SOURCE_DIR}/src/utils/inline_configs.py)
 
 # executables
 add_executable(app "src/application/main.cpp")
@@ -111,7 +109,7 @@ target_link_libraries(ssimp nonmain_files)
 target_add_config(ssimp)
 
 if(${SSIMP_INLINE_CONFIGS})
-    add_dependencies(ssimp generate_inlined_configs)
+  add_dependencies(ssimp generate_inlined_configs)
 endif()
 
 # library
@@ -119,15 +117,22 @@ add_library(libssimp SHARED)
 target_link_libraries(libssimp nonmain_files ${LIBS})
 
 if(${SSIMP_INLINE_CONFIGS})
-    add_dependencies(libssimp generate_inlined_configs)
+  add_dependencies(libssimp generate_inlined_configs)
 endif()
-
-
 
 # instalation
 install(TARGETS ssimp RUNTIME DESTINATION bin)
-install(FILES ${APP_FORMAT_CONFIGS} DESTINATION bin/formats)
-install(FILES ${APP_ALGO_CONFIGS} DESTINATION bin/algorithms)
+install(TARGETS libssimp DESTINATION lib)
+install(
+  FILES ${CMAKE_SOURCE_DIR}/src/application/api.hpp
+        ${CMAKE_SOURCE_DIR}/src/application/meta_types.hpp
+        ${CMAKE_SOURCE_DIR}/src/application/nd_image.hpp
+        ${CMAKE_SOURCE_DIR}/src/application/utils.hpp
+  DESTINATION "include/ssimp")
+if(NOT ${SSIMP_INLINE_CONFIGS})
+  install(FILES ${APP_FORMAT_CONFIGS} DESTINATION bin/formats)
+  install(FILES ${APP_ALGO_CONFIGS} DESTINATION bin/algorithms)
+endif()
 
 # tests
 enable_testing()
