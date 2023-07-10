@@ -12,6 +12,7 @@
 	if (_arg_debug)                                                            \
 		std::cerr << "[DEBUG] " << std::format(__VA_ARGS__) << '\n';
 
+namespace {
 namespace po = boost::program_options;
 namespace fs = std::filesystem;
 
@@ -19,15 +20,49 @@ namespace fs = std::filesystem;
 fs::path _arg_input_path;
 fs::path _arg_output_path;
 std::string _arg_format = "";
-fs::path _arg_options = "";
+fs::path _arg_loading_options = "";
+fs::path _arg_saving_options = "";
 fs::path _arg_preset = "";
 std::vector<std::string> _arg_algorithms;
 fs::path _arg_algo_options = "";
+std::string _arg_saving_options_string = "";
+std::string _arg_loading_options_string = "";
+std::string _arg_algo_options_string = "";
+std::string _arg_help_format = "";
+std::string _arg_help_algo = "";
 
 bool _arg_recurse = false;
 bool _arg_directory_mode = false;
 bool _arg_print_info = false;
 bool _arg_debug = false;
+
+boost::json::value _load_json_file(const std::filesystem::path& file) {
+	std::ifstream f(file);
+	return boost::json::parse(f);
+}
+
+void _load_preset() {
+	auto preset = _load_json_file(_arg_preset).as_object();
+
+	_arg_debug = preset.contains("debug") && preset.at("debug").as_bool();
+	_arg_recurse = preset.contains("recurse") && preset.at("recurse").as_bool();
+	_arg_print_info =
+	    preset.contains("print_info") && preset.at("print_info").as_bool();
+
+	if (preset.contains("algorithms"))
+		std::ranges::transform(preset.at("algorithms").as_array(),
+		                       std::back_inserter(_arg_algorithms), [](auto x) {
+			                       return std::string(x.as_string());
+		                       });
+
+	_arg_format = preset.at("format").as_string();
+}
+
+void _print_options(
+    const std::vector<ssimp::option_types::OptionConfig>& opts) {
+	for (const auto& opt : opts)
+		std::cout << opt << '\n';
+}
 
 bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	po::positional_options_description positional;
@@ -41,21 +76,34 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	     "output_path"); //
 
 	po::options_description generic("Generic options");
-	generic.add_options()                                                   //
-	    ("help,h", "produce help message")                                  //
-	    ("debug", "produce debug messages")                                 //
-	    ("print_info", "only print information about image")                //
-	    ("format,f", po::value<std::string>(&_arg_format), "output format") //
-	    ("recurse,r", "Recurse into subdirectories")                        //
-	    ("options", po::value<fs::path>(&_arg_options),
-	     "path to json file containing options for format") //
-	    ("algorithm,a", po::value<std::vector<std::string>>(&_arg_algorithms),
+	generic.add_options()                  //
+	    ("help,h", "produce help message") //
+	    ("help_format", po::value(&_arg_help_format),
+	     "show options config for format") //
+	    ("help_algo", po::value(&_arg_help_algo),
+	     "show options config for algorithm")                //
+	    ("debug", "produce debug messages")                  //
+	    ("print_info", "only print information about image") //
+	    ("loading_options", po::value(&_arg_loading_options),
+	     "path to json file containing options for loading files") //
+	    ("loading_opt_string", po::value(&_arg_loading_options_string),
+	     "json string (can be used instead of loading_options)") //
+	    ("format,f", po::value(&_arg_format), "output format")   //
+	    ("recurse,r", "Recurse into subdirectories")             //
+	    ("saving_options", po::value(&_arg_saving_options),
+	     "path to json file containing saving options for format") //
+	    ("saving_opt_string", po::value(&_arg_saving_options_string),
+	     "json string (can be used instead of saving_options)") //
+	    ("algorithm,a", po::value(&_arg_algorithms),
 	     "algorithms to use") //
-	    ("options", po::value<fs::path>(&_arg_algo_options),
+	    ("algo_options", po::value(&_arg_algo_options),
 	     "path to json file containing options for algorithms") //
-	    // TODO implement later
-	    ("preset", po::value<fs::path>(&_arg_preset),
-	     "path json preset file <NOT IMPLEMENTED>");
+	    ("algo_opt_string", po::value(&_arg_algo_options_string),
+	     "json string (can be used instead of algo_options)") //
+	    ("preset", po::value(&_arg_preset),
+	     "path json preset file  !!!All other arguments will be ignored"
+	     "!!!") //
+	    ;
 
 	po::options_description all_options("All options");
 	all_options.add(hidden).add(generic);
@@ -68,11 +116,16 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	          vm);
 
 	if (vm.contains("help")) {
-		std::cout << "Usage: ./ssimp input_path [output_path] [--help] "
-		             "[--recurse]\n\t[--preset "
-		             "<preset.json>]\n\t[--format <string> [--options "
-		             "<options.json>]]\n\t[{--algorithm <string>}... "
-		             "[--algo_options <algo_options.json>]]\n\n";
+		std::cout << "Usage: ./ssimp input_path [output_path]\n\t[--help] "
+		             "[--help_format <string>] [--help_algo <string>]\n\t"
+		             "[--recurse] [--preset "
+		             "<preset.json>]\n\t[--loading_options "
+		             "<lopt.json>] [--loading_opt_string "
+		             "<string>]\n\t[--format <string> [--saving_options "
+		             "<sopt.json>] [--saving_opt_string "
+		             "<string>]]\n\t[{--algorithm <string>}... "
+		             "[--algo_options <algo_options.json>] [--algo_opt_string "
+		             "<string>]]\n\n";
 		std::cout << generic << "\n";
 		std::cout << "Supported formats:\n";
 		for (const auto& f : api.supported_formats())
@@ -86,6 +139,22 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		return false;
 	}
 
+	if (vm.contains("help_format")) {
+		_arg_help_format = vm.at("help_format").as<std::string>();
+		std::cout << _arg_help_format << " loading options configuration:\n";
+		_print_options(api.loading_options_configuration(_arg_help_format));
+		std::cout << _arg_help_format << " saving options configuration:\n";
+		_print_options(api.saving_options_configuration(_arg_help_format));
+		return false;
+	}
+
+	if (vm.contains("help_algo")) {
+		_arg_help_algo = vm.at("help_algo").as<std::string>();
+		std::cout << _arg_help_algo << " options configuration:\n";
+		_print_options(api.algorithm_options_configuration(_arg_help_algo));
+
+		return false;
+	}
 	po::notify(vm);
 
 	if (vm.contains("debug"))
@@ -94,16 +163,21 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	if (!vm.contains("input_path"))
 		throw std::runtime_error("Input path is required");
 
-	if (!vm.contains("output_path") && !vm.contains("print_info"))
-		throw std::runtime_error("Output path is required");
-
 	if (!fs::exists(_arg_input_path))
 		throw std::runtime_error("Input path does not exist");
 
 	_arg_directory_mode = fs::is_directory(_arg_input_path);
 
+	if (vm.contains("preset")) {
+		_load_preset();
+		return true;
+	}
+
+	if (!vm.contains("output_path") && !vm.contains("print_info"))
+		throw std::runtime_error("Output path is required");
+
 	if (!_arg_directory_mode && vm.contains("recurse"))
-		throw std::runtime_error("--recurse cannot be used if an "
+		throw std::runtime_error("recurse cannot be used if an "
 		                         "input_path is not a directory.");
 
 	_arg_recurse = vm.contains("recurse");
@@ -112,11 +186,6 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		return true;
 	}
 
-	// TODO uncomment when preset implemented
-	/*
-	if (vm.contains("preset"))
-	    return true;
-	*/
 	if (_arg_directory_mode && !vm.contains("format"))
 		throw std::runtime_error(
 		    "--format is required when an input_path is a directory.");
@@ -131,15 +200,28 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		throw std::runtime_error(
 		    "can not specify algo_options without algorithm");
 
+	if (vm.contains("loading_opt_string") && vm.contains("loading_options"))
+		throw std::runtime_error("Only one of 'loading_options' and "
+		                         "'loading_opt_string' can be used.");
+
+	if (vm.contains("saving_opt_string") && vm.contains("saving_options"))
+		throw std::runtime_error("Only one of 'saving_options' and "
+		                         "'saving_opt_string' can be used.");
+
+	if (vm.contains("algo_opt_string") && vm.contains("algo_options"))
+		throw std::runtime_error("Only one of 'algo_options' and "
+		                         "'algo_opt_string' can be used.");
+
 	return true;
 }
 
 void print_info_dir(const ssimp::API& api,
                     const fs::path& curr_dir,
-                    bool recurse) {
+                    bool recurse,
+                    const ssimp::option_types::options_t& loading_options) {
 	for (auto& entry : fs::directory_iterator(curr_dir)) {
 		if (entry.is_directory() && recurse)
-			print_info_dir(api, entry.path(), recurse);
+			print_info_dir(api, entry.path(), recurse, loading_options);
 
 		if (entry.is_regular_file()) {
 			std::cout << entry << ":\n";
@@ -175,26 +257,68 @@ _load_json_options(const boost::json::object& data) {
 }
 
 std::unordered_map<std::string, ssimp::option_types::options_t>
-load_algo_options() {
-	if (_arg_algo_options.empty())
-		return {};
-
+_load_algo_json(const boost::json::object& options) {
 	std::unordered_map<std::string, ssimp::option_types::options_t> out;
-	std::ifstream f(_arg_algo_options);
-	boost::json::value data = boost::json::parse(f);
-	for (const auto& [algo, options] : data.as_object())
+
+	for (const auto& [algo, options] :
+	     _load_json_file(_arg_algo_options).as_object())
 		out[algo] = _load_json_options(options.as_object());
 
 	return out;
 }
 
-ssimp::option_types::options_t load_format_options() {
-	if (_arg_options.empty())
-		return {};
+std::unordered_map<std::string, ssimp::option_types::options_t>
+load_algo_options() {
+	if (!_arg_preset.empty())
+		return _load_algo_json(_load_json_file(_arg_preset)
+		                           .as_object()
+		                           .at("algo_options")
+		                           .as_object());
 
-	std::ifstream f(_arg_options);
-	boost::json::value data = boost::json::parse(f);
-	return _load_json_options(data.as_object());
+	if (!_arg_algo_options.empty())
+		return _load_algo_json(_load_json_file(_arg_algo_options).as_object());
+
+	if (!_arg_algo_options_string.empty())
+		return _load_algo_json(
+		    boost::json::parse(_arg_algo_options_string).as_object());
+
+	return {};
+}
+
+ssimp::option_types::options_t load_loading_options() {
+	if (!_arg_preset.empty())
+		_load_json_options(_load_json_file(_arg_preset)
+		                       .as_object()
+		                       .at("loading_options")
+		                       .as_object());
+
+	if (!_arg_loading_options.empty())
+		return _load_json_options(
+		    _load_json_file(_arg_loading_options).as_object());
+
+	if (!_arg_loading_options_string.empty())
+		return _load_json_options(
+		    boost::json::parse(_arg_loading_options_string).as_object());
+
+	return {};
+}
+
+ssimp::option_types::options_t load_saving_options() {
+	if (!_arg_preset.empty())
+		_load_json_options(_load_json_file(_arg_preset)
+		                       .as_object()
+		                       .at("saving_options")
+		                       .as_object());
+
+	if (!_arg_saving_options.empty())
+		return _load_json_options(
+		    _load_json_file(_arg_saving_options).as_object());
+
+	if (!_arg_saving_options_string.empty())
+		return _load_json_options(
+		    boost::json::parse(_arg_saving_options_string).as_object());
+
+	return {};
 }
 
 void save_image(const std::vector<ssimp::img::LocalizedImage>& images,
@@ -243,6 +367,7 @@ std::vector<ssimp::img::LocalizedImage> apply_algorithms(
 	}
 	return out;
 }
+} // namespace
 
 int main(int argc, const char** argv) {
 	ssimp::API api;
@@ -253,7 +378,8 @@ int main(int argc, const char** argv) {
 
 		print_debug("api loaded") print_debug("program options parsed");
 
-		ssimp::option_types::options_t format_options = load_format_options();
+		ssimp::option_types::options_t loading_options = load_loading_options();
+		ssimp::option_types::options_t saving_options = load_saving_options();
 		print_debug("format options loaded");
 
 		std::unordered_map<std::string, ssimp::option_types::options_t>
@@ -265,12 +391,15 @@ int main(int argc, const char** argv) {
 			if (_arg_print_info) {
 				print_debug("printing file information") std::cout
 				    << _arg_input_path << ":\n";
-				std::cout << api.get_properties(_arg_input_path) << '\n';
+				std::cout << api.get_properties(_arg_input_path,
+				                                loading_options)
+				          << '\n';
 				print_debug("exiting ... (location 0)");
 				return 0;
 			}
 
-			auto images = api.load_image(_arg_input_path);
+			auto images =
+			    api.load_image(_arg_input_path, "", "", loading_options);
 			print_debug("{} loaded, got {} images",
 			            ssimp::to_string(_arg_input_path), images.size());
 			images = apply_algorithms(images, algo_options, api);
@@ -280,7 +409,7 @@ int main(int argc, const char** argv) {
 			print_debug("{} created",
 			            ssimp::to_string(_arg_output_path.parent_path()));
 			print_debug("saving {} ...", ssimp::to_string(_arg_output_path));
-			save_image(images, _arg_output_path, _arg_format, format_options,
+			save_image(images, _arg_output_path, _arg_format, saving_options,
 			           api);
 			print_debug("saved");
 
@@ -288,12 +417,14 @@ int main(int argc, const char** argv) {
 			print_debug("directory mode enabled");
 			if (_arg_print_info) {
 				print_debug("printing directory info");
-				print_info_dir(api, _arg_input_path, _arg_recurse);
+				print_info_dir(api, _arg_input_path, _arg_recurse,
+				               loading_options);
 				print_debug("exiting ... (location 1)");
 				return 0;
 			}
 
-			auto all_images = api.load_directory(_arg_input_path, _arg_recurse);
+			auto all_images = api.load_directory(_arg_input_path, _arg_recurse,
+			                                     "", loading_options);
 			print_debug("images loaded, loaded {} files", all_images.size());
 			fs::create_directories(_arg_output_path);
 			for (auto& images : all_images) {
@@ -307,7 +438,7 @@ int main(int argc, const char** argv) {
 				fs::path out_path =
 				    _arg_output_path / images[0].location.parent_path();
 				print_debug("saving {} ...", ssimp::to_string(out_path));
-				save_image(images, out_path, _arg_format, format_options, api);
+				save_image(images, out_path, _arg_format, saving_options, api);
 				print_debug("saved", ssimp::to_string(out_path));
 			}
 		}

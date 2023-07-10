@@ -230,7 +230,10 @@ std::set<std::string> API::supported_formats() const {
 	return std::set(formats.begin(), formats.end());
 }
 
-std::set<std::string> API::supported_algorithms() const { return {}; }
+std::set<std::string> API::supported_algorithms() const {
+	auto algos = _algorithm_manager->registered_algorithms();
+	return std::set(algos.begin(), algos.end());
+}
 
 std::string API::predict_format(const fs::path& file) const {
 	auto possibilites = _extension_manager->find_possible_formats(file);
@@ -267,6 +270,21 @@ bool API::is_dims_supported_algorithm(const std::string& algorithm,
 
 bool API::is_same_dims_required_algorithm(const std::string& algorithm) const {
 	return _algorithm_manager->is_same_dims_required(algorithm);
+}
+
+const std::vector<ssimp::option_types::OptionConfig>&
+API::loading_options_configuration(const std::string& format) const {
+	return _options_manager->option_configs(format + "_loading");
+}
+
+const std::vector<ssimp::option_types::OptionConfig>&
+API::saving_options_configuration(const std::string& format) const {
+	return _options_manager->option_configs(format + "_saving");
+}
+
+const std::vector<ssimp::option_types::OptionConfig>&
+API::algorithm_options_configuration(const std::string& algorithm) const {
+	return _options_manager->option_configs(algorithm + "_algo");
 }
 
 std::vector<img::ndImageBase>

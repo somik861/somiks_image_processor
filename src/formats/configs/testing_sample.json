@@ -3,7 +3,7 @@
   "saving_options": [
     {
       "text": "compression",
-      "var_name": "compression",
+      "id": "compression",
       "type": "choice",
       "values": [
         "None",
@@ -13,13 +13,13 @@
     },
     {
       "text": "quality loss",
-      "var_name": "quality_loss",
+      "id": "quality_loss",
       "type": "subsection",
       "default": false,
       "options": [
         {
           "text": "Quality percentage",
-          "var_name": "quality_perc",
+          "id": "quality_perc",
           "type": "double",
           "range": [ 0.0, 100.0 ],
           "default": 100.0
