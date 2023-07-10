@@ -1,3 +1,6 @@
+export CC=gcc-13
+export CXX=g++-13
+
 pip3 install --upgrade conan
 conan --version
 conan profile detect --name ssimp_release
@@ -26,7 +29,7 @@ cmake --fresh --preset conan-debug -DSSIMP_INLINE_CONFIGS=ON
 cmake --build --preset conan-debug
 
 # copy debug builds
-cp build_conan/libssimp.so ssimp_release/library/Debug
+cp build_conan/libssimp.so ssimp_release/library/Debug/
 
 # copy include files
 cp src/application/*.hpp ssimp_release/library/include/ssimp
