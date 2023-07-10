@@ -19,7 +19,7 @@ API::API()
       _format_manager(std::make_unique<FormatManager>()),
       _algorithm_manager(std::make_unique<AlgorithmManager>()) {
 
-	for (const std::string& format : _format_manager->registered_formats()) {
+	for (const std::string& format : _format_manager->registered()) {
 		auto config = _config_manager->load_format(format).get_object();
 
 		_extension_manager->load_from_json(
@@ -33,8 +33,7 @@ API::API()
 		    format + "_saving", config.at("saving_options").get_array());
 	}
 
-	for (const std::string& algorithm :
-	     _algorithm_manager->registered_algorithms()) {
+	for (const std::string& algorithm : _algorithm_manager->registered()) {
 		auto config = _config_manager->load_algorithm(algorithm).get_object();
 
 		_options_manager->load_from_json(algorithm + "_algo",
@@ -226,12 +225,12 @@ API::apply(const std::vector<img::LocalizedImage>& images,
 }
 
 std::set<std::string> API::supported_formats() const {
-	auto formats = _format_manager->registered_formats();
+	auto formats = _format_manager->registered();
 	return std::set(formats.begin(), formats.end());
 }
 
 std::set<std::string> API::supported_algorithms() const {
-	auto algos = _algorithm_manager->registered_algorithms();
+	auto algos = _algorithm_manager->registered();
 	return std::set(algos.begin(), algos.end());
 }
 

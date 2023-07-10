@@ -25,6 +25,7 @@ set(APP_NONMAIN_SOURCES
     "src/application/managers/options_manager.cpp"
     "src/application/managers/format_manager.cpp"
     "src/application/managers/algorithm_manager.cpp"
+    "src/application/managers/_algo_format_base.cpp"
     "src/application/api.cpp")
 
 # formats
