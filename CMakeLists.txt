@@ -2,30 +2,41 @@ cmake_minimum_required(VERSION 3.23)
 
 project(somiks_image_processor CXX)
 
-# suppress no debug files linker warning
-if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+option(SSIMP_INLINE_CONFIGS_CLI "Compile configs directly to the code" OFF)
+
+add_custom_target(
+  generate_inlined_configs
+  COMMAND python ${CMAKE_SOURCE_DIR}/src/utils/inline_configs.py
+)
+
+# use -fPIC in UNIX for the library
+if (UNIX)
+  add_compile_options(-fPIC)
 endif()
 
+# suppress no debug files linker warning
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
+endif()
 
-# external packages
-## Boost
+# external packages Boost
 find_package(Boost CONFIG REQUIRED)
-set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json Boost::program_options)
+set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json
+         Boost::program_options)
 
-## Jpeg
+# Jpeg
 find_package(JPEG REQUIRED)
 set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
-
 
 # sources
 set(APP_NONMAIN_SOURCES
     "src/application/managers/extension_manager.cpp"
-    "src/application/managers/config_manager.cpp"
     "src/application/managers/options_manager.cpp"
     "src/application/managers/format_manager.cpp"
     "src/application/managers/algorithm_manager.cpp"
     "src/application/managers/_algo_format_base.cpp"
+    "src/application/managers/config_manager.cpp"
     "src/application/api.cpp")
 
 # formats
@@ -39,8 +50,14 @@ foreach(FILE ${ALGO_SOURCES})
   message("Found algorithm source: ${FILE}")
 endforeach()
 
-add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES} ${ALGO_SOURCES})
+add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES}
+                                 ${ALGO_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})
+
+if(${SSIMP_INLINE_CONFIGS})
+  add_dependencies(nonmain_files generate_inlined_configs)
+  target_compile_definitions(nonmain_files PUBLIC INLINE_CONFIGS)
+endif()
 
 # configuration files
 file(GLOB APP_FORMAT_CONFIGS ${CMAKE_SOURCE_DIR}/src/formats/configs/*.json)
@@ -83,14 +100,38 @@ function(_copy_config_files dest)
   endforeach()
 endfunction()
 
+
 # executables
 add_executable(app "src/application/main.cpp")
 target_link_libraries(app nonmain_files)
-target_add_config(app)
 
 add_executable(ssimp "src/application/cli.cpp")
 target_link_libraries(ssimp nonmain_files)
-target_add_config(ssimp)
+
+if(NOT ${SSIMP_INLINE_CONFIGS})
+  target_add_config(ssimp)
+  target_add_config(app)
+endif()
+
+# library
+add_library(libssimp SHARED)
+target_link_libraries(libssimp nonmain_files ${LIBS})
+set_target_properties(libssimp PROPERTIES PREFIX "")
+
+
+# instalation
+install(TARGETS ssimp RUNTIME DESTINATION bin)
+install(TARGETS libssimp DESTINATION lib)
+install(
+  FILES ${CMAKE_SOURCE_DIR}/src/application/api.hpp
+        ${CMAKE_SOURCE_DIR}/src/application/meta_types.hpp
+        ${CMAKE_SOURCE_DIR}/src/application/nd_image.hpp
+        ${CMAKE_SOURCE_DIR}/src/application/utils.hpp
+  DESTINATION "include/ssimp")
+if(NOT ${SSIMP_INLINE_CONFIGS})
+  install(FILES ${APP_FORMAT_CONFIGS} DESTINATION bin/formats)
+  install(FILES ${APP_ALGO_CONFIGS} DESTINATION bin/algorithms)
+endif()
 
 # tests
 enable_testing()

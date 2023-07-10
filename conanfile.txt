@@ -1,5 +1,5 @@
 [requires]
-boost/1.81.0
+boost/1.82.0
 catch2/3.3.2
 libjpeg-turbo/2.1.5
 

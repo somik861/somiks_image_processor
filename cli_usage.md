@@ -9,7 +9,7 @@ Therefore, I strongly recommend reading this manual before usage and to strictly
 ## Example help output
 ``` pwsh
 PS> ssimp --help
-Usage: ./ssimp input_path [output_path]
+Usage: ./ssimp input_path [output_path] [--version]
         [--help] [--help_format <string>] [--help_algo <string>]
         [--recurse] [--preset <preset.json>]
         [--loading_options <lopt.json>] [--loading_opt_string <string>]
@@ -18,6 +18,7 @@ Usage: ./ssimp input_path [output_path]
 
 Generic options:
   -h [ --help ]            produce help message
+  --version                show version
   --help_format arg        show options config for format
   --help_algo arg          show options config for algorithm
   --debug                  produce debug messages
@@ -50,6 +51,9 @@ Input path to either a file or directory to process. The type of input (file/dir
 ### output_path
 Output path of the same type as `input_path`. If `print_info` is also provided, it does not need to be passed.
 
+### version
+Show API version number.
+
 ### help
 Produces help message (shown above).
 
@@ -63,7 +67,7 @@ Show configuration of available algorithm options.
 Can be only used when type of `input_path` is directory. Tells the program to also search all subdirectories.
 
 ### preset
-Path to json preset file. Using this will ignore all other commands (except `help`).
+Path to json preset file. Using this will ignore all other commands (except `help` and `version`).
 
 File needs to have the following structure:
 ``` json

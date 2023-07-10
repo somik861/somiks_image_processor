@@ -12,8 +12,14 @@ __pycache__
 # build directories
 /build*
 
+# release builds
+/ssimp_release
+
 # conan presets
 /CMakeUserPresets.json
 
 # temporary testing folders
 tmp
+
+# inline configs file
+src/application/managers/inlined_configs.hpp
