@@ -17,3 +17,6 @@ __pycache__
 
 # temporary testing folders
 tmp
+
+# inline configs file
+src/application/managers/inlined_configs.hpp

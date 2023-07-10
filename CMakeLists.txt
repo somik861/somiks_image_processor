@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.23)
 
+
 project(somiks_image_processor CXX)
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+set(SSIMP_INLINE_CONFIGS ON)
 
 # suppress no debug files linker warning
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -21,11 +25,11 @@ set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
 # sources
 set(APP_NONMAIN_SOURCES
     "src/application/managers/extension_manager.cpp"
-    "src/application/managers/config_manager.cpp"
     "src/application/managers/options_manager.cpp"
     "src/application/managers/format_manager.cpp"
     "src/application/managers/algorithm_manager.cpp"
     "src/application/managers/_algo_format_base.cpp"
+    "src/application/managers/config_manager.cpp"
     "src/application/api.cpp")
 
 # formats
@@ -41,6 +45,10 @@ endforeach()
 
 add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES} ${ALGO_SOURCES})
 target_link_libraries(nonmain_files ${LIBS})
+
+if (${SSIMP_INLINE_CONFIGS})
+target_compile_definitions(nonmain_files PUBLIC INLINE_CONFIGS)
+endif()
 
 # configuration files
 file(GLOB APP_FORMAT_CONFIGS ${CMAKE_SOURCE_DIR}/src/formats/configs/*.json)
@@ -83,14 +91,38 @@ function(_copy_config_files dest)
   endforeach()
 endfunction()
 
+add_custom_target(
+        generate_inlined_configs ALL
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/application/managers/inlined_configs.hpp
+)
+
+add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/application/managers/inlined_configs.hpp
+                COMMAND python ${CMAKE_SOURCE_DIR}/src/utils/inline_configs.py)
+
 # executables
 add_executable(app "src/application/main.cpp")
+
 target_link_libraries(app nonmain_files)
 target_add_config(app)
 
 add_executable(ssimp "src/application/cli.cpp")
+
 target_link_libraries(ssimp nonmain_files)
 target_add_config(ssimp)
+
+if(${SSIMP_INLINE_CONFIGS})
+    add_dependencies(ssimp generate_inlined_configs)
+endif()
+
+# library
+add_library(libssimp SHARED)
+target_link_libraries(libssimp nonmain_files ${LIBS})
+
+if(${SSIMP_INLINE_CONFIGS})
+    add_dependencies(libssimp generate_inlined_configs)
+endif()
+
+
 
 # instalation
 install(TARGETS ssimp RUNTIME DESTINATION bin)
