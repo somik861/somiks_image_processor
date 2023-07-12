@@ -5,7 +5,8 @@
 namespace ssimp::formats {
 class PNG {
   public:
-	using supported_types = std::tuple<img::RGB8, img::RGBA8>;
+	using supported_types =
+	    std::tuple<img::GRAY8, img::GRAY8A, img::RGB8, img::RGBA8>;
 	constexpr static const char* name = "png";
 
 	static bool image_count_supported(std::size_t count);
@@ -13,7 +14,7 @@ class PNG {
 	static constexpr bool same_dims_required() { return true; }
 
 	static std::optional<std::vector<img::LocalizedImage>>
-	load_image(const std::filesystem::path&,
+	load_image(const std::filesystem::path& path,
 	           const option_types::options_t& options);
 
 	template <typename T>

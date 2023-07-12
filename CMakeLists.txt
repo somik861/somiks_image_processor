@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.23)
 project(somiks_image_processor CXX)
 
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-option(SSIMP_INLINE_CONFIGS_CLI "Compile configs directly to the code" OFF)
+option(SSIMP_INLINE_CONFIGS "Compile configs directly to the code" OFF)
 
 add_custom_target(
   generate_inlined_configs
@@ -32,6 +32,10 @@ set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
 # PNG
 find_package(PNG REQUIRED)
 set(LIBS ${LIBS} PNG::PNG)
+
+# ZLIB
+find_package(ZLIB REQUIRED)
+set(LIBS ${LIBS} ZLIB::ZLIB)
 
 # sources
 set(APP_NONMAIN_SOURCES

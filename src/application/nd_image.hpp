@@ -29,6 +29,7 @@ namespace ssimp::img {
  */
 enum class elem_type : int {
 	GRAY8,
+	GRAY8A,
 	GRAY16,
 	GRAY32,
 	GRAY64,
@@ -39,7 +40,7 @@ enum class elem_type : int {
 };
 
 inline std::ostream& operator<<(std::ostream& os, elem_type t) {
-	os << std::array{"GRAY8", "GRAY16", "GRAY32", "GRAY64",
+	os << std::array{"GRAY8", "GRAY8A", "GRAY16", "GRAY32", "GRAY64",
 	                 "FLOAT", "DOUBLE", "RGB8",   "RGBA8"}[static_cast<int>(t)];
 	return os;
 }
@@ -49,6 +50,7 @@ namespace type_aliases {
  * Type list of c++-types corresponding to the enumeration above
  */
 using type_list = std::tuple<uint8_t,
+                             std::array<uint8_t, 2>,
                              uint16_t,
                              uint32_t,
                              uint64_t,
@@ -75,6 +77,7 @@ constexpr elem_type type_to_enum = static_cast<elem_type>(
  * convenient as possible
  */
 using GRAY8 = enum_to_type<elem_type::GRAY8>;
+using GRAY8A = enum_to_type<elem_type::GRAY8A>;
 using GRAY16 = enum_to_type<elem_type::GRAY16>;
 using GRAY32 = enum_to_type<elem_type::GRAY32>;
 using GRAY64 = enum_to_type<elem_type::GRAY64>;

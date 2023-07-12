@@ -1,6 +1,13 @@
 {
   "loading_options": [],
-  "saving_options": [],
+  "saving_options": [
+    {
+      "type": "checkbox",
+      "text": "Save faster with worse compression ratio",
+      "default": false,
+      "id": "fast_save"
+    }
+  ],
   "extensions": [
     {
       "suffix": "png"
