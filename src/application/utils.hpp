@@ -174,7 +174,7 @@ inline std::ostream& operator<<(std::ostream& os,
                                 const ssimp::option_types::OptionConfig& cfg) {
 	ssimp::details::IosStateHolder _holder(os);
 	os << std::boolalpha;
-	os << std::format("{}\n\ttype: {}\n\ttext: {}\n", cfg.id(), cfg.type(),
+	os << std::format("-> {}\n\ttype: {}\n\ttext: {}\n", cfg.id(), cfg.type(),
 	                  cfg.text());
 
 	if (cfg.type() == "header")
@@ -198,7 +198,7 @@ inline std::ostream& operator<<(std::ostream& os,
 		for (const auto& option : cfg.options()) {
 			std::ostringstream oss;
 			oss << option;
-			os << ssimp::details::indent(oss.str()) << '\n';
+			os << '\t' << ssimp::details::indent(oss.str()) << '\n';
 		}
 		return os;
 	}
