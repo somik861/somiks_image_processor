@@ -35,21 +35,21 @@
       "default": 255
     },
     {
-      "type": "float",
+      "type": "double",
       "text": "Color RGB to GRAY multiplier - red",
       "range": [ 0.0, 1.0 ],
       "id": "red_mult",
       "default": 0.333
     },
     {
-      "type": "float",
+      "type": "double",
       "text": "Color RGB to GRAY multiplier - green",
       "range": [ 0.0, 1.0 ],
       "id": "green_mult",
       "default": 0.333
     },
     {
-      "type": "float",
+      "type": "double",
       "text": "Color RGB to GRAY multiplier - blue",
       "range": [ 0.0, 1.0 ],
       "id": "blue_mult",
