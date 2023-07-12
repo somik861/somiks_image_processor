@@ -6,6 +6,13 @@
       "text": "Save faster with worse compression ratio",
       "default": false,
       "id": "fast_save"
+    },
+    {
+      "type": "choice",
+      "text": "Colorspace (number of channels of loaded image and selected colorspace must match)",
+      "id": "colorspace",
+      "values": [ "auto", "GRAY", "GRAY (with alpha)", "RGB", "RGBA", "Linear GRAY", "Linear GRAY (with alpha)", "Linear RGB", "Linear RGBA" ],
+      "default": "auto"
     }
   ],
   "extensions": [
