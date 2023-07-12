@@ -143,16 +143,28 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 
 	if (vm.contains("help_format")) {
 		_arg_help_format = vm.at("help_format").as<std::string>();
-		std::cout << _arg_help_format << " loading options configuration:\n";
+
+		std::cout << "SUPPORTED TYPES: [ ";
+		for (const auto& type : api.supported_types_format(_arg_help_format))
+			std::cout << type << " ";
+		std::cout << "]\n";
+
+		std::cout << "LOADING OPTIONS CONFIGURATION:\n";
 		_print_options(api.loading_options_configuration(_arg_help_format));
-		std::cout << _arg_help_format << " saving options configuration:\n";
+		std::cout << "SAVING OPTIONS CONFIGURATION:\n";
 		_print_options(api.saving_options_configuration(_arg_help_format));
 		return false;
 	}
 
 	if (vm.contains("help_algo")) {
 		_arg_help_algo = vm.at("help_algo").as<std::string>();
-		std::cout << _arg_help_algo << " options configuration:\n";
+
+		std::cout << "SUPPORTED TYPES: [ ";
+		for (const auto& type : api.supported_types_algorithm(_arg_help_algo))
+			std::cout << type << " ";
+		std::cout << "]\n";
+
+		std::cout << "OPTIONS CONFIGURATION:\n";
 		_print_options(api.algorithm_options_configuration(_arg_help_algo));
 
 		return false;

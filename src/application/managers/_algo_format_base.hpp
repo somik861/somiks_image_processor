@@ -14,25 +14,31 @@ class _AlgoFormatBase {
 	/**
 	 * Return true if type is supported.
 	 */
-	bool is_type_supported(const std::string& algorithm,
+	bool is_type_supported(const std::string& element,
 	                       img::elem_type type) const;
+
+	/**
+	 * Return set of supported types.
+	 */
+	const std::unordered_set<img::elem_type>&
+	supported_types(const std::string& element) const;
 
 	/**
 	 * Return true if image count is supported
 	 */
-	bool is_count_supported(const std::string& algorithm,
+	bool is_count_supported(const std::string& element,
 	                        std::size_t count) const;
 
 	/**
 	 * Return true if image dimensionality is supported
 	 */
-	bool is_dims_supported(const std::string& algorithm,
+	bool is_dims_supported(const std::string& element,
 	                       std::span<const std::size_t> dims) const;
 
 	/**
 	 * Return true if same dims of multiple input images are required
 	 */
-	bool is_same_dims_required(const std::string& algorithm) const;
+	bool is_same_dims_required(const std::string& element) const;
 
 	/**
 	 * Get names of registered elements

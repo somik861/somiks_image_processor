@@ -2,11 +2,25 @@
 This is free-time project developed with motivation to create simple and free image conversion (and light processing) application.
 
 ## Current status
-At this stage, there is really nothing to look at. The app, directory, files and all of the stuff are in WIP state.\
-At the later time, there will be some instruction on how to contribute to the project and what can or should be done. If you are interested, you may enable some notifications, but as I said above, this is free-time project and I really do not have any deadlines, plans or time schedules, so there are really no guarantess when (or if) this app will be usable.
+At this stage, there is(are) a release(s) of CLI and Library available for both Linux and Windows. These contains the latest functionality in the time of its release.
+
+Note that the functionality is **not** heavily tested. There are some tests done, but that are far from bulletproof testsuit.
 
 # Contributions
-There is nothing to contribute to yet :D all the info about rules is just for me to be consistent.
+## How to
+You can contribute to the code by implementing new format/algorithm support. Implementing support for both of them are pretty simillary and contains following steps:
+
+1. Copy header file of other format/algo
+2. Change the header file to match your needs (class name, algo/format name, supported types)
+3. Create .cpp file and implement all the functions that are required by the header file
+4. Do not forget to explicitly instantiate templates for supported types (you can use macro in *common_macro.hpp*)
+5. Create config file *name*.json
+6. To register your class to the whole application, include your header file and add the class to _registered_{formats, algorithms} in {format, algorithm}_manager.hpp
+
+## Notes:
+* Do not include any new 3rd party library in header file (to prevent poluting namespace with macros etc...)
+* If you are unsure of something, look to other formats/algorithms (the simplest: testing_sample, split_channels) for needed info
+* You may also need to modify CMakeLists.txt and conanfile.txt, which is fine as long as you stick to the simplest changes possible and follow its conventions
 
 ## Code rules
 ### File formating
@@ -69,7 +83,7 @@ pre-commit install
 ### Cmake and conan
 #### conan
 To install dependecies, run:\
-(Do not forget to switch cpp version to 20 and select correct compiler inside conan profile).
+(Do not forget to switch cpp version to 23 and select correct compiler inside conan profile).
 ``` bash
 pip3 install --upgrade conan
 conan --version
