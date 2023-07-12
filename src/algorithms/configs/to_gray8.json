@@ -1,0 +1,59 @@
+{
+  "options": [
+    {
+      "type": "checkbox",
+      "text": "Rescale higher-bit values",
+      "id": "rescale",
+      "default": true
+    },
+    {
+      "type": "int",
+      "text": "Grayscale background",
+      "range": [ 0, 255 ],
+      "id": "gray_bg",
+      "default": 255
+    },
+    {
+      "type": "int",
+      "text": "Color background - red",
+      "range": [ 0, 255 ],
+      "id": "red_bg",
+      "default": 255
+    },
+    {
+      "type": "int",
+      "text": "Color background - green",
+      "range": [ 0, 255 ],
+      "id": "green_bg",
+      "default": 255
+    },
+    {
+      "type": "int",
+      "text": "Color background - blue",
+      "range": [ 0, 255 ],
+      "id": "blue_bg",
+      "default": 255
+    },
+    {
+      "type": "float",
+      "text": "Color RGB to GRAY multiplier - red",
+      "range": [ 0.0, 1.0 ],
+      "id": "red_mult",
+      "default": 0.333
+    },
+    {
+      "type": "float",
+      "text": "Color RGB to GRAY multiplier - green",
+      "range": [ 0.0, 1.0 ],
+      "id": "green_mult",
+      "default": 0.333
+    },
+    {
+      "type": "float",
+      "text": "Color RGB to GRAY multiplier - blue",
+      "range": [ 0.0, 1.0 ],
+      "id": "blue_mult",
+      "default": 0.333
+    }
+  ]
+}
