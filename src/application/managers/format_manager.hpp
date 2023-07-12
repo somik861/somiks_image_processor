@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../formats/jpeg.hpp"
+#include "../../formats/png.hpp"
 #include "../../formats/testing_sample.hpp"
 #include "../nd_image.hpp"
 #include "../utils.hpp"
@@ -17,7 +18,7 @@ namespace ssimp {
 class FormatManager : public details::_AlgoFormatBase {
   private:
 	using _registered_formats =
-	    std::tuple</* formats::TestingSample, */ formats::JPEG>;
+	    std::tuple</* formats::TestingSample, */ formats::JPEG, formats::PNG>;
 
   public:
 	/**

@@ -2,6 +2,8 @@
 boost/1.82.0
 catch2/3.3.2
 libjpeg-turbo/2.1.5
+libpng/1.6.40
+zlib/1.2.13
 
 [generators]
 CMakeDeps
