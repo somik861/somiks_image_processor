@@ -25,9 +25,13 @@ find_package(Boost CONFIG REQUIRED)
 set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json
          Boost::program_options)
 
-# Jpeg
+# JPEG
 find_package(JPEG REQUIRED)
 set(LIBS ${LIBS} libjpeg-turbo::libjpeg-turbo)
+
+# PNG
+find_package(PNG REQUIRED)
+set(LIBS ${LIBS} PNG::PNG)
 
 # sources
 set(APP_NONMAIN_SOURCES
