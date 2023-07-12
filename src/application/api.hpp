@@ -157,6 +157,30 @@ class API {
 	bool is_same_dims_required_algorithm(const std::string& algorithm) const;
 
 	/**
+	 * Return true if the image type is supported by **format**
+	 */
+	bool is_type_supported_format(const std::string& format,
+	                              img::elem_type type) const;
+
+	/**
+	 * Return true if the image type is supported by **algorithm**
+	 */
+	bool is_type_supported_algorithm(const std::string& algorithm,
+	                                 img::elem_type type) const;
+
+	/**
+	 * Return set of image types supported by **format**
+	 */
+	std::set<img::elem_type>
+	supported_types_format(const std::string& format) const;
+
+	/**
+	 * Return set of image types supported by **format**
+	 */
+	std::set<img::elem_type>
+	supported_types_algorithm(const std::string& algorithm) const;
+
+	/**
 	 * Get loading option configuration of **format**
 	 */
 	const std::vector<ssimp::option_types::OptionConfig>&

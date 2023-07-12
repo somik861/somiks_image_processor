@@ -273,6 +273,28 @@ bool API::is_same_dims_required_algorithm(const std::string& algorithm) const {
 	return _algorithm_manager->is_same_dims_required(algorithm);
 }
 
+bool API::is_type_supported_format(const std::string& format,
+                                   img::elem_type type) const {
+	return _format_manager->is_type_supported(format, type);
+}
+
+bool API::is_type_supported_algorithm(const std::string& algorithm,
+                                      img::elem_type type) const {
+	return _algorithm_manager->is_type_supported(algorithm, type);
+}
+
+std::set<img::elem_type>
+API::supported_types_format(const std::string& format) const {
+	auto types = _format_manager->supported_types(format);
+	return std::set(types.begin(), types.end());
+}
+
+std::set<img::elem_type>
+API::supported_types_algorithm(const std::string& algorithm) const {
+	auto types = _algorithm_manager->supported_types(algorithm);
+	return std::set(types.begin(), types.end());
+}
+
 const std::vector<ssimp::option_types::OptionConfig>&
 API::loading_options_configuration(const std::string& format) const {
 	return _options_manager->option_configs(format + "_loading");

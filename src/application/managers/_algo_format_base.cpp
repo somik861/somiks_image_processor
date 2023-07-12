@@ -5,6 +5,10 @@ bool _AlgoFormatBase::is_type_supported(const std::string& element,
                                         img::elem_type type) const {
 	return _supported_types.at(element).contains(type);
 }
+const std::unordered_set<img::elem_type>&
+_AlgoFormatBase::supported_types(const std::string& element) const {
+	return _supported_types.at(element);
+}
 bool _AlgoFormatBase::is_count_supported(const std::string& element,
                                          std::size_t count) const {
 	return _count_verifiers.at(element)(count);
