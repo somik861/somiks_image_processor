@@ -234,6 +234,12 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	return true;
 }
 
+void _print_file_info(const fs::path& path, const ssimp::API& api) {
+	std::cout << path << ":\n";
+	std::cout << "File size: " << fs::file_size(path) / 1000.0 << " KB\n";
+	std::cout << api.get_properties(path) << '\n';
+}
+
 void print_info_dir(const ssimp::API& api,
                     const fs::path& curr_dir,
                     bool recurse,
@@ -242,10 +248,8 @@ void print_info_dir(const ssimp::API& api,
 		if (entry.is_directory() && recurse)
 			print_info_dir(api, entry.path(), recurse, loading_options);
 
-		if (entry.is_regular_file()) {
-			std::cout << entry << ":\n";
-			std::cout << api.get_properties(entry.path()) << '\n';
-		}
+		if (entry.is_regular_file())
+			_print_file_info(entry.path(), api);
 	}
 }
 
@@ -408,11 +412,8 @@ int main(int argc, const char** argv) {
 		if (!_arg_directory_mode) {
 			print_debug("directory mode disabled");
 			if (_arg_print_info) {
-				print_debug("printing file information") std::cout
-				    << _arg_input_path << ":\n";
-				std::cout << api.get_properties(_arg_input_path,
-				                                loading_options)
-				          << '\n';
+				print_debug("printing file information");
+				_print_file_info(_arg_input_path, api);
 				print_debug("exiting ... (location 0)");
 				return 0;
 			}
