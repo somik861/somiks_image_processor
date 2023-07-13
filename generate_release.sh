@@ -1,5 +1,10 @@
-export CC=gcc-13
-export CXX=g++-13
+if gcc --version | head -n 1 | grep -q '12\.'; then
+	export CC=gcc
+	export CXX=g++
+else
+	export CC=gcc-13
+	export CXX=g++-13
+fi
 
 pip3 install --upgrade conan
 conan --version
@@ -33,3 +38,8 @@ cp build_conan/libssimp.so ssimp_release/library/Debug/
 
 # copy include files
 cp src/application/*.hpp ssimp_release/library/include/ssimp
+
+# create library archive
+cd ssimp_release/library
+tar -czvf lib_linux.tar.gz Debug/ Release/ include/
+cd ../../
