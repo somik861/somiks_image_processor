@@ -104,6 +104,16 @@ struct tuple_to_variant<std::tuple<types_t...>> {
 
 template <typename tuple_t>
 using tuple_to_variant_t = tuple_to_variant<tuple_t>::type;
+
+template <typename array_t>
+struct array_size;
+
+template <typename T, std::size_t N>
+struct array_size<std::array<T, N>>
+    : public std::integral_constant<std::size_t, N> {};
+
+template <typename array_t>
+constexpr std::size_t array_size_v = array_size<array_t>::value;
 } // namespace traits
 
 namespace concepts {
