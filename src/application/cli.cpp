@@ -36,6 +36,7 @@ bool _arg_directory_mode = false;
 bool _arg_print_info = false;
 bool _arg_debug = false;
 bool _arg_allow_override = false;
+bool _arg_as_one = false;
 
 boost::json::value _load_json_file(const std::filesystem::path& file) {
 	std::ifstream f(file);
@@ -85,10 +86,11 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
-	     "show options config for algorithm")                 //
-	    ("debug", "produce debug messages")                   //
-	    ("print_info", "only print information about image")  //
-	    ("allow_override", "Allow overriding existing files") //
+	     "show options config for algorithm")                               //
+	    ("debug", "produce debug messages")                                 //
+	    ("print_info", "only print information about image")                //
+	    ("allow_override", "Allow overriding existing files")               //
+	    ("as_one", "Load directory as one file containing multiple images") //
 	    ("loading_options", po::value(&_arg_loading_options),
 	     "path to json file containing options for loading files") //
 	    ("loading_opt_string", po::value(&_arg_loading_options_string),
@@ -124,7 +126,7 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		std::cout << "Usage: ./ssimp input_path [output_path] "
 		             "[--version]\n\t[--help] "
 		             "[--help_format <string>] [--help_algo <string>]\n\t"
-		             "[--allow_override] [--recurse] [--preset "
+		             "[--allow_override] [--recurse] [--as_one] [--preset "
 		             "<preset.json>]\n\t[--loading_options "
 		             "<lopt.json>] [--loading_opt_string "
 		             "<string>]\n\t[--format <string>] [--saving_options "
@@ -180,11 +182,9 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	}
 	po::notify(vm);
 
-	if (vm.contains("debug"))
-		_arg_debug = true;
+	_arg_debug = vm.contains("debug");
 
-	if (vm.contains("allow_override"))
-		_arg_allow_override = true;
+	_arg_allow_override = vm.contains("allow_override");
 
 	if (!vm.contains("input_path"))
 		throw std::runtime_error("Input path is required");
@@ -205,8 +205,13 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	if (!_arg_directory_mode && vm.contains("recurse"))
 		throw std::runtime_error("recurse cannot be used if an "
 		                         "input_path is not a directory.");
-
 	_arg_recurse = vm.contains("recurse");
+
+	if (!_arg_directory_mode && vm.contains("as_one"))
+		throw std::runtime_error(
+		    "as_one cannot be used if an input_path is not a directory");
+	_arg_as_one = vm.contains("as_one");
+
 	if (vm.contains("print_info")) {
 		_arg_print_info = true;
 		return true;
@@ -455,6 +460,13 @@ int main(int argc, const char** argv) {
 
 			auto all_images = api.load_directory(_arg_input_path, _arg_recurse,
 			                                     "", loading_options);
+			if (_arg_as_one) {
+				std::vector<ssimp::img::LocalizedImage> one_image;
+				for (const auto& images : all_images)
+					one_image.insert_range(one_image.end(), images);
+				all_images = {one_image};
+			}
+
 			print_debug("images loaded, loaded {} files", all_images.size());
 			fs::create_directories(_arg_output_path);
 			for (auto& images : all_images) {
