@@ -424,6 +424,9 @@ int main(int argc, const char** argv) {
 			    std::format("{} already exists, use --allow_override to force",
 			                ssimp::to_string(_arg_output_path)));
 
+		if (!_arg_output_path.empty())
+			_arg_output_path = fs::absolute(_arg_output_path);
+
 		if (!_arg_directory_mode) {
 			print_debug("directory mode disabled");
 			if (_arg_print_info) {
