@@ -3,6 +3,7 @@
 #include "common_macro.hpp"
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 namespace ssimp::algorithms {
 /*static*/ bool ChangeType::image_count_supported(std::size_t count) {
