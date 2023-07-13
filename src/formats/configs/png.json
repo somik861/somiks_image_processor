@@ -11,7 +11,7 @@
       "type": "choice",
       "text": "Colorspace (number of channels of loaded image and selected colorspace must match)",
       "id": "colorspace",
-      "values": [ "auto", "GRAY", "GRAY (with alpha)", "RGB", "RGBA", "Linear GRAY", "Linear GRAY (with alpha)", "Linear RGB", "Linear RGBA" ],
+      "values": [ "auto", "GRAY8", "GRAY8A", "RGB8", "RGBA8", "Linear GRAY8", "Linear GRAY8A", "Linear RGB8", "Linear RGBA8" ],
       "default": "auto"
     }
   ],

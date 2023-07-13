@@ -15,25 +15,25 @@ _mirror_map(const std::unordered_map<key_t, value_t>& map) {
 }
 
 std::unordered_map<png_uint_32, std::string> _format_string_map{
-    {PNG_FORMAT_GRAY, "GRAY"},
-    {PNG_FORMAT_GA, "GRAY (with alpha)"},
-    {PNG_FORMAT_AG, "GRAY (with alpha first)"},
-    {PNG_FORMAT_RGB, "RGB"},
-    {PNG_FORMAT_BGR, "BGR"},
-    {PNG_FORMAT_RGBA, "RGBA"},
-    {PNG_FORMAT_ARGB, "ARGN"},
-    {PNG_FORMAT_BGRA, "BGRA"},
-    {PNG_FORMAT_ABGR, "ABGR"},
-    {PNG_FORMAT_LINEAR_Y, "Linear GRAY"},
-    {PNG_FORMAT_LINEAR_Y_ALPHA, "Linear GRAY (with alpha)"},
-    {PNG_FORMAT_LINEAR_RGB, "Linear RGB"},
-    {PNG_FORMAT_LINEAR_RGB_ALPHA, "Linear RGBA"},
-    {PNG_FORMAT_RGB_COLORMAP, "RGB with Colormap"},
-    {PNG_FORMAT_BGR_COLORMAP, "BGR with Colormap"},
-    {PNG_FORMAT_RGBA_COLORMAP, "RGB with Colormap"},
-    {PNG_FORMAT_ARGB_COLORMAP, "ARGB with Colormap"},
-    {PNG_FORMAT_BGRA_COLORMAP, "BGRA with Colormap"},
-    {PNG_FORMAT_ABGR_COLORMAP, "ABGR with Colormap"}};
+    {PNG_FORMAT_GRAY, "GRAY8"},
+    {PNG_FORMAT_GA, "GRAY8A"},
+    {PNG_FORMAT_AG, "GRAY8A (with alpha first)"},
+    {PNG_FORMAT_RGB, "RGB8"},
+    {PNG_FORMAT_BGR, "BGR8"},
+    {PNG_FORMAT_RGBA, "RGBA8"},
+    {PNG_FORMAT_ARGB, "ARGN8"},
+    {PNG_FORMAT_BGRA, "BGRA8"},
+    {PNG_FORMAT_ABGR, "ABGR8"},
+    {PNG_FORMAT_LINEAR_Y, "Linear GRAY8"},
+    {PNG_FORMAT_LINEAR_Y_ALPHA, "Linear GRAY8A"},
+    {PNG_FORMAT_LINEAR_RGB, "Linear RGB8"},
+    {PNG_FORMAT_LINEAR_RGB_ALPHA, "Linear RGBA8"},
+    {PNG_FORMAT_RGB_COLORMAP, "RGB8 with Colormap"},
+    {PNG_FORMAT_BGR_COLORMAP, "BGR8 with Colormap"},
+    {PNG_FORMAT_RGBA_COLORMAP, "RGB8 with Colormap"},
+    {PNG_FORMAT_ARGB_COLORMAP, "ARGB8 with Colormap"},
+    {PNG_FORMAT_BGRA_COLORMAP, "BGRA8 with Colormap"},
+    {PNG_FORMAT_ABGR_COLORMAP, "ABGR8 with Colormap"}};
 auto _string_format_map = _mirror_map(_format_string_map);
 
 const std::string& format_to_string(png_uint_32 format) {
