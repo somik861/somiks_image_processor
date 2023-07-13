@@ -6,6 +6,7 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <string>
 
 #define print_debug(...)                                                       \
@@ -465,11 +466,16 @@ int main(int argc, const char** argv) {
 			                                     "", loading_options);
 			if (_arg_as_one) {
 				std::vector<ssimp::img::LocalizedImage> one_image;
-				for (const auto& images : all_images)
-					one_image.insert_range(one_image.end(), images);
+				std::set<fs::path> seen_loc;
+				for (auto& images : all_images)
+					for (auto& image : images) {
+						while (seen_loc.contains(image.location))
+							image.location.concat("_");
+						seen_loc.insert(image.location);
+						one_image.push_back(image);
+					}
 				all_images = {one_image};
 			}
-
 			print_debug("images loaded, loaded {} files", all_images.size());
 			fs::create_directories(_arg_output_path);
 			for (auto& images : all_images) {
@@ -487,7 +493,6 @@ int main(int argc, const char** argv) {
 				print_debug("saved", ssimp::to_string(out_path));
 			}
 		}
-
 	} catch (std::exception& e) {
 		print_debug("printing error info");
 		std::cerr << "Error: " << e.what() << '\n';
