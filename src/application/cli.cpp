@@ -123,9 +123,9 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		             "[--recurse] [--preset "
 		             "<preset.json>]\n\t[--loading_options "
 		             "<lopt.json>] [--loading_opt_string "
-		             "<string>]\n\t[--format <string> [--saving_options "
+		             "<string>]\n\t[--format <string>] [--saving_options "
 		             "<sopt.json>] [--saving_opt_string "
-		             "<string>]]\n\t[{--algorithm <string>}... "
+		             "<string>]\n\t[{--algorithm <string>}... "
 		             "[--algo_options <algo_options.json>] [--algo_opt_string "
 		             "<string>]]\n\n";
 		std::cout << generic << "\n";
@@ -211,9 +211,6 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 
 	if (!vm.contains("format"))
 		_arg_format = api.predict_format(_arg_output_path);
-
-	if (vm.contains("options") && !vm.contains("format"))
-		throw std::runtime_error("can not specify options without format");
 
 	if (vm.contains("algo_options") && !vm.contains("algorithm"))
 		throw std::runtime_error(
