@@ -82,22 +82,25 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 
 	po::options_description generic("Generic options");
 	generic.add_options()                  //
-	    ("help,h", "produce help message") //
 	    ("version", "show version")        //
+	    ("help,h", "produce help message") //
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
-	     "show options config for algorithm")                               //
-	    ("debug", "produce debug messages")                                 //
-	    ("print_info", "only print information about image")                //
+	     "show options config for algorithm")                //
+	    ("debug", "produce debug messages")                  //
+	    ("print_info", "only print information about image") //
+	    ("preset", po::value(&_arg_preset),
+	     "path json preset file  !!!All other arguments will be ignored"
+	     "!!!")                                                             //
 	    ("allow_override", "Allow overriding existing files")               //
+	    ("recurse,r", "Recurse into subdirectories")                        //
 	    ("as_one", "Load directory as one file containing multiple images") //
 	    ("loading_options", po::value(&_arg_loading_options),
 	     "path to json file containing options for loading files") //
 	    ("loading_opt_string", po::value(&_arg_loading_options_string),
 	     "json string (can be used instead of loading_options)") //
 	    ("format,f", po::value(&_arg_format), "output format")   //
-	    ("recurse,r", "Recurse into subdirectories")             //
 	    ("saving_options", po::value(&_arg_saving_options),
 	     "path to json file containing saving options for format") //
 	    ("saving_opt_string", po::value(&_arg_saving_options_string),
@@ -108,9 +111,6 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	     "path to json file containing options for algorithms") //
 	    ("algo_opt_string", po::value(&_arg_algo_options_string),
 	     "json string (can be used instead of algo_options)") //
-	    ("preset", po::value(&_arg_preset),
-	     "path json preset file  !!!All other arguments will be ignored"
-	     "!!!") //
 	    ;
 
 	po::options_description all_options("All options");
@@ -127,8 +127,10 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		std::cout << "Usage: ./ssimp input_path [output_path] "
 		             "[--version]\n\t[--help] "
 		             "[--help_format <string>] [--help_algo <string>]\n\t"
-		             "[--allow_override] [--recurse] [--as_one] [--preset "
-		             "<preset.json>]\n\t[--loading_options "
+		             "[--debug] [--print_info] [--preset "
+		             "<preset.json>]\n\t"
+		             "[--allow_override] [--recurse] [--as_one] "
+		             "\n\t[--loading_options "
 		             "<lopt.json>] [--loading_opt_string "
 		             "<string>]\n\t[--format <string>] [--saving_options "
 		             "<sopt.json>] [--saving_opt_string "
