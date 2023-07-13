@@ -85,9 +85,12 @@ load_from_json_rec(const boost::json::array& json) {
 		if (option.contains("help"))
 			option_config.help() = option.at("help").get_string();
 
-		if (opt_type != "header")
-			option_config.id() = option.at("id").get_string();
+		if (opt_type == "header") {
+			configs.push_back(option_config);
+			continue;
+		}
 
+		option_config.id() = option.at("id").get_string();
 		auto opt_default = option.at("default");
 
 		if (opt_type == "choice") {
