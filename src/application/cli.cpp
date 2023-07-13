@@ -35,6 +35,7 @@ bool _arg_recurse = false;
 bool _arg_directory_mode = false;
 bool _arg_print_info = false;
 bool _arg_debug = false;
+bool _arg_allow_override = false;
 
 boost::json::value _load_json_file(const std::filesystem::path& file) {
 	std::ifstream f(file);
@@ -48,6 +49,8 @@ void _load_preset() {
 	_arg_recurse = preset.contains("recurse") && preset.at("recurse").as_bool();
 	_arg_print_info =
 	    preset.contains("print_info") && preset.at("print_info").as_bool();
+	_arg_allow_override = preset.contains("allow_override") &&
+	                      preset.at("allow_override").as_bool();
 
 	if (preset.contains("algorithms"))
 		std::ranges::transform(preset.at("algorithms").as_array(),
@@ -82,9 +85,10 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
-	     "show options config for algorithm")                //
-	    ("debug", "produce debug messages")                  //
-	    ("print_info", "only print information about image") //
+	     "show options config for algorithm")                 //
+	    ("debug", "produce debug messages")                   //
+	    ("print_info", "only print information about image")  //
+	    ("allow_override", "Allow overriding existing files") //
 	    ("loading_options", po::value(&_arg_loading_options),
 	     "path to json file containing options for loading files") //
 	    ("loading_opt_string", po::value(&_arg_loading_options_string),
@@ -120,7 +124,7 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		std::cout << "Usage: ./ssimp input_path [output_path] "
 		             "[--version]\n\t[--help] "
 		             "[--help_format <string>] [--help_algo <string>]\n\t"
-		             "[--recurse] [--preset "
+		             "[--allow_override] [--recurse] [--preset "
 		             "<preset.json>]\n\t[--loading_options "
 		             "<lopt.json>] [--loading_opt_string "
 		             "<string>]\n\t[--format <string>] [--saving_options "
@@ -178,6 +182,9 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 
 	if (vm.contains("debug"))
 		_arg_debug = true;
+
+	if (vm.contains("allow_override"))
+		_arg_allow_override = true;
 
 	if (!vm.contains("input_path"))
 		throw std::runtime_error("Input path is required");
@@ -405,6 +412,12 @@ int main(int argc, const char** argv) {
 		std::unordered_map<std::string, ssimp::option_types::options_t>
 		    algo_options = load_algo_options();
 		print_debug("algo options loaded");
+
+		if (!_arg_print_info && !_arg_allow_override &&
+		    fs::exists(_arg_output_path))
+			throw std::runtime_error(
+			    std::format("{} already exists, use --allow_override to force",
+			                ssimp::to_string(_arg_output_path)));
 
 		if (!_arg_directory_mode) {
 			print_debug("directory mode disabled");
