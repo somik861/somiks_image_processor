@@ -6,6 +6,7 @@
 #include <format>
 #include <fstream>
 #include <iostream>
+#include <set>
 #include <string>
 
 #define print_debug(...)                                                       \
@@ -35,6 +36,8 @@ bool _arg_recurse = false;
 bool _arg_directory_mode = false;
 bool _arg_print_info = false;
 bool _arg_debug = false;
+bool _arg_allow_override = false;
+bool _arg_as_one = false;
 
 boost::json::value _load_json_file(const std::filesystem::path& file) {
 	std::ifstream f(file);
@@ -48,6 +51,8 @@ void _load_preset() {
 	_arg_recurse = preset.contains("recurse") && preset.at("recurse").as_bool();
 	_arg_print_info =
 	    preset.contains("print_info") && preset.at("print_info").as_bool();
+	_arg_allow_override = preset.contains("allow_override") &&
+	                      preset.at("allow_override").as_bool();
 
 	if (preset.contains("algorithms"))
 		std::ranges::transform(preset.at("algorithms").as_array(),
@@ -77,20 +82,25 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 
 	po::options_description generic("Generic options");
 	generic.add_options()                  //
-	    ("help,h", "produce help message") //
 	    ("version", "show version")        //
+	    ("help,h", "produce help message") //
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
 	     "show options config for algorithm")                //
 	    ("debug", "produce debug messages")                  //
 	    ("print_info", "only print information about image") //
+	    ("preset", po::value(&_arg_preset),
+	     "path json preset file  !!!All other arguments will be ignored"
+	     "!!!")                                                             //
+	    ("allow_override", "Allow overriding existing files")               //
+	    ("recurse,r", "Recurse into subdirectories")                        //
+	    ("as_one", "Load directory as one file containing multiple images") //
 	    ("loading_options", po::value(&_arg_loading_options),
 	     "path to json file containing options for loading files") //
 	    ("loading_opt_string", po::value(&_arg_loading_options_string),
 	     "json string (can be used instead of loading_options)") //
 	    ("format,f", po::value(&_arg_format), "output format")   //
-	    ("recurse,r", "Recurse into subdirectories")             //
 	    ("saving_options", po::value(&_arg_saving_options),
 	     "path to json file containing saving options for format") //
 	    ("saving_opt_string", po::value(&_arg_saving_options_string),
@@ -101,9 +111,6 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	     "path to json file containing options for algorithms") //
 	    ("algo_opt_string", po::value(&_arg_algo_options_string),
 	     "json string (can be used instead of algo_options)") //
-	    ("preset", po::value(&_arg_preset),
-	     "path json preset file  !!!All other arguments will be ignored"
-	     "!!!") //
 	    ;
 
 	po::options_description all_options("All options");
@@ -120,8 +127,10 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		std::cout << "Usage: ./ssimp input_path [output_path] "
 		             "[--version]\n\t[--help] "
 		             "[--help_format <string>] [--help_algo <string>]\n\t"
-		             "[--recurse] [--preset "
-		             "<preset.json>]\n\t[--loading_options "
+		             "[--debug] [--print_info] [--preset "
+		             "<preset.json>]\n\t"
+		             "[--allow_override] [--recurse] [--as_one] "
+		             "\n\t[--loading_options "
 		             "<lopt.json>] [--loading_opt_string "
 		             "<string>]\n\t[--format <string>] [--saving_options "
 		             "<sopt.json>] [--saving_opt_string "
@@ -176,8 +185,9 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	}
 	po::notify(vm);
 
-	if (vm.contains("debug"))
-		_arg_debug = true;
+	_arg_debug = vm.contains("debug");
+
+	_arg_allow_override = vm.contains("allow_override");
 
 	if (!vm.contains("input_path"))
 		throw std::runtime_error("Input path is required");
@@ -198,8 +208,13 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	if (!_arg_directory_mode && vm.contains("recurse"))
 		throw std::runtime_error("recurse cannot be used if an "
 		                         "input_path is not a directory.");
-
 	_arg_recurse = vm.contains("recurse");
+
+	if (!_arg_directory_mode && vm.contains("as_one"))
+		throw std::runtime_error(
+		    "as_one cannot be used if an input_path is not a directory");
+	_arg_as_one = vm.contains("as_one");
+
 	if (vm.contains("print_info")) {
 		_arg_print_info = true;
 		return true;
@@ -406,6 +421,15 @@ int main(int argc, const char** argv) {
 		    algo_options = load_algo_options();
 		print_debug("algo options loaded");
 
+		if (!_arg_print_info && !_arg_allow_override &&
+		    fs::exists(_arg_output_path))
+			throw std::runtime_error(
+			    std::format("{} already exists, use --allow_override to force",
+			                ssimp::to_string(_arg_output_path)));
+
+		if (!_arg_output_path.empty())
+			_arg_output_path = fs::absolute(_arg_output_path);
+
 		if (!_arg_directory_mode) {
 			print_debug("directory mode disabled");
 			if (_arg_print_info) {
@@ -442,6 +466,18 @@ int main(int argc, const char** argv) {
 
 			auto all_images = api.load_directory(_arg_input_path, _arg_recurse,
 			                                     "", loading_options);
+			if (_arg_as_one) {
+				std::vector<ssimp::img::LocalizedImage> one_image;
+				std::set<fs::path> seen_loc;
+				for (auto& images : all_images)
+					for (auto& image : images) {
+						while (seen_loc.contains(image.location))
+							image.location.concat("_");
+						seen_loc.insert(image.location);
+						one_image.push_back(image);
+					}
+				all_images = {one_image};
+			}
 			print_debug("images loaded, loaded {} files", all_images.size());
 			fs::create_directories(_arg_output_path);
 			for (auto& images : all_images) {
@@ -459,7 +495,6 @@ int main(int argc, const char** argv) {
 				print_debug("saved", ssimp::to_string(out_path));
 			}
 		}
-
 	} catch (std::exception& e) {
 		print_debug("printing error info");
 		std::cerr << "Error: " << e.what() << '\n';

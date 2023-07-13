@@ -11,36 +11,42 @@ Therefore, I strongly recommend reading this manual before usage and to strictly
 PS> ssimp --help
 Usage: ./ssimp input_path [output_path] [--version]
         [--help] [--help_format <string>] [--help_algo <string>]
-        [--recurse] [--preset <preset.json>]
+        [--debug] [--print_info] [--preset <preset.json>]
+        [--allow_override] [--recurse] [--as_one]
         [--loading_options <lopt.json>] [--loading_opt_string <string>]
-        [--format <string> [--saving_options <sopt.json>] [--saving_opt_string <string>]]
+        [--format <string>] [--saving_options <sopt.json>] [--saving_opt_string <string>]
         [{--algorithm <string>}... [--algo_options <algo_options.json>] [--algo_opt_string <string>]]
 
 Generic options:
-  -h [ --help ]            produce help message
   --version                show version
+  -h [ --help ]            produce help message
   --help_format arg        show options config for format
   --help_algo arg          show options config for algorithm
   --debug                  produce debug messages
   --print_info             only print information about image
+  --preset arg             path json preset file  !!!All other arguments will
+                           be ignored!!!
+  --allow_override         Allow overriding existing files
+  -r [ --recurse ]         Recurse into subdirectories
+  --as_one                 Load directory as one file containing multiple
+                           images
   --loading_options arg    path to json file containing options for loading
                            files
   --loading_opt_string arg json string (can be used instead of loading_options)
   -f [ --format ] arg      output format
-  -r [ --recurse ]         Recurse into subdirectories
   --saving_options arg     path to json file containing saving options for
                            format
   --saving_opt_string arg  json string (can be used instead of saving_options)
   -a [ --algorithm ] arg   algorithms to use
   --algo_options arg       path to json file containing options for algorithms
   --algo_opt_string arg    json string (can be used instead of algo_options)
-  --preset arg             path json preset file  !!!All other arguments will
-                           be ignored!!!
 
 Supported formats:
         jpeg
+        png
 
 Supported algorithms:
+        change_type
         split_channels
 ```
 
@@ -63,8 +69,11 @@ Show configuration of available loading and saving options for given format.
 ### help_algo
 Show configuration of available algorithm options.
 
-### recurse
-Can be only used when type of `input_path` is directory. Tells the program to also search all subdirectories.
+### debug
+Produce debug messages.
+
+### print_info
+Print information about image.
 
 ### preset
 Path to json preset file. Using this will ignore all other commands (except `help` and `version`).
@@ -82,6 +91,13 @@ File needs to have the following structure:
     "algo_options": { "alg1": { "fast": true } } // does not need to contain all algorithms, but needs to exist
 }
 ```
+
+
+### recurse
+Can be only used when type of `input_path` is directory. Tells the program to also search all subdirectories.
+
+## as_one
+Load directory as one file containing multiple images.
 
 ### loading_options
 Path to json file containing loading options. All options need to be falid for input format, ommited options will be set to default values.
