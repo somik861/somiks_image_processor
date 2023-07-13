@@ -20,7 +20,14 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS})
 endif()
 
-# external packages Boost
+# include externs
+include_directories("${CMAKE_SOURCE_DIR}/src/extern")
+
+# extern lib .cpp files
+# bmp
+set(LIBS_CPP ${LIBS_CPP})
+
+# Boost
 find_package(Boost CONFIG REQUIRED)
 set(LIBS ${LIBS} Boost::headers Boost::filesystem Boost::json
          Boost::program_options)
@@ -59,7 +66,7 @@ foreach(FILE ${ALGO_SOURCES})
 endforeach()
 
 add_library(nonmain_files OBJECT ${APP_NONMAIN_SOURCES} ${FORMAT_SOURCES}
-                                 ${ALGO_SOURCES})
+	${ALGO_SOURCES} ${LIBS_CPP})
 target_link_libraries(nonmain_files ${LIBS})
 
 if(${SSIMP_INLINE_CONFIGS})
