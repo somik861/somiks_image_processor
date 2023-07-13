@@ -17,9 +17,12 @@
     }
   ],
   "extensions": [
-    {
-      "suffix": "jpg"
-    }
+    { "suffix": "jpg" },
+    { "suffix": ".jpeg" },
+    { "suffix": ".jpe" },
+    { "suffix": ".jif" },
+    { "suffix": ".jfif" },
+    { "suffix": ".jfi" }
   ],
   "output_extension": "jpg"
 }
