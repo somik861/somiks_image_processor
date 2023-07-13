@@ -87,6 +87,8 @@ class OptionConfig {
 	const std::string& type() const { return _type; }
 	std::string& text() { return _text; }
 	const std::string& text() const { return _text; }
+	std::string& help() { return _help; }
+	const std::string& help() const { return _help; }
 	value_t& default_() { return _default; }
 	const value_t& default_() const { return _default; }
 	const std::vector<std::string>& values() const {
@@ -126,6 +128,7 @@ class OptionConfig {
 	std::string _id;
 	std::string _type;
 	std::string _text;
+	std::string _help;
 	value_t _default;
 	std::vector<std::string> _values;
 	std::array<value_t, 2> _range;
@@ -179,6 +182,9 @@ inline std::ostream& operator<<(std::ostream& os,
 
 	if (cfg.type() == "header")
 		return os;
+
+	if (!cfg.help().empty())
+		os << "\thelp: " << cfg.help() << '\n';
 
 	os << "\tdefault: ";
 	std::visit([&](auto x) -> void { os << x << '\n'; }, cfg.default_());
