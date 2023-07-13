@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../../algorithms/change_type.hpp"
 #include "../../algorithms/split_channels.hpp"
-#include "../../algorithms/to_gray8.hpp"
 #include "../nd_image.hpp"
 #include "_algo_format_base.hpp"
 #include <functional>
@@ -15,7 +15,7 @@ namespace ssimp {
 class AlgorithmManager : public details::_AlgoFormatBase {
   private:
 	using _registered_algorithms =
-	    std::tuple<algorithms::SplitChannels, algorithms::ToGray8>;
+	    std::tuple<algorithms::SplitChannels, algorithms::ChangeType>;
 
   public:
 	/**
