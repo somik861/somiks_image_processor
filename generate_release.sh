@@ -1,4 +1,4 @@
-if gcc --version | head -n 1 | grep -q '12\.'; then
+if gcc --version | head -n 1 | grep -q '13\.'; then
 	export CC=gcc
 	export CXX=g++
 else
