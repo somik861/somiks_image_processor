@@ -82,6 +82,8 @@ load_from_json_rec(const boost::json::array& json) {
 		std::string opt_type(option.at("type").get_string());
 		option_config.type() = opt_type;
 		option_config.text() = option.at("text").get_string();
+		if (option.contains("help"))
+			option_config.help() = option.at("help").get_string();
 
 		if (opt_type != "header")
 			option_config.id() = option.at("id").get_string();
