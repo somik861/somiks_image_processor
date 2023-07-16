@@ -402,6 +402,13 @@ std::vector<ssimp::img::LocalizedImage> apply_algorithms(
 	}
 	return out;
 }
+
+void throw_if_exists(const fs::path& path) {
+	if (!_arg_allow_override && fs::exists(path))
+		throw std::runtime_error(
+		    std::format("{} already exists, use --allow_override to force",
+		                ssimp::to_string(_arg_output_path)));
+}
 } // namespace
 
 int main(int argc, const char** argv) {
@@ -411,7 +418,8 @@ int main(int argc, const char** argv) {
 		if (!option_parser(argc, argv, api))
 			return 0;
 
-		print_debug("api loaded") print_debug("program options parsed");
+		print_debug("api loaded");
+		print_debug("program options parsed");
 
 		ssimp::option_types::options_t loading_options = load_loading_options();
 		ssimp::option_types::options_t saving_options = load_saving_options();
@@ -420,12 +428,6 @@ int main(int argc, const char** argv) {
 		std::unordered_map<std::string, ssimp::option_types::options_t>
 		    algo_options = load_algo_options();
 		print_debug("algo options loaded");
-
-		if (!_arg_print_info && !_arg_allow_override &&
-		    fs::exists(_arg_output_path))
-			throw std::runtime_error(
-			    std::format("{} already exists, use --allow_override to force",
-			                ssimp::to_string(_arg_output_path)));
 
 		if (!_arg_output_path.empty())
 			_arg_output_path = fs::absolute(_arg_output_path);
@@ -450,6 +452,7 @@ int main(int argc, const char** argv) {
 			print_debug("{} created",
 			            ssimp::to_string(_arg_output_path.parent_path()));
 			print_debug("saving {} ...", ssimp::to_string(_arg_output_path));
+			throw_if_exists(_arg_output_path);
 			save_image(images, _arg_output_path, _arg_format, saving_options,
 			           api);
 			print_debug("saved");
@@ -491,6 +494,7 @@ int main(int argc, const char** argv) {
 				fs::path out_path =
 				    _arg_output_path / images[0].location.parent_path();
 				print_debug("saving {} ...", ssimp::to_string(out_path));
+				throw_if_exists(out_path);
 				save_image(images, out_path, _arg_format, saving_options, api);
 				print_debug("saved", ssimp::to_string(out_path));
 			}
