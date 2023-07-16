@@ -18,11 +18,11 @@
   ],
   "extensions": [
     { "suffix": "jpg" },
-    { "suffix": ".jpeg" },
-    { "suffix": ".jpe" },
-    { "suffix": ".jif" },
-    { "suffix": ".jfif" },
-    { "suffix": ".jfi" }
+    { "suffix": "jpeg" },
+    { "suffix": "jpe" },
+    { "suffix": "jif" },
+    { "suffix": "jfif" },
+    { "suffix": "jfi" }
   ],
   "default_extension": "jpg"
 }
