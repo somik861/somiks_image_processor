@@ -495,11 +495,18 @@ int main(int argc, const char** argv) {
 				print_debug("saved", ssimp::to_string(out_path));
 			}
 		}
-	} catch (std::exception& e) {
+
+	}
+#ifndef NDEBUG
+	catch (int e) { // unused catch, just for debuging
+	}
+#endif
+	catch (std::exception& e) {
 		print_debug("printing error info");
 		std::cerr << "Error: " << e.what() << '\n';
 		print_debug("exiting ... (location 2)");
 		return 1;
 	}
+
 	print_debug("exiting ... (location 3)");
 }

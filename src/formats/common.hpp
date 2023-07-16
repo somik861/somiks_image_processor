@@ -12,16 +12,18 @@
 #include <optional>
 #include <ostream>
 #include <span>
+#include <utility>
 #include <vector>
 
 namespace fs = std::filesystem;
 
 namespace ssimp::formats::details {
-inline std::vector<std::byte> read_file(const fs::path& path) {
+inline std::vector<std::byte> read_file(const fs::path& path,
+                                        std::size_t bytes = 0) {
 	std::ifstream file(path, std::ios::binary);
 	std::vector<std::byte> out;
 
-	while (file.good())
+	while (file.good() && (bytes == 0 || out.size() < bytes))
 		out.push_back(std::byte(file.get()));
 
 	return out;
