@@ -183,10 +183,10 @@ def check_format_config(config: dict[str, Any]) -> None:
     if _contains(config, ext, tuple(), type_=list):
         check_extensions(config[ext], (ext,))
 
-    if _contains(config, 'output_extension', tuple(), type_=str):
-        _nonempty(config['output_extension'], ('output_extension',))
+    if _contains(config, 'default_extension', tuple(), type_=str):
+        _nonempty(config['default_extension'], ('default_extension',))
 
-    for key in keys - {ext, 'output_extension'}:
+    for key in keys - {ext, 'default_extension'}:
         _report_ignored((key,))
 
 

@@ -30,4 +30,8 @@ std::unordered_set<std::string> _AlgoFormatBase::registered() const {
 	return out;
 }
 
+bool _AlgoFormatBase::is_registered(const std::string& element) const {
+	return _supported_types.contains(element);
+}
+
 } // namespace ssimp::details

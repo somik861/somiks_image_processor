@@ -45,6 +45,12 @@ class _AlgoFormatBase {
 	 */
 	std::unordered_set<std::string> registered() const;
 
+	/**
+	 * Return true if element is registered. Is much faster then obtatining all
+	 * the registered elemets in for loop.
+	 */
+	bool is_registered(const std::string& element) const;
+
   protected:
 	using _options_t = option_types::options_t;
 	template <typename fun_t>

@@ -205,6 +205,13 @@ class API {
 	delocalize(const std::vector<img::LocalizedImage>& imgs) const;
 
 	/**
+	 * Return name of file with corrected extension (if neccessary)
+	 */
+	std::filesystem::path
+	with_correct_extension(const std::string& format,
+	                       const std::filesystem::path& file) const;
+
+	/**
 	 * Custom destructor to enable destruction of managers
 	 */
 	~API();
@@ -216,6 +223,9 @@ class API {
 	                     bool recurse,
 	                     const std::string& format,
 	                     const option_types::options_t& options) const;
+
+	void _check_format_validity(const std::string& format) const;
+	void _check_algorithm_validity(const std::string& algorithm) const;
 
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;

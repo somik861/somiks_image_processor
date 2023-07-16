@@ -36,5 +36,5 @@
       "type": "regex"
     }
   ],
-  "output_extension": "img"
+  "default_extension": "img"
 }

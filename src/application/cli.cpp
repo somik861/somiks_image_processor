@@ -40,10 +40,14 @@ bool _arg_allow_override = false;
 bool _arg_as_one = false;
 
 boost::json::value _load_json_file(const std::filesystem::path& file) {
-	std::ifstream f(file);
-	return boost::json::parse(f);
+	try {
+		std::ifstream f(file);
+		return boost::json::parse(f);
+	} catch (const boost::system::system_error&) {
+		throw std::runtime_error(std::format("'{}' does not contain valid json",
+		                                     ssimp::to_string(file)));
+	}
 }
-
 void _load_preset() {
 	auto preset = _load_json_file(_arg_preset).as_object();
 
@@ -92,10 +96,11 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	    ("print_info", "only print information about image") //
 	    ("preset", po::value(&_arg_preset),
 	     "path json preset file  !!!All other arguments will be ignored"
-	     "!!!")                                                             //
-	    ("allow_override", "Allow overriding existing files")               //
-	    ("recurse,r", "Recurse into subdirectories")                        //
-	    ("as_one", "Load directory as one file containing multiple images") //
+	     "!!!")                                               //
+	    ("allow_override", "Allow overriding existing files") //
+	    ("recurse,r", "Recurse into subdirectories")          //
+	    ("as_one",
+	     "Load directory as one file containing multiple images") //
 	    ("loading_options", po::value(&_arg_loading_options),
 	     "path to json file containing options for loading files") //
 	    ("loading_opt_string", po::value(&_arg_loading_options_string),
@@ -295,9 +300,8 @@ std::unordered_map<std::string, ssimp::option_types::options_t>
 _load_algo_json(const boost::json::object& options) {
 	std::unordered_map<std::string, ssimp::option_types::options_t> out;
 
-	for (const auto& [algo, options] :
-	     _load_json_file(_arg_algo_options).as_object())
-		out[algo] = _load_json_options(options.as_object());
+	for (const auto& [algo, option] : options)
+		out[algo] = _load_json_options(option.as_object());
 
 	return out;
 }
@@ -313,9 +317,16 @@ load_algo_options() {
 	if (!_arg_algo_options.empty())
 		return _load_algo_json(_load_json_file(_arg_algo_options).as_object());
 
-	if (!_arg_algo_options_string.empty())
-		return _load_algo_json(
-		    boost::json::parse(_arg_algo_options_string).as_object());
+	if (!_arg_algo_options_string.empty()) {
+		try {
+			return _load_algo_json(
+			    boost::json::parse(_arg_algo_options_string).as_object());
+		} catch (const boost::system::system_error&) {
+			throw std::runtime_error(
+			    std::format("algo option string '{}' is not valid json",
+			                _arg_algo_options_string));
+		}
+	}
 
 	return {};
 }
@@ -332,8 +343,14 @@ ssimp::option_types::options_t load_loading_options() {
 		    _load_json_file(_arg_loading_options).as_object());
 
 	if (!_arg_loading_options_string.empty())
-		return _load_json_options(
-		    boost::json::parse(_arg_loading_options_string).as_object());
+		try {
+			return _load_json_options(
+			    boost::json::parse(_arg_loading_options_string).as_object());
+		} catch (const boost::system::system_error&) {
+			throw std::runtime_error(
+			    std::format("loading option string '{}' is not valid json",
+			                _arg_loading_options_string));
+		}
 
 	return {};
 }
@@ -350,8 +367,14 @@ ssimp::option_types::options_t load_saving_options() {
 		    _load_json_file(_arg_saving_options).as_object());
 
 	if (!_arg_saving_options_string.empty())
-		return _load_json_options(
-		    boost::json::parse(_arg_saving_options_string).as_object());
+		try {
+			return _load_json_options(
+			    boost::json::parse(_arg_saving_options_string).as_object());
+		} catch (const boost::system::system_error&) {
+			throw std::runtime_error(
+			    std::format("saving option string '{}' is not valid json",
+			                _arg_saving_options_string));
+		}
 
 	return {};
 }
@@ -402,6 +425,13 @@ std::vector<ssimp::img::LocalizedImage> apply_algorithms(
 	}
 	return out;
 }
+
+void throw_if_exists(const fs::path& path) {
+	if (!_arg_allow_override && fs::exists(path))
+		throw std::runtime_error(
+		    std::format("{} already exists, use --allow_override to force",
+		                ssimp::to_string(_arg_output_path)));
+}
 } // namespace
 
 int main(int argc, const char** argv) {
@@ -411,7 +441,8 @@ int main(int argc, const char** argv) {
 		if (!option_parser(argc, argv, api))
 			return 0;
 
-		print_debug("api loaded") print_debug("program options parsed");
+		print_debug("api loaded");
+		print_debug("program options parsed");
 
 		ssimp::option_types::options_t loading_options = load_loading_options();
 		ssimp::option_types::options_t saving_options = load_saving_options();
@@ -420,12 +451,6 @@ int main(int argc, const char** argv) {
 		std::unordered_map<std::string, ssimp::option_types::options_t>
 		    algo_options = load_algo_options();
 		print_debug("algo options loaded");
-
-		if (!_arg_print_info && !_arg_allow_override &&
-		    fs::exists(_arg_output_path))
-			throw std::runtime_error(
-			    std::format("{} already exists, use --allow_override to force",
-			                ssimp::to_string(_arg_output_path)));
 
 		if (!_arg_output_path.empty())
 			_arg_output_path = fs::absolute(_arg_output_path);
@@ -450,6 +475,7 @@ int main(int argc, const char** argv) {
 			print_debug("{} created",
 			            ssimp::to_string(_arg_output_path.parent_path()));
 			print_debug("saving {} ...", ssimp::to_string(_arg_output_path));
+			throw_if_exists(_arg_output_path);
 			save_image(images, _arg_output_path, _arg_format, saving_options,
 			           api);
 			print_debug("saved");
@@ -491,6 +517,7 @@ int main(int argc, const char** argv) {
 				fs::path out_path =
 				    _arg_output_path / images[0].location.parent_path();
 				print_debug("saving {} ...", ssimp::to_string(out_path));
+				throw_if_exists(out_path);
 				save_image(images, out_path, _arg_format, saving_options, api);
 				print_debug("saved", ssimp::to_string(out_path));
 			}
@@ -501,6 +528,7 @@ int main(int argc, const char** argv) {
 	catch (int e) { // unused catch, just for debuging
 	}
 #endif
+
 	catch (std::exception& e) {
 		print_debug("printing error info");
 		std::cerr << "Error: " << e.what() << '\n';

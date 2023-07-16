@@ -84,23 +84,23 @@ class ExtensionManager {
 	sorted_formats_by_priority(const std::filesystem::path& file) const;
 
 	/**
-	 * Set output extension to a **format**.
-	 * This will be used when an image is saved.
+	 * Set default extension to a **format**.
 	 */
-	void set_output_extension(const std::string& format,
-	                          const std::string& extension);
+	void set_default_extension(const std::string& format,
+	                           const std::string& extension);
 
 	/**
 	 * Get output extension.
 	 */
-	const std::string& get_output_extension(const std::string& format) const;
+	const std::string& get_default_extension(const std::string& format) const;
 
 	/**
-	 * Update filename **file** to have output extension of **format**.
+	 * Update filename **file** to have supported output extension of
+	 * **format**.
 	 */
 	std::filesystem::path
-	with_output_extension(const std::string& format,
-	                      const std::filesystem::path& file) const;
+	with_correct_extension(const std::string& format,
+	                       const std::filesystem::path& file) const;
 
 	/**
 	 * Load format informations from json configuration.
@@ -108,6 +108,12 @@ class ExtensionManager {
 	void load_from_json(const std::string& format,
 	                    const boost::json::array& matchers,
 	                    const boost::json::string& output_ext);
+
+	/**
+	 * Return true if extension of **file** is correct for **format**
+	 */
+	bool is_extension_correct(const std::string& format,
+	                          const std::filesystem::path& file) const;
 
   private:
 	std::string _get_extension(const std::filesystem::path& file) const;
@@ -121,6 +127,6 @@ class ExtensionManager {
 	    _format_raw_suffixes;
 	std::unordered_map<std::string, std::vector<boost::regex>>
 	    _format_regex_suffixes;
-	std::unordered_map<std::string, std::string> _output_extensions;
+	std::unordered_map<std::string, std::string> _default_extensions;
 };
 } // namespace ssimp

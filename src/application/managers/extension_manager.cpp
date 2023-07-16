@@ -189,20 +189,21 @@ ExtensionManager::_divide_matching_nonmatching_regex(
 	return {matching, nonmatching};
 }
 
-void ExtensionManager::set_output_extension(const std::string& format,
-                                            const std::string& extension) {
-	_output_extensions[format] = extension;
+void ExtensionManager::set_default_extension(const std::string& format,
+                                             const std::string& extension) {
+	_default_extensions[format] = extension;
 }
 
 const std::string&
-ExtensionManager::get_output_extension(const std::string& format) const {
-	return _output_extensions.at(format);
+ExtensionManager::get_default_extension(const std::string& format) const {
+	return _default_extensions.at(format);
 }
 
-fs::path ExtensionManager::with_output_extension(const std::string& format,
-                                                 const fs::path& file) const {
+fs::path ExtensionManager::with_correct_extension(const std::string& format,
+                                                  const fs::path& file) const {
 	auto out = file;
-	out.replace_extension(_output_extensions.at(format));
+	if (!is_extension_correct(format, file))
+		out.replace_extension(_default_extensions.at(format));
 
 	return out;
 }
@@ -218,7 +219,25 @@ void ExtensionManager::load_from_json(const std::string& format,
 		                   regex);
 	}
 
-	set_output_extension(format, std::string(output_ext));
+	set_default_extension(format, std::string(output_ext));
+}
+
+bool ExtensionManager::is_extension_correct(const std::string& format,
+                                            const fs::path& file) const {
+	auto extension = _get_extension(file);
+	if (_format_raw_suffixes.contains(format)) {
+		for (const auto& suff : _format_raw_suffixes.at(format))
+			if (suff == extension)
+				return true;
+	}
+
+	if (_format_regex_suffixes.contains(format)) {
+		for (const auto& suff : _format_regex_suffixes.at(format))
+			if (boost::regex_match(extension, suff))
+				return true;
+	}
+
+	return false;
 }
 
 } // namespace ssimp
