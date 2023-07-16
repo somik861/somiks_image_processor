@@ -300,9 +300,8 @@ std::unordered_map<std::string, ssimp::option_types::options_t>
 _load_algo_json(const boost::json::object& options) {
 	std::unordered_map<std::string, ssimp::option_types::options_t> out;
 
-	for (const auto& [algo, options] :
-	     _load_json_file(_arg_algo_options).as_object())
-		out[algo] = _load_json_options(options.as_object());
+	for (const auto& [algo, option] : options)
+		out[algo] = _load_json_options(option.as_object());
 
 	return out;
 }
@@ -529,6 +528,7 @@ int main(int argc, const char** argv) {
 	catch (int e) { // unused catch, just for debuging
 	}
 #endif
+
 	catch (std::exception& e) {
 		print_debug("printing error info");
 		std::cerr << "Error: " << e.what() << '\n';

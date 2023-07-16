@@ -399,7 +399,7 @@ void API::_check_format_validity(const std::string& format) const {
 }
 
 void API::_check_algorithm_validity(const std::string& algorithm) const {
-	if (!_format_manager->is_registered(algorithm))
+	if (!_algorithm_manager->is_registered(algorithm))
 		throw ssimp::exceptions::Unsupported(
 		    std::format("Algorithm '{}' was not recogized.", algorithm));
 }

@@ -27,7 +27,7 @@ ChangeType::apply(const std::vector<img::ndImage<T>>& imgs,
 	bool rescale = std::get<bool>(options.at("rescale"));
 	img::GRAY8 gray_bg(std::get<int32_t>(options.at("gray_bg")));
 	img::RGB8 rgb_bg{img::GRAY8(std::get<int32_t>(options.at("red_bg"))),
-	                 img::GRAY8(std::get<int32_t>(options.at("greeb_bg"))),
+	                 img::GRAY8(std::get<int32_t>(options.at("green_bg"))),
 	                 img::GRAY8(std::get<int32_t>(options.at("blue_bg")))};
 	std::array<double, 3> rgb_mult{std::get<double>(options.at("red_mult")),
 	                               std::get<double>(options.at("green_mult")),

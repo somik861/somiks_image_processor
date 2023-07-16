@@ -225,13 +225,17 @@ void ExtensionManager::load_from_json(const std::string& format,
 bool ExtensionManager::is_extension_correct(const std::string& format,
                                             const fs::path& file) const {
 	auto extension = _get_extension(file);
-	for (const auto& suff : _format_raw_suffixes.at(format))
-		if (suff == extension)
-			return true;
+	if (_format_raw_suffixes.contains(format)) {
+		for (const auto& suff : _format_raw_suffixes.at(format))
+			if (suff == extension)
+				return true;
+	}
 
-	for (const auto& suff : _format_regex_suffixes.at(format))
-		if (boost::regex_match(extension, suff))
-			return true;
+	if (_format_regex_suffixes.contains(format)) {
+		for (const auto& suff : _format_regex_suffixes.at(format))
+			if (boost::regex_match(extension, suff))
+				return true;
+	}
 
 	return false;
 }
