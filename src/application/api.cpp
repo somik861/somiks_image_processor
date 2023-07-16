@@ -319,6 +319,11 @@ API::delocalize(const std::vector<img::LocalizedImage>& imgs) const {
 	return out;
 }
 
+fs::path API::with_correct_extension(const std::string& format,
+                                     const fs::path& file) const {
+	return _extension_manager->with_correct_extension(format, file);
+}
+
 API::~API() {}
 
 void API::_load_directory(std::vector<std::vector<img::LocalizedImage>>& images,

@@ -205,6 +205,13 @@ class API {
 	delocalize(const std::vector<img::LocalizedImage>& imgs) const;
 
 	/**
+	 * Return name of file with corrected extension (if neccessary)
+	 */
+	std::filesystem::path
+	with_correct_extension(const std::string& format,
+	                       const std::filesystem::path& file) const;
+
+	/**
 	 * Custom destructor to enable destruction of managers
 	 */
 	~API();
