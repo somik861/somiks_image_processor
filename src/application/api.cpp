@@ -48,6 +48,9 @@ API::load_image(const fs::path& path,
                 const fs::path& rel_dir /* = "" */,
                 const std::string& format /* = "" */,
                 const option_types::options_t& options /* = {} */) const {
+	if (!format.empty())
+		_check_format_validity(format);
+
 	fs::path img_prefix = "";
 	if (!rel_dir.empty())
 		img_prefix = fs::relative(path, rel_dir);
@@ -92,6 +95,9 @@ API::load_one(const fs::path& path,
               const fs::path& rel_dir /* = "" */,
               const std::string& format /* = "" */,
               const option_types::options_t& options /* = {} */) const {
+	if (!format.empty())
+		_check_format_validity(format);
+
 	auto images = load_image(path, rel_dir, format, options);
 	if (images.size() != 1)
 		throw exceptions::IOError(
@@ -106,6 +112,8 @@ API::load_directory(const fs::path& dir,
                     bool recurse /* = false */,
                     const std::string& format /* = "" */,
                     const option_types::options_t& options /* = "" */) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	std::vector<std::vector<img::LocalizedImage>> out;
 	_load_directory(out, dir, dir, recurse, format, options);
 	return out;
@@ -115,6 +123,9 @@ void API::save_image(const std::vector<img::ndImageBase>& img,
                      const fs::path& path,
                      const std::string& format /* = "" */,
                      const option_types::options_t& options /* = {} */) const {
+	if (!format.empty())
+		_check_format_validity(format);
+
 	for (const auto& f :
 	     (format != "" ? std::vector{format}
 	                   : _extension_manager->find_possible_formats(path))) {
@@ -149,6 +160,9 @@ void API::save_one(const img::ndImageBase& img,
                    const std::filesystem::path& path,
                    const std::string& format /* = "" */,
                    const option_types::options_t& options /* = {} */) const {
+	if (!format.empty())
+		_check_format_validity(format);
+
 	save_image({img}, path, format, options);
 }
 
@@ -175,6 +189,8 @@ std::vector<img::LocalizedImage>
 API::apply(const std::vector<img::ndImageBase>& images,
            const std::string& algorithm,
            const option_types::options_t& options /* = {} */) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 
 	if (!is_count_supported_algorithm(algorithm, images.size()))
 		throw exceptions::Unsupported(
@@ -211,6 +227,9 @@ std::vector<img::LocalizedImage>
 API::apply(const std::vector<img::LocalizedImage>& images,
            const std::string& algorithm,
            const option_types::options_t& options /* = {} */) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
+
 	std::vector<img::LocalizedImage> out;
 	for (const auto& img : images) {
 		auto res = apply({img.image}, algorithm, options);
@@ -247,66 +266,93 @@ std::string API::predict_format(const fs::path& file) const {
 
 bool API::is_count_supported_format(const std::string& format,
                                     std::size_t count) const {
+	if (!format.empty())
+		_check_format_validity(format);
+
 	return _format_manager->is_count_supported(format, count);
 }
 
 bool API::is_dims_supported_format(const std::string& format,
                                    std::span<const std::size_t> dims) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	return _format_manager->is_dims_supported(format, dims);
 }
 
 bool API::is_same_dims_required_format(const std::string& format) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	return _format_manager->is_same_dims_required(format);
 }
 
 bool API::is_count_supported_algorithm(const std::string& algorithm,
                                        std::size_t count) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 	return _algorithm_manager->is_count_supported(algorithm, count);
 }
 
 bool API::is_dims_supported_algorithm(const std::string& algorithm,
                                       std::span<const std::size_t> dims) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 	return _algorithm_manager->is_dims_supported(algorithm, dims);
 }
 
 bool API::is_same_dims_required_algorithm(const std::string& algorithm) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 	return _algorithm_manager->is_same_dims_required(algorithm);
 }
 
 bool API::is_type_supported_format(const std::string& format,
                                    img::elem_type type) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	return _format_manager->is_type_supported(format, type);
 }
 
 bool API::is_type_supported_algorithm(const std::string& algorithm,
                                       img::elem_type type) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 	return _algorithm_manager->is_type_supported(algorithm, type);
 }
 
 std::set<img::elem_type>
 API::supported_types_format(const std::string& format) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	auto types = _format_manager->supported_types(format);
 	return std::set(types.begin(), types.end());
 }
 
 std::set<img::elem_type>
 API::supported_types_algorithm(const std::string& algorithm) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 	auto types = _algorithm_manager->supported_types(algorithm);
 	return std::set(types.begin(), types.end());
 }
 
 const std::vector<ssimp::option_types::OptionConfig>&
 API::loading_options_configuration(const std::string& format) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	return _options_manager->option_configs(format + "_loading");
 }
 
 const std::vector<ssimp::option_types::OptionConfig>&
 API::saving_options_configuration(const std::string& format) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	return _options_manager->option_configs(format + "_saving");
 }
 
 const std::vector<ssimp::option_types::OptionConfig>&
 API::algorithm_options_configuration(const std::string& algorithm) const {
+	if (!algorithm.empty())
+		_check_algorithm_validity(algorithm);
 	return _options_manager->option_configs(algorithm + "_algo");
 }
 
@@ -321,6 +367,8 @@ API::delocalize(const std::vector<img::LocalizedImage>& imgs) const {
 
 fs::path API::with_correct_extension(const std::string& format,
                                      const fs::path& file) const {
+	if (!format.empty())
+		_check_format_validity(format);
 	return _extension_manager->with_correct_extension(format, file);
 }
 
@@ -342,6 +390,18 @@ void API::_load_directory(std::vector<std::vector<img::LocalizedImage>>& images,
 			images.push_back(
 			    load_image(entry.path(), base_dir, format, options));
 	}
+}
+
+void API::_check_format_validity(const std::string& format) const {
+	if (!_format_manager->is_registered(format))
+		throw ssimp::exceptions::Unsupported(
+		    std::format("Format '{}' was not recogized.", format));
+}
+
+void API::_check_algorithm_validity(const std::string& algorithm) const {
+	if (!_format_manager->is_registered(algorithm))
+		throw ssimp::exceptions::Unsupported(
+		    std::format("Algorithm '{}' was not recogized.", algorithm));
 }
 
 } // namespace ssimp

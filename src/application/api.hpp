@@ -224,6 +224,9 @@ class API {
 	                     const std::string& format,
 	                     const option_types::options_t& options) const;
 
+	void _check_format_validity(const std::string& format) const;
+	void _check_algorithm_validity(const std::string& algorithm) const;
+
 	std::unique_ptr<ConfigManager> _config_manager;
 	std::unique_ptr<ExtensionManager> _extension_manager;
 	std::unique_ptr<OptionsManager> _options_manager;
