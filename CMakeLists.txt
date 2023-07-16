@@ -51,6 +51,7 @@ set(APP_NONMAIN_SOURCES
     "src/application/managers/algorithm_manager.cpp"
     "src/application/managers/_algo_format_base.cpp"
     "src/application/managers/config_manager.cpp"
+    "src/application/managers/license_manager.cpp"
     "src/application/api.cpp")
 
 # formats
