@@ -24,5 +24,5 @@
     { "suffix": ".jfif" },
     { "suffix": ".jfi" }
   ],
-  "output_extension": "jpg"
+  "default_extension": "jpg"
 }

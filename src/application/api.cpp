@@ -24,7 +24,7 @@ API::API()
 
 		_extension_manager->load_from_json(
 		    format, config.at("extensions").get_array(),
-		    config.at("output_extension").get_string());
+		    config.at("default_extension").get_string());
 
 		_options_manager->load_from_json(
 		    format + "_loading", config.at("loading_options").get_array());
@@ -135,7 +135,7 @@ void API::save_image(const std::vector<img::ndImageBase>& img,
 			    "Given options are not supported for format '{}'", format));
 
 		_format_manager->save_image(
-		    _extension_manager->with_output_extension(f, path), img, f,
+		    _extension_manager->with_correct_extension(f, path), img, f,
 		    _options_manager->finalize_options(format + "_saving", options));
 		return;
 	}

@@ -20,5 +20,5 @@
       "suffix": "png"
     }
   ],
-  "output_extension": "png"
+  "default_extension": "png"
 }

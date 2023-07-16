@@ -24,7 +24,6 @@ endif()
 include_directories("${CMAKE_SOURCE_DIR}/src/extern")
 
 # extern lib .cpp files
-# bmp
 set(LIBS_CPP ${LIBS_CPP})
 
 # Boost
