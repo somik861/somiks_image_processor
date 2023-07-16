@@ -40,10 +40,14 @@ bool _arg_allow_override = false;
 bool _arg_as_one = false;
 
 boost::json::value _load_json_file(const std::filesystem::path& file) {
-	std::ifstream f(file);
-	return boost::json::parse(f);
+	try {
+		std::ifstream f(file);
+		return boost::json::parse(f);
+	} catch (const boost::system::system_error&) {
+		throw std::runtime_error(std::format("'{}' does not contain valid json",
+		                                     ssimp::to_string(file)));
+	}
 }
-
 void _load_preset() {
 	auto preset = _load_json_file(_arg_preset).as_object();
 
@@ -92,10 +96,11 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	    ("print_info", "only print information about image") //
 	    ("preset", po::value(&_arg_preset),
 	     "path json preset file  !!!All other arguments will be ignored"
-	     "!!!")                                                             //
-	    ("allow_override", "Allow overriding existing files")               //
-	    ("recurse,r", "Recurse into subdirectories")                        //
-	    ("as_one", "Load directory as one file containing multiple images") //
+	     "!!!")                                               //
+	    ("allow_override", "Allow overriding existing files") //
+	    ("recurse,r", "Recurse into subdirectories")          //
+	    ("as_one",
+	     "Load directory as one file containing multiple images") //
 	    ("loading_options", po::value(&_arg_loading_options),
 	     "path to json file containing options for loading files") //
 	    ("loading_opt_string", po::value(&_arg_loading_options_string),
@@ -313,9 +318,16 @@ load_algo_options() {
 	if (!_arg_algo_options.empty())
 		return _load_algo_json(_load_json_file(_arg_algo_options).as_object());
 
-	if (!_arg_algo_options_string.empty())
-		return _load_algo_json(
-		    boost::json::parse(_arg_algo_options_string).as_object());
+	if (!_arg_algo_options_string.empty()) {
+		try {
+			return _load_algo_json(
+			    boost::json::parse(_arg_algo_options_string).as_object());
+		} catch (const boost::system::system_error&) {
+			throw std::runtime_error(
+			    std::format("algo option string '{}' is not valid json",
+			                _arg_algo_options_string));
+		}
+	}
 
 	return {};
 }
@@ -332,8 +344,14 @@ ssimp::option_types::options_t load_loading_options() {
 		    _load_json_file(_arg_loading_options).as_object());
 
 	if (!_arg_loading_options_string.empty())
-		return _load_json_options(
-		    boost::json::parse(_arg_loading_options_string).as_object());
+		try {
+			return _load_json_options(
+			    boost::json::parse(_arg_loading_options_string).as_object());
+		} catch (const boost::system::system_error&) {
+			throw std::runtime_error(
+			    std::format("loading option string '{}' is not valid json",
+			                _arg_loading_options_string));
+		}
 
 	return {};
 }
@@ -350,8 +368,14 @@ ssimp::option_types::options_t load_saving_options() {
 		    _load_json_file(_arg_saving_options).as_object());
 
 	if (!_arg_saving_options_string.empty())
-		return _load_json_options(
-		    boost::json::parse(_arg_saving_options_string).as_object());
+		try {
+			return _load_json_options(
+			    boost::json::parse(_arg_saving_options_string).as_object());
+		} catch (const boost::system::system_error&) {
+			throw std::runtime_error(
+			    std::format("saving option string '{}' is not valid json",
+			                _arg_saving_options_string));
+		}
 
 	return {};
 }
