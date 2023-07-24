@@ -158,6 +158,8 @@ install(
 if(NOT ${SSIMP_INLINE_CONFIGS})
   install(FILES ${APP_FORMAT_CONFIGS} DESTINATION bin/formats)
   install(FILES ${APP_ALGO_CONFIGS} DESTINATION bin/algorithms)
+  install(FILES ${3RD_PARTY_LICENSES} DESTINATION bin/licenses)
+  install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.md DESTINATION bin/licenses RENAME ssimp.lic)
 endif()
 
 # tests
