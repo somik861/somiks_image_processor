@@ -51,6 +51,7 @@ set(APP_NONMAIN_SOURCES
     "src/application/managers/algorithm_manager.cpp"
     "src/application/managers/_algo_format_base.cpp"
     "src/application/managers/config_manager.cpp"
+    "src/application/managers/license_manager.cpp"
     "src/application/api.cpp")
 
 # formats
@@ -82,6 +83,11 @@ endforeach()
 foreach(FILE ${APP_ALGO_CONFIGS})
   message("Found algorithm config: ${FILE}")
 endforeach()
+# 3rd party licenses
+file(GLOB 3RD_PARTY_LICENSES ${CMAKE_SOURCE_DIR}/src/licenses/*.lic)
+foreach(FILE ${3RD_PARTY_LICENSES})
+  message("Found 3rd party licenses: ${FILE}")
+endforeach()
 
 # add config to target
 function(target_add_config target)
@@ -112,6 +118,13 @@ function(_copy_config_files dest)
     get_filename_component(NAME "${FILE}" NAME)
     configure_file("${FILE}" "${dest}/algorithms/${NAME}")
   endforeach()
+
+  # 3rd party licenses
+  foreach(FILE ${3RD_PARTY_LICENSES})
+    get_filename_component(NAME "${FILE}" NAME)
+    configure_file("${FILE}" "${dest}/licenses/${NAME}")
+  endforeach()
+  configure_file("${CMAKE_SOURCE_DIR}/LICENSE.md" "${dest}/licenses/ssimp.lic")
 endfunction()
 
 

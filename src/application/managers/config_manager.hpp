@@ -12,15 +12,6 @@ class ConfigManager {
 	boost::json::value load_format(const std::string& format) const;
 	boost::json::value load_algorithm(const std::string& algorithm) const;
 
-	friend std::ostream& operator<<(std::ostream& os,
-	                                const ConfigManager& cfg) {
-		os << "ConfigManager properties:\n";
-		os << "Binary dir: " << cfg._binary_dir << '\n';
-		os << "Format folder: " << cfg._format_folder << '\n';
-		os << "Algo folder: " << cfg._algo_folder << '\n';
-		return os;
-	}
-
   private:
 	boost::json::value _load_json(const std::filesystem::path& file) const;
 

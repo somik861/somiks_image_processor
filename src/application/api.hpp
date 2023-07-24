@@ -18,6 +18,7 @@ class ExtensionManager;
 class FormatManager;
 class OptionsManager;
 class AlgorithmManager;
+class LicenseManager;
 
 class API {
   public:
@@ -212,6 +213,21 @@ class API {
 	                       const std::filesystem::path& file) const;
 
 	/**
+	 * Return set available licenses
+	 */
+	std::set<std::string> available_licenses() const;
+
+	/**
+	 * Get license text
+	 */
+	const std::string& license(const std::string& name = "ssimp") const;
+
+	/**
+	 * Retrun true if license with given name is available
+	 */
+	bool is_license_available(const std::string& name) const;
+
+	/**
 	 * Custom destructor to enable destruction of managers
 	 */
 	~API();
@@ -232,5 +248,6 @@ class API {
 	std::unique_ptr<OptionsManager> _options_manager;
 	std::unique_ptr<FormatManager> _format_manager;
 	std::unique_ptr<AlgorithmManager> _algorithm_manager;
+	std::unique_ptr<LicenseManager> _license_manager;
 };
 } // namespace ssimp
