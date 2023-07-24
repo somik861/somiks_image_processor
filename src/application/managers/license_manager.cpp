@@ -4,16 +4,27 @@ namespace fs = std::filesystem;
 #include <fstream>
 #include <sstream>
 
+#ifdef INLINE_CONFIGS
+#include "inlined_licenses.hpp"
+#endif
+
 namespace ssimp {
 LicenseManager::LicenseManager() {
+#ifdef INLINE_CONFIGS
+	for (const auto& [k, v] : inlined_configs::licenses) {
+		_license_names.insert(k);
+		_loaded[k] = v;
+	}
+#else
 	for (const auto& entry : fs::directory_iterator(_license_folder))
 		if (entry.path().extension() == ".lic")
-			_licence_names.insert(entry.path().stem().string());
+			_license_names.insert(entry.path().stem().string());
+#endif
 }
 
 const std::unordered_set<std::string>&
 LicenseManager::available_licenses() const {
-	return _licence_names;
+	return _license_names;
 }
 const std::string& LicenseManager::license(const std::string& name) const {
 	if (!_loaded.contains(name)) {
@@ -26,6 +37,6 @@ const std::string& LicenseManager::license(const std::string& name) const {
 	return _loaded.at(name);
 }
 bool LicenseManager::is_license_available(const std::string& name) const {
-	return _licence_names.contains(name);
+	return _license_names.contains(name);
 }
 } // namespace ssimp

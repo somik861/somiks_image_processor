@@ -26,7 +26,7 @@ class LicenseManager {
 	bool is_license_available(const std::string& name) const;
 
   private:
-	std::unordered_set<std::string> _licence_names;
+	std::unordered_set<std::string> _license_names;
 	/**
 	 * Cache of loaded licenses in RAM.
 	 */
