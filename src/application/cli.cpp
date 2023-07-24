@@ -20,17 +20,18 @@ namespace fs = std::filesystem;
 // program options variables
 fs::path _arg_input_path;
 fs::path _arg_output_path;
-std::string _arg_format = "";
-fs::path _arg_loading_options = "";
-fs::path _arg_saving_options = "";
-fs::path _arg_preset = "";
+std::string _arg_format;
+fs::path _arg_loading_options;
+fs::path _arg_saving_options;
+fs::path _arg_preset;
 std::vector<std::string> _arg_algorithms;
-fs::path _arg_algo_options = "";
-std::string _arg_saving_options_string = "";
-std::string _arg_loading_options_string = "";
-std::string _arg_algo_options_string = "";
-std::string _arg_help_format = "";
-std::string _arg_help_algo = "";
+fs::path _arg_algo_options;
+std::string _arg_saving_options_string;
+std::string _arg_loading_options_string;
+std::string _arg_algo_options_string;
+std::string _arg_help_format;
+std::string _arg_help_algo;
+std::string _arg_license_of;
 
 bool _arg_recurse = false;
 bool _arg_directory_mode = false;
@@ -73,6 +74,16 @@ void _print_options(
 		std::cout << opt << '\n';
 }
 
+void _print_license(const std::string& name, const ssimp::API& api) {
+	std::string side(20, '=');
+	std::string row(2 * side.size() + 2 + name.size(), '=');
+	std::cout << row << '\n';
+	std::cout << side << ' ' << name << ' ' << side << '\n';
+	std::cout << row << "\n\n";
+	std::cout << api.license(name);
+	std::cout << '\n';
+}
+
 bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	po::positional_options_description positional;
 	positional.add("input_path", 1).add("output_path", 1);
@@ -85,9 +96,11 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	     "output_path"); //
 
 	po::options_description generic("Generic options");
-	generic.add_options()                  //
-	    ("version", "show version")        //
-	    ("help,h", "produce help message") //
+	generic.add_options()                               //
+	    ("version", "show version")                     //
+	    ("license", "Show whole product license")       //
+	    ("license_of", "Show specific part of license") //
+	    ("help,h", "produce help message")              //
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
@@ -129,19 +142,20 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	          vm);
 
 	if (vm.contains("help")) {
-		std::cout << "Usage: ./ssimp input_path [output_path] "
-		             "[--version]\n\t[--help] "
-		             "[--help_format <string>] [--help_algo <string>]\n\t"
-		             "[--debug] [--print_info] [--preset "
-		             "<preset.json>]\n\t"
-		             "[--allow_override] [--recurse] [--as_one] "
-		             "\n\t[--loading_options "
-		             "<lopt.json>] [--loading_opt_string "
-		             "<string>]\n\t[--format <string>] [--saving_options "
-		             "<sopt.json>] [--saving_opt_string "
-		             "<string>]\n\t[{--algorithm <string>}... "
-		             "[--algo_options <algo_options.json>] [--algo_opt_string "
-		             "<string>]]\n\n";
+		std::cout
+		    << "Usage: ./ssimp input_path [output_path] "
+		       "[--version]\n\t[--license] [--license_of <string>]\n\t[--help] "
+		       "[--help_format <string>] [--help_algo <string>]\n\t"
+		       "[--debug] [--print_info] [--preset "
+		       "<preset.json>]\n\t"
+		       "[--allow_override] [--recurse] [--as_one] "
+		       "\n\t[--loading_options "
+		       "<lopt.json>] [--loading_opt_string "
+		       "<string>]\n\t[--format <string>] [--saving_options "
+		       "<sopt.json>] [--saving_opt_string "
+		       "<string>]\n\t[{--algorithm <string>}... "
+		       "[--algo_options <algo_options.json>] [--algo_opt_string "
+		       "<string>]]\n\n";
 		std::cout << generic << "\n";
 		std::cout << "Supported formats:\n";
 		for (const auto& f : api.supported_formats())
@@ -151,7 +165,29 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		for (const auto& a : api.supported_algorithms())
 			std::cout << "\t" << a << '\n';
 		std::cout << '\n';
+		std::cout << "Available licenses:\n";
+		for (const auto& a : api.available_licenses())
+			std::cout << "\t" << a << '\n';
+		std::cout << '\n';
 
+		return false;
+	}
+
+	if (vm.contains("license")) {
+		std::cout
+		    << "By using and sharing this product, you accept all licenses\n";
+
+		_print_license("ssimp", api);
+
+		auto licenses = api.available_licenses();
+		licenses.erase("ssimp");
+		for (const auto& lic : licenses)
+			_print_license(lic, api);
+		return false;
+	}
+
+	if (!_arg_license_of.empty()) {
+		_print_license(_arg_license_of, api);
 		return false;
 	}
 

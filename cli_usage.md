@@ -10,6 +10,7 @@ Therefore, I strongly recommend reading this manual before usage and to strictly
 ``` pwsh
 PS> ssimp --help
 Usage: ./ssimp input_path [output_path] [--version]
+        [--license] [--license_of <string>]
         [--help] [--help_format <string>] [--help_algo <string>]
         [--debug] [--print_info] [--preset <preset.json>]
         [--allow_override] [--recurse] [--as_one]
@@ -19,6 +20,8 @@ Usage: ./ssimp input_path [output_path] [--version]
 
 Generic options:
   --version                show version
+  --license                Show whole product license
+  --license_of             Show specific part of license
   -h [ --help ]            produce help message
   --help_format arg        show options config for format
   --help_algo arg          show options config for algorithm
@@ -48,6 +51,10 @@ Supported formats:
 Supported algorithms:
         change_type
         split_channels
+
+Available licenses:
+        boost
+        ssimp
 ```
 
 ## Explanation of arguments
@@ -68,6 +75,12 @@ Show configuration of available loading and saving options for given format.
 
 ### help_algo
 Show configuration of available algorithm options.
+
+### license
+Show product license
+
+### license_of
+Show part of license corresponding. The argument must be one of available licenses.
 
 ### debug
 Produce debug messages.
