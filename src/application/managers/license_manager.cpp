@@ -25,4 +25,7 @@ const std::string& LicenseManager::license(const std::string& name) const {
 
 	return _loaded.at(name);
 }
+bool LicenseManager::is_license_available(const std::string& name) const {
+	return _licence_names.contains(name);
+}
 } // namespace ssimp

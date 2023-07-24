@@ -20,6 +20,10 @@ class LicenseManager {
 	 * Obtain license text
 	 */
 	const std::string& license(const std::string& name) const;
+	/**
+	 * Return true if license with **name** is available
+	 */
+	bool is_license_available(const std::string& name) const;
 
   private:
 	std::unordered_set<std::string> _licence_names;
