@@ -3,6 +3,7 @@
 #include "managers/config_manager.hpp"
 #include "managers/extension_manager.hpp"
 #include "managers/format_manager.hpp"
+#include "managers/license_manager.hpp"
 #include "managers/options_manager.hpp"
 #include <algorithm>
 #include <format>
@@ -17,7 +18,8 @@ API::API()
       _extension_manager(std::make_unique<ExtensionManager>()),
       _options_manager(std::make_unique<OptionsManager>()),
       _format_manager(std::make_unique<FormatManager>()),
-      _algorithm_manager(std::make_unique<AlgorithmManager>()) {
+      _algorithm_manager(std::make_unique<AlgorithmManager>()),
+      _license_manager(std::make_unique<LicenseManager>()) {
 
 	for (const std::string& format : _format_manager->registered()) {
 		auto config = _config_manager->load_format(format).get_object();
@@ -372,7 +374,24 @@ fs::path API::with_correct_extension(const std::string& format,
 	return _extension_manager->with_correct_extension(format, file);
 }
 
-API::~API() {}
+std::set<std::string> API::available_licenses() const {
+	std::set<std::string> out;
+	out.insert_range(_license_manager->available_licenses());
+	return out;
+}
+
+const std::string& API::license(const std::string& name /* = "ssimp" */) const {
+	if (!is_license_available(name))
+		throw ssimp::exceptions::Unsupported(
+		    std::format("License with name '{}' is not available", name));
+	return _license_manager->license(name);
+}
+
+bool API::is_license_available(const std::string& name) const {
+	return _license_manager->is_license_available(name);
+}
+
+API::~API() = default;
 
 void API::_load_directory(std::vector<std::vector<img::LocalizedImage>>& images,
                           const fs::path& base_dir,
