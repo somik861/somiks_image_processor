@@ -375,9 +375,8 @@ fs::path API::with_correct_extension(const std::string& format,
 }
 
 std::set<std::string> API::available_licenses() const {
-	std::set<std::string> out;
-	out.insert_range(_license_manager->available_licenses());
-	return out;
+	const auto& licenses = _license_manager->available_licenses();
+	return std::set<std::string>(licenses.begin(), licenses.end());
 }
 
 const std::string& API::license(const std::string& name /* = "ssimp" */) const {
