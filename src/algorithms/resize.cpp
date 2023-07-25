@@ -1,5 +1,6 @@
 #include "resize.hpp"
 #include "common_macro.hpp"
+#include <boost/lexical_cast.hpp>
 #include <map>
 
 namespace {
@@ -58,6 +59,48 @@ ssimp::img::ndImage<T> resize_to(const ssimp::img::ndImage<T>& img,
 	return new_img;
 }
 
+std::vector<std::string> split(const std::string& str, char delim) {
+	std::vector<std::string> out;
+	std::string* buffer = &out.emplace_back();
+	for (char ch : str) {
+		if (ch == delim)
+			buffer = &out.emplace_back();
+		else
+			buffer->push_back(ch);
+	}
+	return out;
+}
+
+std::string strip_ws(const std::string& str) {
+	auto it = str.begin();
+	auto end_it = str.end();
+	while (it != end_it && std::isspace(*it))
+		++it;
+
+	std::string out(it, end_it);
+	while (!out.empty() && std::isspace(out.back()))
+		out.pop_back();
+
+	return out;
+}
+
+std::vector<std::size_t> string_to_dims(const std::string& str) {
+	std::vector<std::size_t> out;
+	for (const auto& val : split(str, ','))
+		out.push_back(boost::lexical_cast<std::size_t>(strip_ws(val)));
+
+	return out;
+}
+
+std::vector<std::size_t> scale_dims(const std::vector<std::size_t>& old,
+                                    double factor) {
+	std::vector<std::size_t> new_(old.size());
+	std::ranges::transform(old, new_.begin(), [factor](auto x) {
+		return std::max<std::size_t>(1, std::llround(x * factor));
+	});
+	return new_;
+}
+
 } // namespace
 
 namespace ssimp::algorithms {
@@ -74,13 +117,31 @@ Resize::apply(const std::vector<img::ndImage<T>>& imgs,
               const option_types::options_t& options) {
 
 	auto& img_ = imgs[0];
-
 	double factor = std::get<double>(options.at("scale_factor"));
-	std::vector<std::size_t> new_dims;
-	std::ranges::transform(
-	    img_.dims(), std::back_inserter(new_dims), [factor](auto x) {
-		    return std::max<std::size_t>(1, std::llround(x * factor));
-	    });
+	std::vector<std::size_t> new_dims = scale_dims(img_.dims(), factor);
+
+	std::string exact_res = std::get<std::string>(options.at("exact_res"));
+	if (exact_res != "auto") {
+		new_dims = string_to_dims(exact_res);
+		if (new_dims.size() != img_.dims().size())
+			throw exceptions::Unsupported(
+			    "Given resolution does not have the same number of dimensions");
+
+		std::size_t zero_c = std::ranges::count(new_dims, 0);
+		if (zero_c > 0) {
+			if (zero_c != new_dims.size() - 1)
+				throw exceptions::Unsupported("To preserve aspect ratio, leave "
+				                              "only one non-zero element");
+
+			std::size_t non_zero_idx = std::distance(
+			    new_dims.begin(),
+			    std::ranges::find_if(new_dims, [](auto x) { return x != 0; }));
+
+			new_dims =
+			    scale_dims(img_.dims(), double(new_dims[non_zero_idx]) /
+			                                double(img_.dims()[non_zero_idx]));
+		}
+	}
 
 	interpolation_type interp =
 	    std::map<std::string, interpolation_type>{
