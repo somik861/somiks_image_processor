@@ -1,0 +1,19 @@
+{
+  "options": [
+    {
+      "type": "double",
+      "text": "Scale factor",
+      "id": "scale_factor",
+      "range": [ 1e-10, 1e10 ],
+      "default": 1.0,
+      "help": "Scale image by factor, each dimension of output is kept to be at least 1."
+    },
+    {
+      "type": "choice",
+      "text": "Interpolation",
+      "id": "interpolation",
+      "values": [ "nearest neighbour" ],
+      "default": "nearest neighbour"
+    }
+  ]
+}
