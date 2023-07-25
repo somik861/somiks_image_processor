@@ -58,21 +58,21 @@
       "text": "red",
       "range": [ 0.0, 1.0 ],
       "id": "red_mult",
-      "default": 0.333
+      "default": 0.2126
     },
     {
       "type": "double",
       "text": "green",
       "range": [ 0.0, 1.0 ],
       "id": "green_mult",
-      "default": 0.333
+      "default": 0.7152
     },
     {
       "type": "double",
       "text": "blue",
       "range": [ 0.0, 1.0 ],
       "id": "blue_mult",
-      "default": 0.333
+      "default": 0.0722
     }
   ]
 }
