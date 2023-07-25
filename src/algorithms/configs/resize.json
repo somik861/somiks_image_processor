@@ -21,7 +21,7 @@
       "id": "exact_res",
       "range": [ 1, 1000 ],
       "default": "auto",
-      "help": "Enter exact resolution as a numbers seprated by comma (e.g. '1920,1080'). Too preserve aspect ratio, replace all reduntant numbers with 0 (e.g. '0,1080'). This overrides scale factor."
+      "help": "Enter exact resolution as a numbers seprated by comma (e.g. '1920,1080'). To preserve aspect ratio, replace all reduntant numbers with 0 (e.g. '0,1080'). This overrides scale factor."
     },
     {
       "type": "choice",
