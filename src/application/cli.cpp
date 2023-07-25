@@ -96,11 +96,12 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 	     "output_path"); //
 
 	po::options_description generic("Generic options");
-	generic.add_options()                               //
-	    ("version", "show version")                     //
-	    ("license", "Show whole product license")       //
-	    ("license_of", "Show specific part of license") //
-	    ("help,h", "produce help message")              //
+	generic.add_options()                         //
+	    ("version", "show version")               //
+	    ("license", "Show whole product license") //
+	    ("license_of", po::value(&_arg_license_of),
+	     "Show specific part of license")  //
+	    ("help,h", "produce help message") //
 	    ("help_format", po::value(&_arg_help_format),
 	     "show options config for format") //
 	    ("help_algo", po::value(&_arg_help_algo),
@@ -186,7 +187,8 @@ bool option_parser(int argc, const char** argv, const ssimp::API& api) {
 		return false;
 	}
 
-	if (!_arg_license_of.empty()) {
+	if (vm.contains("license_of")) {
+		_arg_license_of = vm.at("license_of").as<std::string>();
 		_print_license(_arg_license_of, api);
 		return false;
 	}
