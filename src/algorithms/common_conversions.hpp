@@ -267,21 +267,27 @@ rgb_to_rgba(const img::ndImage<img::RGB8>& img_) {
 
 // ========== COMPLEX ===========
 template <typename out_t, typename in_t>
-img::ndImage<out_t> all_to_all(const img::ndImage<in_t>& img_,
-                               bool rescale,
-                               std::array<double, 3> rgb_multipliers,
-                               img::GRAY8 gray_bg,
-                               img::RGB8 rgb_bg);
-
-template <typename out_t, typename in_t>
 img::ndImage<out_t> noncomplex_to_complex(const img::ndImage<in_t>& img_,
                                           bool rescale,
                                           std::array<double, 3> rgb_multipliers,
                                           img::GRAY8 gray_bg,
                                           img::RGB8 rgb_bg) {
 	using prec_t = typename out_t::value_type;
-	img::ndImage<prec_t> float_img =
-	    all_to_all<prec_t>(img_, rescale, rgb_multipliers, gray_bg, rgb_bg);
+	img::ndImage<prec_t> float_img(0);
+
+	if constexpr (mt::traits::is_any_of_tuple_v<in_t, gray_types>)
+		float_img = gray_to_float<prec_t>(img_, rescale);
+	else if constexpr (mt::traits::is_any_of_tuple_v<in_t, float_types>)
+		float_img = float_to_float<prec_t>(img_);
+	else if constexpr (std::is_same_v<in_t, img::GRAY8A>)
+		float_img = ga_to_float<prec_t>(img_, rescale, gray_bg);
+	else if constexpr (std::is_same_v<in_t, img::RGB8>)
+		float_img = rgb_to_float<prec_t>(img_, rescale, rgb_multipliers);
+	else if constexpr (std::is_same_v<in_t, img::RGBA8>)
+		float_img =
+		    rgba_to_float<prec_t>(img_, rescale, rgb_multipliers, rgb_bg);
+	else
+		throw exceptions::Unsupported("Unsupported conversion");
 
 	img::ndImage<std::complex<prec_t>> out(img_.dims());
 	std::ranges::transform(float_img, out.begin(), [](auto elem) {
@@ -321,8 +327,18 @@ img::ndImage<out_t> complex_to_noncomplex(const img::ndImage<in_t>& img_,
 	std::ranges::transform(img_, float_img.begin(),
 	                       [](auto elem) { return elem.real(); });
 
-	return all_to_all<out_t>(float_img, rescale, rgb_multipliers, gray_bg,
-	                         rgb_bg);
+	if constexpr (mt::traits::is_any_of_tuple_v<out_t, gray_types>)
+		return float_to_gray<out_t>(float_img, rescale);
+	else if constexpr (mt::traits::is_any_of_tuple_v<out_t, float_types>)
+		return float_to_float<out_t>(float_img);
+	else if constexpr (std::is_same_v<out_t, img::GRAY8A>)
+		return float_to_ga(float_img, rescale);
+	else if constexpr (std::is_same_v<out_t, img::RGB8>)
+		return float_to_rgb(float_img, rescale);
+	else if constexpr (std::is_same_v<out_t, img::RGBA8>)
+		return float_to_rgba(float_img, rescale);
+
+	throw exceptions::Unsupported("Unsupported conversion");
 }
 
 // ========== DISPATCHERS ===========
