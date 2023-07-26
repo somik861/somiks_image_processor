@@ -4,7 +4,7 @@
       "type": "choice",
       "text": "Output type",
       "id": "output_type",
-      "values": [ "same as input", "GRAY8", "GRAY16", "GRAY32", "GRAY64", "FLOAT", "DOUBLE", "GRAY8A", "RGB8", "RGBA8" ],
+      "values": [ "same as input", "GRAY8", "GRAY16", "GRAY32", "GRAY64", "FLOAT", "DOUBLE", "GRAY8A", "RGB8", "RGBA8" , "COMPLEX_F", "COMPLEX_D"],
       "default": "same as input"
     },
     {

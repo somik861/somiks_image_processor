@@ -62,6 +62,13 @@ ChangeType::apply(const std::vector<img::ndImage<T>>& imgs,
 	if (output_type == "RGBA8")
 		return {{conversions::all_to_all<img::RGBA8>(img_, rescale, rgb_mult,
 		                                             gray_bg, rgb_bg)}};
+	if (output_type == "COMPLEX_F")
+		return {{conversions::all_to_all<img::COMPLEX_F>(
+		    img_, rescale, rgb_mult, gray_bg, rgb_bg)}};
+
+	if (output_type == "COMPLEX_D")
+		return {{conversions::all_to_all<img::COMPLEX_D>(
+		    img_, rescale, rgb_mult, gray_bg, rgb_bg)}};
 
 	std::unreachable();
 }
@@ -75,4 +82,6 @@ INSTANTIATE_TEMPLATE(ChangeType, img::RGB8);
 INSTANTIATE_TEMPLATE(ChangeType, img::RGBA8);
 INSTANTIATE_TEMPLATE(ChangeType, img::FLOAT);
 INSTANTIATE_TEMPLATE(ChangeType, img::DOUBLE);
+INSTANTIATE_TEMPLATE(ChangeType, img::COMPLEX_F);
+INSTANTIATE_TEMPLATE(ChangeType, img::COMPLEX_D);
 } // namespace ssimp::algorithms

@@ -13,7 +13,9 @@ class ChangeType {
 	                                   img::RGB8,
 	                                   img::RGBA8,
 	                                   img::FLOAT,
-	                                   img::DOUBLE>;
+	                                   img::DOUBLE,
+	                                   img::COMPLEX_F,
+	                                   img::COMPLEX_D>;
 	constexpr static const char* name = "change_type";
 
 	static bool image_count_supported(std::size_t count);
