@@ -54,6 +54,8 @@ void _load_preset() {
 
 	_arg_debug = preset.contains("debug") && preset.at("debug").as_bool();
 	_arg_recurse = preset.contains("recurse") && preset.at("recurse").as_bool();
+	_arg_allow_override = preset.contains("allow_override") &&
+	                      preset.at("allow_override").as_bool();
 	_arg_print_info =
 	    preset.contains("print_info") && preset.at("print_info").as_bool();
 	_arg_allow_override = preset.contains("allow_override") &&
