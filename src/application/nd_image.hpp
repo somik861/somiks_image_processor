@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <complex>
 #include <cstddef>
 #include <filesystem>
 #include <memory>
@@ -37,11 +38,14 @@ enum class elem_type : int {
 	DOUBLE,
 	RGB8,
 	RGBA8,
+	COMPLEX_F,
+	COMPLEX_D
 };
 
 inline std::ostream& operator<<(std::ostream& os, elem_type t) {
-	os << std::array{"GRAY8", "GRAY8A", "GRAY16", "GRAY32", "GRAY64",
-	                 "FLOAT", "DOUBLE", "RGB8",   "RGBA8"}[static_cast<int>(t)];
+	os << std::array{"GRAY8",  "GRAY8A",    "GRAY16",   "GRAY32",
+	                 "GRAY64", "FLOAT",     "DOUBLE",   "RGB8",
+	                 "RGBA8",  "COMPLEX_F", "COMPLEX_D"}[static_cast<int>(t)];
 	return os;
 }
 
@@ -57,7 +61,9 @@ using type_list = std::tuple<uint8_t,
                              float,
                              double,
                              std::array<uint8_t, 3>,
-                             std::array<uint8_t, 4>>;
+                             std::array<uint8_t, 4>,
+                             std::complex<float>,
+                             std::complex<double>>;
 
 /**
  * Convenience function for convering enum type to c++-type
@@ -85,6 +91,8 @@ using FLOAT = enum_to_type<elem_type::FLOAT>;
 using DOUBLE = enum_to_type<elem_type::DOUBLE>;
 using RGB8 = enum_to_type<elem_type::RGB8>;
 using RGBA8 = enum_to_type<elem_type::RGBA8>;
+using COMPLEX_F = enum_to_type<elem_type::COMPLEX_F>;
+using COMPLEX_D = enum_to_type<elem_type::COMPLEX_D>;
 
 /**
  * Concept to prevent instatiation of template swith unsupported type

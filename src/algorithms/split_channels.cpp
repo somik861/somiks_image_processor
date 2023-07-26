@@ -21,16 +21,34 @@ SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
 	std::vector<img::LocalizedImage> out;
 	const auto& img_ = imgs[0];
 
-	for (std::size_t i = 0; i < mt::traits::array_size_v<T>; ++i) {
-		img::ndImage<img::GRAY8> ch(img_.dims());
+	if constexpr (mt::traits::is_any_of_v<T, img::COMPLEX_F, img::COMPLEX_D>) {
+		using prec_t = T::value_type;
 
-		std::transform(img_.begin(), img_.end(), ch.begin(),
-		               [=](auto elem) { return elem[i]; });
+		img::ndImage<prec_t> r(img_.dims());
+		img::ndImage<prec_t> i(img_.dims());
 
-		if constexpr (std::is_same_v<T, img::GRAY8A>)
-			out.push_back({ch, std::array{"gray", "alpha"}[i]});
-		else
-			out.push_back({ch, std::array{"red", "green", "blue", "alpha"}[i]});
+		std::ranges::transform(img_, r.begin(),
+		                       [=](auto elem) { return elem.real(); });
+
+		std::ranges::transform(img_, i.begin(),
+		                       [=](auto elem) { return elem.imag(); });
+
+		out.push_back({r, "real"});
+		out.push_back({i, "imaginary"});
+
+	} else {
+		for (std::size_t i = 0; i < mt::traits::array_size_v<T>; ++i) {
+			img::ndImage<img::GRAY8> ch(img_.dims());
+
+			std::ranges::transform(img_, ch.begin(),
+			                       [=](auto elem) { return elem[i]; });
+
+			if constexpr (std::is_same_v<T, img::GRAY8A>)
+				out.push_back({ch, std::array{"gray", "alpha"}[i]});
+			else
+				out.push_back(
+				    {ch, std::array{"red", "green", "blue", "alpha"}[i]});
+		}
 	}
 
 	return out;
@@ -39,4 +57,6 @@ SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
 INSTANTIATE_TEMPLATE(SplitChannels, img::GRAY8A);
 INSTANTIATE_TEMPLATE(SplitChannels, img::RGB8);
 INSTANTIATE_TEMPLATE(SplitChannels, img::RGBA8);
+INSTANTIATE_TEMPLATE(SplitChannels, img::COMPLEX_F);
+INSTANTIATE_TEMPLATE(SplitChannels, img::COMPLEX_D);
 } // namespace ssimp::algorithms
