@@ -16,6 +16,13 @@
       "id": "intensity"
     },
     {
+      "type": "choice",
+      "text": "Boundary condition",
+      "values": [ "zero", "nearest", "mirror" ],
+      "id": "bound_condition",
+      "default": "nearest"
+    },
+    {
       "type": "subsection",
       "text": "Apply only to one dimension",
       "id": "one_dim",
