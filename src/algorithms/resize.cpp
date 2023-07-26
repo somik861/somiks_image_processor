@@ -1,6 +1,7 @@
 #include "resize.hpp"
 #include "common_macro.hpp"
 #include <boost/lexical_cast.hpp>
+#include <iostream>
 #include <map>
 
 namespace {
@@ -122,8 +123,52 @@ std::vector<double> gauss_right_kernel(double sigma) {
 }
 
 template <typename T>
-void blur_dim(ssimp::img::ndImage<T>& img, std::size_t dim_idx, double sigma) {
+T _get_blurred(const ssimp::img::ndImage<T>& img,
+               const std::vector<std::size_t>& coords,
+               std::size_t dim_idx,
+               const std::vector<double>& gauss_right) {
+	std::size_t kernel_size = gauss_right.size();
+
+	std::array<double, 4> accum{};
+
+	auto coords_ = coords;
+	for (int dx = -int(kernel_size) + 1; dx < int(kernel_size); ++dx) {
+		int new_coord = std::abs(int(coords[dim_idx]) + dx);
+		if (new_coord >= coords[dim_idx])
+			new_coord = 2 * int(coords[dim_idx]) - new_coord - 1;
+
+		// kernel does not fit
+		if (new_coord < 0) {
+			return img(coords);
+			continue;
+		}
+
+		coords_[dim_idx] = new_coord;
+		T dx_val = img(coords_);
+		if constexpr (std::is_scalar_v<T>) {
+			accum[0] += dx_val * gauss_right[std::abs(dx)];
+		} else {
+			for (std::size_t i = 0; i < dx_val.size(); ++i)
+				accum[i] += dx_val[i] * gauss_right[std::abs(dx)];
+		}
+	}
+
+	if constexpr (std::is_scalar_v<T>)
+		return T(accum[0]);
+	else {
+		T out{};
+		for (std::size_t i = 0; i < out.size(); ++i)
+			out[i] = T::value_type(accum[i]);
+
+		return out;
+	}
+}
+
+template <typename T>
+ssimp::img::ndImage<T>
+blur_dim(const ssimp::img::ndImage<T>& img, std::size_t dim_idx, double sigma) {
 	std::vector<double> kernel = gauss_right_kernel(sigma);
+	ssimp::img::ndImage<T> new_img(img.dims());
 
 	std::vector<std::size_t> current_coords(img.dims().size());
 	auto increment_coords = [&]() {
@@ -133,21 +178,18 @@ void blur_dim(ssimp::img::ndImage<T>& img, std::size_t dim_idx, double sigma) {
 				break;
 			current_coords[i] = 0;
 			std::size_t next = i + 1;
-			if (next == dim_idx) {
-				++next;
-				++i;
-			}
 			if (next < current_coords.size())
 				++current_coords[next];
 		}
 	};
 
 	do {
-		// TODO
-
+		new_img(current_coords) =
+		    _get_blurred(img, current_coords, dim_idx, kernel);
 		increment_coords();
-		current_coords[dim_idx] = 0;
 	} while (std::ranges::any_of(current_coords, [](auto x) { return x; }));
+
+	return new_img;
 }
 
 template <typename T>
@@ -156,9 +198,9 @@ blur_dims_fast(const ssimp::img::ndImage<T>& img,
                const std::vector<std::size_t>& new_dims) {
 	ssimp::img::ndImage<T> new_img = img.copy();
 	for (std::size_t i = 0; i < new_dims.size(); ++i) {
-		double down_factor = double(new_dims[i]) / double(img.dims()[i]);
+		double down_factor = double(img.dims()[i]) / double(new_dims[i]);
 		if (down_factor > 1.0)
-			blur_dim(new_img, i, (down_factor - 1.0) / 2.0);
+			new_img = blur_dim(new_img, i, (down_factor - 1.0) / 2.0);
 	}
 	return new_img;
 }
