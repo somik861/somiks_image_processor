@@ -1,0 +1,35 @@
+{
+  "options": [
+    {
+      "type": "choice",
+      "text": "Filter type",
+      "id": "filter",
+      "values": [ "gaussian", "box" ],
+      "default": "gaussian"
+    },
+    {
+      "type": "double",
+      "text": "Intensity",
+      "help": "Equivalent to length of box-side if filter is 'box' or to sigma if filter is 'gaussian'",
+      "range": [ 0.0, 1e5 ],
+      "default": 0.0,
+      "id": "intensity"
+    },
+    {
+      "type": "subsection",
+      "text": "Apply only to one dimension",
+      "id": "one_dim",
+      "default": false,
+      "options": [
+        {
+          "type": "int",
+          "text": "Dimension index",
+          "range": [ 0, 2000000000 ],
+          "help": "Number from 0 to (dimension count - 1) included",
+          "default": 0,
+          "id": "dim_idx"
+        }
+      ]
+    }
+  ]
+}
