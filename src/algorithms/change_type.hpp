@@ -5,13 +5,13 @@
 namespace ssimp::algorithms {
 class ChangeType {
   public:
-	using supported_types = std::tuple<img::GRAY8,
-	                                   img::GRAY8A,
-	                                   img::GRAY16,
-	                                   img::GRAY32,
-	                                   img::GRAY64,
-	                                   img::RGB8,
-	                                   img::RGBA8,
+	using supported_types = std::tuple<img::GRAY_8,
+	                                   img::GRAYA_8,
+	                                   img::GRAY_16,
+	                                   img::GRAY_32,
+	                                   img::GRAY_64,
+	                                   img::RGB_8,
+	                                   img::RGBA_8,
 	                                   img::FLOAT,
 	                                   img::DOUBLE,
 	                                   img::COMPLEX_F,

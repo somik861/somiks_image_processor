@@ -2,10 +2,10 @@
 #include "common.hpp"
 #include <tuple>
 
-using scalar_type_list = std::tuple<img::GRAY8,
-                                    img::GRAY16,
-                                    img::GRAY32,
-                                    img::GRAY64,
+using scalar_type_list = std::tuple<img::GRAY_8,
+                                    img::GRAY_16,
+                                    img::GRAY_32,
+                                    img::GRAY_64,
                                     img::FLOAT,
                                     img::DOUBLE>;
 

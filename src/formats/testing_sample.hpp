@@ -5,7 +5,7 @@
 namespace ssimp::formats {
 class TestingSample {
   public:
-	using supported_types = std::tuple<img::GRAY8>;
+	using supported_types = std::tuple<img::GRAY_8>;
 	constexpr static const char* name = "testing_sample";
 
 	static bool image_count_supported(std::size_t count);

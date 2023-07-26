@@ -5,7 +5,7 @@
 namespace ssimp::formats {
 class JPEG {
   public:
-	using supported_types = std::tuple<img::GRAY8, img::RGB8>;
+	using supported_types = std::tuple<img::GRAY_8, img::RGB_8>;
 	constexpr static const char* name = "jpeg";
 
 	static bool image_count_supported(std::size_t count);

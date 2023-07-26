@@ -50,11 +50,11 @@ std::ostream& operator<<(std::ostream& os, TJSAMP samp) {
 std::ostream& operator<<(std::ostream& os, TJCS samp) {
 	switch (samp) {
 	case TJCS_RGB:
-		return os << "RGB";
+		return os << ssimp::img::elem_type::RGB_8;
 	case TJCS_YCbCr:
 		return os << "YCbCr";
 	case TJCS_GRAY:
-		return os << "GRAY";
+		return os << ssimp::img::elem_type::GRAY_8;
 	case TJCS_CMYK:
 		return os << "CMYK";
 	case TJCS_YCCK:
@@ -77,21 +77,6 @@ TJSAMP samp_from_string(std::string_view sv) {
 		return TJSAMP_440;
 	if (sv == "4:1:1")
 		return TJSAMP_411;
-
-	throw std::runtime_error("Invalid value");
-}
-
-TJCS cs_from_string(std::string_view sv) {
-	if (sv == "RGB")
-		return TJCS_RGB;
-	if (sv == "YCbCr")
-		return TJCS_YCbCr;
-	if (sv == "GRAY")
-		return TJCS_GRAY;
-	if (sv == "CMYK")
-		return TJCS_CMYK;
-	if (sv == "YCCK")
-		return TJCS_YCCK;
 
 	throw std::runtime_error("Invalid value");
 }
@@ -129,14 +114,14 @@ JPEG::load_image(const fs::path& path, const option_types::options_t&) {
 
 	TJPF pixel_format = gray ? TJPF_GRAY : TJPF_RGB;
 
-	img::ndImageBase dest_img = img::ndImage<img::GRAY8>(1);
+	img::ndImageBase dest_img = img::ndImage<img::GRAY_8>(1);
 	unsigned char* dest_ptr;
 	if (gray)
 		std::tie(dest_img, dest_ptr) =
-		    get_image<img::GRAY8>(meta_data->width, meta_data->height);
+		    get_image<img::GRAY_8>(meta_data->width, meta_data->height);
 	else
 		std::tie(dest_img, dest_ptr) =
-		    get_image<img::RGB8>(meta_data->width, meta_data->height);
+		    get_image<img::RGB_8>(meta_data->width, meta_data->height);
 
 	int rv = tjDecompress2(decompressor,
 	                       reinterpret_cast<const unsigned char*>(bytes.data()),
@@ -180,7 +165,7 @@ template <typename T>
 	unsigned char* jpeg_buffer = nullptr;
 	unsigned long jpeg_size;
 
-	bool gray = std::is_same_v<T, img::GRAY8>;
+	bool gray = std::is_same_v<T, img::GRAY_8>;
 
 	if (tjCompress2(
 	        compressor,
@@ -202,6 +187,6 @@ template <typename T>
 	tjFree(jpeg_buffer);
 }
 
-INSTANTIATE_SAVE_TEMPLATE(JPEG, img::GRAY8);
-INSTANTIATE_SAVE_TEMPLATE(JPEG, img::RGB8);
+INSTANTIATE_SAVE_TEMPLATE(JPEG, img::GRAY_8);
+INSTANTIATE_SAVE_TEMPLATE(JPEG, img::RGB_8);
 } // namespace ssimp::formats

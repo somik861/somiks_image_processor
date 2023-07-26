@@ -6,7 +6,7 @@ namespace ssimp::formats {
 class PNG {
   public:
 	using supported_types =
-	    std::tuple<img::GRAY8, img::GRAY8A, img::RGB8, img::RGBA8>;
+	    std::tuple<img::GRAY_8, img::GRAYA_8, img::RGB_8, img::RGBA_8>;
 	constexpr static const char* name = "png";
 
 	static bool image_count_supported(std::size_t count);

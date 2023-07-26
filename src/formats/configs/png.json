@@ -9,10 +9,11 @@
     },
     {
       "type": "choice",
-      "text": "Colorspace (number of channels of loaded image and selected colorspace must match)",
+      "text": "Colorspace",
       "id": "colorspace",
-      "values": [ "auto", "GRAY8", "GRAY8A", "RGB8", "RGBA8", "Linear GRAY8", "Linear GRAY8A", "Linear RGB8", "Linear RGBA8" ],
-      "default": "auto"
+      "values": [ "auto", "GRAY_8", "GRAYA_8", "RGB_8", "RGBA_8", "Linear GRAY_8", "Linear GRAYA_8", "Linear RGB_8", "Linear RGBA_8" ],
+      "default": "auto",
+      "help": "Number of channels of loaded image and selected colorspace must match."
     }
   ],
   "extensions": [
