@@ -5,7 +5,11 @@
 namespace ssimp::algorithms {
 class SplitChannels {
   public:
-	using supported_types = std::tuple<img::GRAY8A, img::RGB8, img::RGBA8>;
+	using supported_types = std::tuple<img::GRAY8A,
+	                                   img::RGB8,
+	                                   img::RGBA8,
+	                                   img::COMPLEX_F,
+	                                   img::COMPLEX_D>;
 	constexpr static const char* name = "split_channels";
 
 	static bool image_count_supported(std::size_t count);
