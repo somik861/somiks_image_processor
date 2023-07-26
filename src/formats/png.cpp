@@ -14,26 +14,28 @@ _mirror_map(const std::unordered_map<key_t, value_t>& map) {
 	return out;
 }
 
+using ssimp::to_string;
+using ssimp::img::elem_type;
 std::unordered_map<png_uint_32, std::string> _format_string_map{
-    {PNG_FORMAT_GRAY, "GRAY8"},
-    {PNG_FORMAT_GA, "GRAY8A"},
-    {PNG_FORMAT_AG, "GRAY8A (with alpha first)"},
-    {PNG_FORMAT_RGB, "RGB8"},
-    {PNG_FORMAT_BGR, "BGR8"},
-    {PNG_FORMAT_RGBA, "RGBA8"},
-    {PNG_FORMAT_ARGB, "ARGN8"},
-    {PNG_FORMAT_BGRA, "BGRA8"},
-    {PNG_FORMAT_ABGR, "ABGR8"},
-    {PNG_FORMAT_LINEAR_Y, "Linear GRAY8"},
-    {PNG_FORMAT_LINEAR_Y_ALPHA, "Linear GRAY8A"},
-    {PNG_FORMAT_LINEAR_RGB, "Linear RGB8"},
-    {PNG_FORMAT_LINEAR_RGB_ALPHA, "Linear RGBA8"},
-    {PNG_FORMAT_RGB_COLORMAP, "RGB8 with Colormap"},
-    {PNG_FORMAT_BGR_COLORMAP, "BGR8 with Colormap"},
-    {PNG_FORMAT_RGBA_COLORMAP, "RGB8 with Colormap"},
-    {PNG_FORMAT_ARGB_COLORMAP, "ARGB8 with Colormap"},
-    {PNG_FORMAT_BGRA_COLORMAP, "BGRA8 with Colormap"},
-    {PNG_FORMAT_ABGR_COLORMAP, "ABGR8 with Colormap"}};
+    {PNG_FORMAT_GRAY, to_string(elem_type::GRAY_8)},
+    {PNG_FORMAT_GA, to_string(elem_type::GRAYA_8)},
+    {PNG_FORMAT_AG, to_string(elem_type::GRAYA_8) + " (with alpha first)"},
+    {PNG_FORMAT_RGB, to_string(elem_type::RGB_8)},
+    {PNG_FORMAT_BGR, "BGR_8"},
+    {PNG_FORMAT_RGBA, to_string(elem_type::RGBA_8)},
+    {PNG_FORMAT_ARGB, "ARGB_8"},
+    {PNG_FORMAT_BGRA, "BGRA_8"},
+    {PNG_FORMAT_ABGR, "ABGR_8"},
+    {PNG_FORMAT_LINEAR_Y, "Linear " + to_string(elem_type::GRAY_8)},
+    {PNG_FORMAT_LINEAR_Y_ALPHA, "Linear " + to_string(elem_type::GRAYA_8)},
+    {PNG_FORMAT_LINEAR_RGB, "Linear " + to_string(elem_type::RGB_8)},
+    {PNG_FORMAT_LINEAR_RGB_ALPHA, "Linear " + to_string(elem_type::RGBA_8)},
+    {PNG_FORMAT_RGB_COLORMAP, to_string(elem_type::RGB_8) + " with Colormap"},
+    {PNG_FORMAT_BGR_COLORMAP, "BGR_8 with Colormap"},
+    {PNG_FORMAT_RGBA_COLORMAP, to_string(elem_type::RGBA_8) + " with Colormap"},
+    {PNG_FORMAT_ARGB_COLORMAP, "ARGB_8 with Colormap"},
+    {PNG_FORMAT_BGRA_COLORMAP, "BGRA_8 with Colormap"},
+    {PNG_FORMAT_ABGR_COLORMAP, "ABGR_8 with Colormap"}};
 auto _string_format_map = _mirror_map(_format_string_map);
 
 const std::string& format_to_string(png_uint_32 format) {
@@ -112,19 +114,19 @@ PNG::load_image(const std::filesystem::path& path,
 
 	std::array dims{std::size_t(image.width), std::size_t(image.height)};
 	if (mem_format == PNG_FORMAT_RGBA) {
-		img::ndImage<img::RGBA8> typed_img(dims);
+		img::ndImage<img::RGBA_8> typed_img(dims);
 		out.emplace_back(typed_img);
 		buffer = reinterpret_cast<png_bytep>(typed_img.span().data());
 	} else if (mem_format == PNG_FORMAT_RGB) {
-		img::ndImage<img::RGB8> typed_img(dims);
+		img::ndImage<img::RGB_8> typed_img(dims);
 		out.emplace_back(typed_img);
 		buffer = reinterpret_cast<png_bytep>(typed_img.span().data());
 	} else if (mem_format == PNG_FORMAT_GRAY) {
-		img::ndImage<img::GRAY8> typed_img(dims);
+		img::ndImage<img::GRAY_8> typed_img(dims);
 		out.emplace_back(typed_img);
 		buffer = reinterpret_cast<png_bytep>(typed_img.span().data());
 	} else if (mem_format == PNG_FORMAT_GA) {
-		img::ndImage<img::GRAY8A> typed_img(dims);
+		img::ndImage<img::GRAYA_8> typed_img(dims);
 		out.emplace_back(typed_img);
 		buffer = reinterpret_cast<png_bytep>(typed_img.span().data());
 	}
@@ -173,13 +175,13 @@ template <typename T>
 	image.width = png_uint_32(img_.dims()[0]);
 	image.height = png_uint_32(img_.dims()[1]);
 	image.version = PNG_IMAGE_VERSION;
-	if constexpr (std::is_same_v<T, img::GRAY8>)
+	if constexpr (std::is_same_v<T, img::GRAY_8>)
 		image.format = PNG_FORMAT_GRAY;
-	if constexpr (std::is_same_v<T, img::GRAY8A>)
+	if constexpr (std::is_same_v<T, img::GRAYA_8>)
 		image.format = PNG_FORMAT_GA;
-	else if constexpr (std::is_same_v<T, img::RGB8>)
+	else if constexpr (std::is_same_v<T, img::RGB_8>)
 		image.format = PNG_FORMAT_RGB;
-	else if constexpr (std::is_same_v<T, img::RGBA8>)
+	else if constexpr (std::is_same_v<T, img::RGBA_8>)
 		image.format = PNG_FORMAT_RGBA;
 	if (std::get<bool>(options.at("fast_save")))
 		image.flags |= PNG_IMAGE_FLAG_FAST;
@@ -236,9 +238,9 @@ template <typename T>
 		    "Could not write: {}; (message: '{}')", str_path, image.message));
 }
 
-INSTANTIATE_SAVE_TEMPLATE(PNG, img::GRAY8);
-INSTANTIATE_SAVE_TEMPLATE(PNG, img::GRAY8A);
-INSTANTIATE_SAVE_TEMPLATE(PNG, img::RGB8);
-INSTANTIATE_SAVE_TEMPLATE(PNG, img::RGBA8);
+INSTANTIATE_SAVE_TEMPLATE(PNG, img::GRAY_8);
+INSTANTIATE_SAVE_TEMPLATE(PNG, img::GRAYA_8);
+INSTANTIATE_SAVE_TEMPLATE(PNG, img::RGB_8);
+INSTANTIATE_SAVE_TEMPLATE(PNG, img::RGBA_8);
 
 } // namespace ssimp::formats

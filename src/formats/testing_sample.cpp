@@ -38,6 +38,6 @@ TestingSample::save_image(const std::vector<img::ndImage<T>>& imgs,
 	}
 }
 
-INSTANTIATE_SAVE_TEMPLATE(TestingSample, img::GRAY8);
+INSTANTIATE_SAVE_TEMPLATE(TestingSample, img::GRAY_8);
 
 } // namespace ssimp::formats

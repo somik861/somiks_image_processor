@@ -38,12 +38,12 @@ SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
 
 	} else {
 		for (std::size_t i = 0; i < mt::traits::array_size_v<T>; ++i) {
-			img::ndImage<img::GRAY8> ch(img_.dims());
+			img::ndImage<img::GRAY_8> ch(img_.dims());
 
 			std::ranges::transform(img_, ch.begin(),
 			                       [=](auto elem) { return elem[i]; });
 
-			if constexpr (std::is_same_v<T, img::GRAY8A>)
+			if constexpr (std::is_same_v<T, img::GRAYA_8>)
 				out.push_back({ch, std::array{"gray", "alpha"}[i]});
 			else
 				out.push_back(
@@ -54,9 +54,9 @@ SplitChannels::apply(const std::vector<img::ndImage<T>>& imgs,
 	return out;
 }
 
-INSTANTIATE_TEMPLATE(SplitChannels, img::GRAY8A);
-INSTANTIATE_TEMPLATE(SplitChannels, img::RGB8);
-INSTANTIATE_TEMPLATE(SplitChannels, img::RGBA8);
+INSTANTIATE_TEMPLATE(SplitChannels, img::GRAYA_8);
+INSTANTIATE_TEMPLATE(SplitChannels, img::RGB_8);
+INSTANTIATE_TEMPLATE(SplitChannels, img::RGBA_8);
 INSTANTIATE_TEMPLATE(SplitChannels, img::COMPLEX_F);
 INSTANTIATE_TEMPLATE(SplitChannels, img::COMPLEX_D);
 } // namespace ssimp::algorithms
