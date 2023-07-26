@@ -29,23 +29,23 @@ namespace ssimp::img {
  * Supported image element types enumeration
  */
 enum class elem_type : int {
-	GRAY8,
-	GRAY8A,
-	GRAY16,
-	GRAY32,
-	GRAY64,
+	GRAY_8,
+	GRAYA_8,
+	GRAY_16,
+	GRAY_32,
+	GRAY_64,
 	FLOAT,
 	DOUBLE,
-	RGB8,
-	RGBA8,
+	RGB_8,
+	RGBA_8,
 	COMPLEX_F,
 	COMPLEX_D
 };
 
 inline std::ostream& operator<<(std::ostream& os, elem_type t) {
-	os << std::array{"GRAY8",  "GRAY8A",    "GRAY16",   "GRAY32",
-	                 "GRAY64", "FLOAT",     "DOUBLE",   "RGB8",
-	                 "RGBA8",  "COMPLEX_F", "COMPLEX_D"}[static_cast<int>(t)];
+	os << std::array{"GRAY_8",  "GRAYA_8",   "GRAY_16",  "GRAY_32",
+	                 "GRAY_64", "FLOAT",     "DOUBLE",   "RGB_8",
+	                 "RGBA_8",  "COMPLEX_F", "COMPLEX_D"}[static_cast<int>(t)];
 	return os;
 }
 
@@ -82,15 +82,15 @@ constexpr elem_type type_to_enum = static_cast<elem_type>(
  * Once again, now with type aliases to make the image manipulation as
  * convenient as possible
  */
-using GRAY8 = enum_to_type<elem_type::GRAY8>;
-using GRAY8A = enum_to_type<elem_type::GRAY8A>;
-using GRAY16 = enum_to_type<elem_type::GRAY16>;
-using GRAY32 = enum_to_type<elem_type::GRAY32>;
-using GRAY64 = enum_to_type<elem_type::GRAY64>;
+using GRAY_8 = enum_to_type<elem_type::GRAY_8>;
+using GRAYA_8 = enum_to_type<elem_type::GRAYA_8>;
+using GRAY_16 = enum_to_type<elem_type::GRAY_16>;
+using GRAY_32 = enum_to_type<elem_type::GRAY_32>;
+using GRAY_64 = enum_to_type<elem_type::GRAY_64>;
 using FLOAT = enum_to_type<elem_type::FLOAT>;
 using DOUBLE = enum_to_type<elem_type::DOUBLE>;
-using RGB8 = enum_to_type<elem_type::RGB8>;
-using RGBA8 = enum_to_type<elem_type::RGBA8>;
+using RGB_8 = enum_to_type<elem_type::RGB_8>;
+using RGBA_8 = enum_to_type<elem_type::RGBA_8>;
 using COMPLEX_F = enum_to_type<elem_type::COMPLEX_F>;
 using COMPLEX_D = enum_to_type<elem_type::COMPLEX_D>;
 
