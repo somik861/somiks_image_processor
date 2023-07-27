@@ -43,6 +43,11 @@ set(LIBS ${LIBS} PNG::PNG)
 find_package(ZLIB REQUIRED)
 set(LIBS ${LIBS} ZLIB::ZLIB)
 
+## FFTW
+find_package(FFTW3 REQUIRED)
+set(LIBS ${LIBS} FFTW3::fftw3)
+
+
 # sources
 set(APP_NONMAIN_SOURCES
     "src/application/managers/extension_manager.cpp"
