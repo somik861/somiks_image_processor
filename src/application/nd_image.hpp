@@ -208,6 +208,112 @@ class ndImage : public ndImageBase {
   private:
 	ndImage() = default;
 
+	template <typename T>
+	class RowProxyIterator {
+	  public:
+		RowProxyIterator() = default;
+		RowProxyIterator(T* data, std::size_t jump_size)
+		    : _data(data), _jump_size(jump_size) {}
+		constexpr bool operator==(const RowProxyIterator& o) const {
+			return o._data == _data;
+		}
+		constexpr RowProxyIterator& operator++() {
+			std::advance(_data, _jump_size);
+			return *this;
+		}
+		constexpr RowProxyIterator operator++(int) {
+			auto cpy = *this;
+			++(*this);
+			return cpy;
+		}
+		constexpr RowProxyIterator& operator--() {
+			std::advance(_data, -_jump_size);
+			return *this;
+		}
+		constexpr RowProxyIterator operator--(int) {
+			auto cpy = *this;
+			--(*this);
+			return cpy;
+		}
+		constexpr T& operator*() const { return *_data; }
+		constexpr T* operator->() const { return _data; }
+
+	  private:
+		T* _data = nullptr;
+		int _jump_size = 0;
+	};
+
+	template <typename img_t>
+	class RowProxy {
+	  public:
+		using value_type = typename img_t::value_type;
+
+		RowProxy(img_t* img,
+		         std::size_t movable_dim,
+		         std::vector<std::size_t> fixed_coords)
+		    : _img(img), _movable_dim(movable_dim),
+		      _coords(std::move(fixed_coords)) {
+			assert(_movable_dim < img->dims().size());
+			assert(_coords.size() + 1 == img->dims().size());
+			_coords.insert(std::next(_coords.cbegin(), _movable_dim), 0);
+		}
+		value_type& operator[](std::size_t idx) {
+			_coords[_movable_dim] = idx;
+			return (*_img)(_coords);
+		}
+
+		value_type operator[](std::size_t idx) const {
+			_coords[_movable_dim] = idx;
+			return (*_img)(_coords);
+		}
+
+		std::size_t size() const { return _img->dims()[_movable_dim]; }
+
+		auto begin() { return RowProxyIterator(&(*this)[0], _jump_size()); }
+		auto begin() const {
+			return RowProxyIterator(&(*this)[0], _jump_size());
+		}
+		auto cbegin() const { return begin(); }
+		auto rbegin() {
+			return RowProxyIterator(&(*this)[size() - 1], -_jump_size());
+		}
+		auto rbegin() const {
+			return RowProxyIterator(&(*this)[size() - 1], -_jump_size());
+		}
+		auto crbegin() const { return rbegin(); }
+
+		auto end() {
+			return RowProxyIterator(
+			    std::next(&(*this)[0], _jump_size() * size()), _jump_size());
+		}
+		auto end() const {
+			return RowProxyIterator(
+			    std::next(&(*this)[0], _jump_size() * size()), _jump_size());
+		}
+		auto cend() const { return end(); }
+		auto rend() {
+			return RowProxyIterator(std::next(&(*this)[0], -_jump_size()),
+			                        -_jump_size());
+		}
+		auto rend() const {
+			return RowProxyIterator(std::next(&(*this)[0], -_jump_size()),
+			                        -_jump_size());
+		}
+		auto crend() const { return rend(); }
+
+	  private:
+		int _jump_size() const {
+			return int(
+			    std::reduce(_img->dims().begin(),
+			                std::next(_img->dims().begin(), _movable_dim),
+			                std::size_t{1}, std::multiplies{}));
+		}
+
+		img_t* _img;
+		std::size_t _movable_dim;
+		std::vector<std::size_t> _coords;
+	};
+
   public:
 	using value_type = T;
 	/**
@@ -294,6 +400,7 @@ class ndImage : public ndImageBase {
 	}
 
 	// ======== ITERATOR ACCESS ==========
+
 	auto begin() { return span().begin(); }
 	auto begin() const { return span().begin(); }
 	auto cbegin() const { return begin(); }
@@ -343,6 +450,16 @@ class ndImage : public ndImageBase {
 
 			increment_coords();
 		} while (std::ranges::any_of(current_coords, [](auto x) { return x; }));
+	}
+
+	auto row(std::size_t movable_dim,
+	         const std::vector<std::size_t>& fixed_dims) {
+		return RowProxy(this, movable_dim, fixed_dims);
+	}
+
+	auto row(std::size_t movable_dim,
+	         const std::vector<std::size_t>& fixed_dims) const {
+		return RowProxy(this, movable_dim, fixed_dims);
 	}
 
   private:
