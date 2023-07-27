@@ -1,0 +1,20 @@
+{
+  "options": [
+    {
+      "type": "choice",
+      "text": "Direction",
+      "id": "direction",
+      "values": [
+        "forward",
+        "backward"
+      ],
+      "default": "forward"
+    },
+    {
+      "type": "checkbox",
+      "text": "Shift to center",
+      "id": "shift",
+      "default": false
+    }
+  ]
+}
