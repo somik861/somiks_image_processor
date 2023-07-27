@@ -1,5 +1,6 @@
 #pragma once
 
+#include <complex>
 #include <tuple>
 #include <type_traits>
 #include <variant>
@@ -114,6 +115,16 @@ struct array_size<std::array<T, N>>
 
 template <typename array_t>
 constexpr std::size_t array_size_v = array_size<array_t>::value;
+
+template <typename T>
+struct is_complex : public std::false_type {};
+
+template <typename T>
+struct is_complex<std::complex<T>> : public std::true_type {};
+
+template <typename T>
+constexpr bool is_complex_v = is_complex<T>::value;
+
 } // namespace traits
 
 namespace concepts {
