@@ -34,7 +34,7 @@ bool FFT::same_dims_required() { return true; }
 
 template <typename T>
     requires mt::traits::is_any_of_tuple_v<T, FFT::supported_types>
-static std::vector<img::LocalizedImage>
+/* static */ std::vector<img::LocalizedImage>
 FFT::apply(const std::vector<img::ndImage<T>>& imgs,
            const option_types::options_t& options) {
 	int direction = std::get<std::string>(options.at("direction")) == "forward"
