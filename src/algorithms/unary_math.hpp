@@ -9,7 +9,6 @@ class UnaryMath {
 	                                   img::GRAY_16,
 	                                   img::GRAY_32,
 	                                   img::GRAY_64,
-	                                   img::GRAYA_8,
 	                                   img::FLOAT,
 	                                   img::DOUBLE,
 	                                   img::COMPLEX_F,
