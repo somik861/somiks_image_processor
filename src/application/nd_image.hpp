@@ -312,6 +312,39 @@ class ndImage : public ndImageBase {
 	T* data() { return span().data(); }
 	const T* data() const { return span().data(); }
 
+	template <typename func_t>
+	void transform(func_t fun) {
+		std::vector<std::size_t> current_coords(dims().size());
+		auto increment_coords = [&]() {
+			++current_coords[0];
+			for (std::size_t i = 0; i < current_coords.size(); ++i) {
+				if (current_coords[i] < dims()[i])
+					break;
+				current_coords[i] = 0;
+				std::size_t next = i + 1;
+				if (next < current_coords.size())
+					++current_coords[next];
+			}
+		};
+
+		do {
+			if constexpr (std::is_invocable_r_v<T, func_t, T>)
+				(*this)(current_coords) = fun((*this)(current_coords));
+
+			else if constexpr (std::is_invocable_r_v<
+			                       T, func_t, T,
+			                       const std::vector<std::size_t>&>)
+				(*this)(current_coords) =
+				    fun((*this)(current_coords), current_coords);
+			else
+				static_assert(std::is_same_v<func_t, char> &&
+				                  std::is_same_v<func_t, void>, // Always false
+				              "Invalid function type");
+
+			increment_coords();
+		} while (std::ranges::any_of(current_coords, [](auto x) { return x; }));
+	}
+
   private:
 	/**
 	 * Calculate flat index of the element.
