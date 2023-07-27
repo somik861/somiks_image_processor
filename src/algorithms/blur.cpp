@@ -59,7 +59,7 @@ T _get_blurred(const ssimp::img::ndImage<T>& img,
 	else {
 		T out{};
 		for (std::size_t i = 0; i < out.size(); ++i)
-			out[i] = T::value_type(accum[i]);
+			out[i] = typename T::value_type(accum[i]);
 
 		return out;
 	}
