@@ -435,6 +435,18 @@ void save_image(const std::vector<ssimp::img::LocalizedImage>& images,
 		    "Did not find suitable way to save an image(s)");
 }
 
+std::string _remove_algo_suffix(const std::string& str) {
+	std::size_t idx = str.find_last_of('_');
+	if (idx == std::string::npos)
+		return str;
+
+	if (std::any_of(std::next(str.begin(), idx + 1), str.end(),
+	                [](auto x) { return !std::isdigit(x); }))
+		return str;
+
+	return str.substr(0, idx);
+}
+
 std::vector<ssimp::img::LocalizedImage> _apply_algorithm(
     const std::vector<ssimp::img::LocalizedImage>& images,
     const std::string& algo,
@@ -446,7 +458,7 @@ std::vector<ssimp::img::LocalizedImage> _apply_algorithm(
 	if (algo_options.contains(algo))
 		options = algo_options.at(algo);
 
-	return api.apply(images, algo, options);
+	return api.apply(images, _remove_algo_suffix(algo), options);
 }
 
 std::vector<ssimp::img::LocalizedImage> apply_algorithms(
