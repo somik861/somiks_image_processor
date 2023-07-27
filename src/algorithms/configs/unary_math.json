@@ -1,0 +1,12 @@
+{
+  "options": [
+    {
+      "type": "choice",
+      "text": "Function",
+      "id": "function",
+      "values": [ "identity", "linear_stretch", "abs", "negative" ],
+      "default": "identity",
+      "help": "Linear stretch can not be applied to complex images."
+    }
+  ]
+}
