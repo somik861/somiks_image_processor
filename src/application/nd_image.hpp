@@ -209,6 +209,7 @@ class ndImage : public ndImageBase {
 	ndImage() = default;
 
   public:
+	using value_type = T;
 	/**
 	 * Construct new image with arbitrary number of dimensions.
 	 * Dimensions are put directly to the constructor as *ints*.
@@ -306,6 +307,10 @@ class ndImage : public ndImageBase {
 	auto rend() { return span().rend(); }
 	auto rend() const { return span().rend(); }
 	auto crend() const { rend(); }
+
+	// ======== DATA ACCESS ==========
+	T* data() { return span().data(); }
+	const T* data() const { return span().data(); }
 
   private:
 	/**
