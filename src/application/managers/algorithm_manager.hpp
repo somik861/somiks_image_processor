@@ -2,7 +2,9 @@
 
 #include "../../algorithms/blur.hpp"
 #include "../../algorithms/change_type.hpp"
+#include "../../algorithms/fft.hpp"
 #include "../../algorithms/split_channels.hpp"
+#include "../../algorithms/unary_math.hpp"
 #include "../nd_image.hpp"
 #include "_algo_format_base.hpp"
 #include <functional>
@@ -17,7 +19,9 @@ class AlgorithmManager : public details::_AlgoFormatBase {
   private:
 	using _registered_algorithms = std::tuple<algorithms::SplitChannels,
 	                                          algorithms::ChangeType,
-	                                          algorithms::Blur>;
+	                                          algorithms::Blur,
+	                                          algorithms::FFT,
+	                                          algorithms::UnaryMath>;
 
   public:
 	/**
