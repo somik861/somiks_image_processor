@@ -210,6 +210,161 @@ class ndImage : public ndImageBase {
 
   public:
 	using value_type = T;
+
+	template <typename U>
+	class RowProxyIterator {
+	  public:
+		using element_type = U;
+		using value_type = std::remove_cv_t<U>;
+		using size_type = std::size_t;
+		using pointer = U*;
+		using const_pointer = const U*;
+		using reference = U&;
+		using const_reference = const U&;
+
+		RowProxyIterator() = default;
+		RowProxyIterator(U* data, std::size_t jump_size)
+		    : _data(data), _jump_size(jump_size) {}
+		constexpr auto operator<=>(const RowProxyIterator& o) const {
+			return _data <=> o._data;
+		}
+		constexpr bool operator==(const RowProxyIterator& o) const {
+			return o._data == _data;
+		}
+		constexpr std::ptrdiff_t operator-(const RowProxyIterator& o) const {
+			return (o._data - _data) / _jump_size;
+		}
+		constexpr RowProxyIterator& operator++() {
+			std::advance(_data, _jump_size);
+			return *this;
+		}
+		constexpr RowProxyIterator operator++(int) {
+			auto cpy = *this;
+			++(*this);
+			return cpy;
+		}
+		constexpr RowProxyIterator& operator--() {
+			std::advance(_data, -_jump_size);
+			return *this;
+		}
+		constexpr RowProxyIterator operator--(int) {
+			auto cpy = *this;
+			--(*this);
+			return cpy;
+		}
+		constexpr U& operator*() const { return *_data; }
+		constexpr U* operator->() const { return _data; }
+
+		constexpr RowProxyIterator& operator+=(std::ptrdiff_t dist) {
+			_data += _jump_size * dist;
+			return *this;
+		}
+
+		constexpr RowProxyIterator& operator-=(std::ptrdiff_t dist) {
+			_data -= _jump_size * dist;
+			return *this;
+		}
+
+		constexpr RowProxyIterator operator+(std::ptrdiff_t dist) const {
+			auto cpy = *this;
+			cpy += dist;
+			return cpy;
+		}
+		constexpr RowProxyIterator operator-(std::ptrdiff_t dist) const {
+			auto cpy = *this;
+			cpy -= dist;
+			return cpy;
+		}
+
+		constexpr friend RowProxyIterator<U>
+		operator+(std::ptrdiff_t dist, const RowProxyIterator<U>& o) {
+			return o + dist;
+		}
+		constexpr friend RowProxyIterator<U>
+		operator-(std::ptrdiff_t dist, const RowProxyIterator<U>& o) {
+			return o - dist;
+		}
+
+		constexpr U& operator[](std::ptrdiff_t idx) const {
+			return *(_data + _jump_size * idx);
+		}
+
+	  private:
+		U* _data = nullptr;
+		int _jump_size = 0;
+	};
+
+	template <typename img_t>
+	class RowProxy {
+	  public:
+		using value_type = typename img_t::value_type;
+
+		RowProxy(img_t* img,
+		         std::size_t movable_dim,
+		         std::vector<std::size_t> fixed_coords)
+		    : _img(img), _movable_dim(movable_dim),
+		      _coords(std::move(fixed_coords)) {
+			assert(_movable_dim < img->dims().size());
+			assert(_coords.size() + 1 == img->dims().size());
+			_coords.insert(std::next(_coords.cbegin(), _movable_dim), 0);
+		}
+		value_type& operator[](std::size_t idx) {
+			_coords[_movable_dim] = idx;
+			return (*_img)(_coords);
+		}
+
+		value_type operator[](std::size_t idx) const {
+			_coords[_movable_dim] = idx;
+			return (*_img)(_coords);
+		}
+
+		std::size_t size() const { return _img->dims()[_movable_dim]; }
+
+		auto begin() { return RowProxyIterator(&(*this)[0], _jump_size()); }
+		auto begin() const {
+			return RowProxyIterator(&(*this)[0], _jump_size());
+		}
+		auto cbegin() const { return begin(); }
+		auto rbegin() {
+			return RowProxyIterator(&(*this)[size() - 1], -_jump_size());
+		}
+		auto rbegin() const {
+			return RowProxyIterator(&(*this)[size() - 1], -_jump_size());
+		}
+		auto crbegin() const { return rbegin(); }
+
+		auto end() {
+			return RowProxyIterator(
+			    std::next(&(*this)[0], _jump_size() * size()), _jump_size());
+		}
+		auto end() const {
+			return RowProxyIterator(
+			    std::next(&(*this)[0], _jump_size() * size()), _jump_size());
+		}
+		auto cend() const { return end(); }
+		auto rend() {
+			return RowProxyIterator(std::next(&(*this)[0], -_jump_size()),
+			                        -_jump_size());
+		}
+		auto rend() const {
+			return RowProxyIterator(std::next(&(*this)[0], -_jump_size()),
+			                        -_jump_size());
+		}
+		auto crend() const { return rend(); }
+
+	  private:
+		int _jump_size() const {
+			return int(
+			    std::reduce(_img->dims().begin(),
+			                std::next(_img->dims().begin(), _movable_dim),
+			                std::size_t{1}, std::multiplies{}));
+		}
+
+		img_t* _img;
+		std::size_t _movable_dim;
+		std::vector<std::size_t> _coords;
+	};
+
 	/**
 	 * Construct new image with arbitrary number of dimensions.
 	 * Dimensions are put directly to the constructor as *ints*.
@@ -294,6 +449,7 @@ class ndImage : public ndImageBase {
 	}
 
 	// ======== ITERATOR ACCESS ==========
+
 	auto begin() { return span().begin(); }
 	auto begin() const { return span().begin(); }
 	auto cbegin() const { return begin(); }
@@ -311,6 +467,112 @@ class ndImage : public ndImageBase {
 	// ======== DATA ACCESS ==========
 	T* data() { return span().data(); }
 	const T* data() const { return span().data(); }
+
+	/**
+	 * Apply function to all coordinates of the image.
+	 * The function can either be T(T) or T(T, coords),
+	 * where coords is a std::vector<std::size_t> showing
+	 * current coords.
+	 * The element is replaced with the one returned.
+	 */
+	template <typename func_t>
+	void transform(func_t fun) {
+		std::vector<std::size_t> current_coords(dims().size());
+		auto increment_coords = [&]() {
+			++current_coords[0];
+			for (std::size_t i = 0; i < current_coords.size(); ++i) {
+				if (current_coords[i] < dims()[i])
+					break;
+				current_coords[i] = 0;
+				std::size_t next = i + 1;
+				if (next < current_coords.size())
+					++current_coords[next];
+			}
+		};
+
+		do {
+			if constexpr (std::is_invocable_r_v<T, func_t, T>)
+				(*this)(current_coords) = fun((*this)(current_coords));
+
+			else if constexpr (std::is_invocable_r_v<
+			                       T, func_t, T,
+			                       const std::vector<std::size_t>&>)
+				(*this)(current_coords) =
+				    fun((*this)(current_coords), current_coords);
+			else
+				static_assert(std::is_same_v<func_t, char> &&
+				                  std::is_same_v<func_t, void>, // Always false
+				              "Invalid function type");
+
+			increment_coords();
+		} while (std::ranges::any_of(current_coords, [](auto x) { return x; }));
+	}
+
+	/**
+	 * Return (non-owning) proxy for row access.
+	 *
+	 * The row could be better understand as 1D-tile.
+	 * The **movable_dim** defines along which dimension we want to move
+	 * and **fixed_coords** specifies the indicies in other dimensions.
+	 * Intuitively it can also be viewed as special case of slicing.
+	 *
+	 * From python.numpy: arr[0 , 1, :, 3, 4] is equivalent to
+	 * **row**(2, {0, 1, 3, 4});
+	 */
+	auto row(std::size_t movable_dim,
+	         const std::vector<std::size_t>& fixed_coords) {
+		return RowProxy(this, movable_dim, fixed_coords);
+	}
+
+	auto row(std::size_t movable_dim,
+	         const std::vector<std::size_t>& fixed_coords) const {
+		return RowProxy(this, movable_dim, fixed_coords);
+	}
+
+	/**
+	 * Apply function to all rows along movable dimension.
+	 * The movable dimension has the same meaning as for **row(...)**.
+	 *
+	 * The function can either be void(RowProxy) or void(RowProxy,
+	 * fixed_coords), where fixed_coords is std::vector<std::size_t> containing
+	 * info about indicies to other dimensions. (the same as fixed_coords in
+	 * **row(...)**)
+	 *
+	 * The function has to modify image through proxy, return value is ignored.
+	 */
+	template <typename func_t>
+	void transform_rows(std::size_t movable_dim, func_t fun) {
+		std::vector<std::size_t> end_ = dims();
+		end_.erase(std::next(end_.begin(), movable_dim));
+		std::vector<std::size_t> fixed_coords(dims().size() - 1);
+		auto increment_coords = [&]() {
+			++fixed_coords[0];
+			for (std::size_t i = 0; i < fixed_coords.size(); ++i) {
+				if (fixed_coords[i] < end_[i])
+					break;
+				fixed_coords[i] = 0;
+				std::size_t next = i + 1;
+				if (next < fixed_coords.size())
+					++fixed_coords[next];
+			}
+		};
+
+		do {
+			if constexpr (std::is_invocable_v<func_t, RowProxy<ndImage<T>>&&>)
+				fun(row(movable_dim, fixed_coords));
+
+			else if constexpr (std::is_invocable_v<
+			                       func_t, RowProxy<ndImage<T>>&&,
+			                       const std::vector<std::size_t>&>)
+				fun(row(movable_dim, fixed_coords), fixed_coords);
+			else
+				static_assert(std::is_same_v<func_t, char> &&
+				                  std::is_same_v<func_t, void>, // Always false
+				              "Invalid function type");
+
+			increment_coords();
+		} while (std::ranges::any_of(fixed_coords, [](auto x) { return x; }));
+	}
 
   private:
 	/**

@@ -89,24 +89,9 @@ ssimp::img::ndImage<T> blur_dim(const ssimp::img::ndImage<T>& img,
                                 boundary_condition bound) {
 	ssimp::img::ndImage<T> new_img(img.dims());
 
-	std::vector<std::size_t> current_coords(img.dims().size());
-	auto increment_coords = [&]() {
-		++current_coords[0];
-		for (std::size_t i = 0; i < current_coords.size(); ++i) {
-			if (current_coords[i] < img.dims()[i])
-				break;
-			current_coords[i] = 0;
-			std::size_t next = i + 1;
-			if (next < current_coords.size())
-				++current_coords[next];
-		}
-	};
-
-	do {
-		new_img(current_coords) =
-		    _get_blurred(img, current_coords, dim_idx, right_kernel, bound);
-		increment_coords();
-	} while (std::ranges::any_of(current_coords, [](auto x) { return x; }));
+	new_img.transform([&](auto _, const auto& current_coords) {
+		return _get_blurred(img, current_coords, dim_idx, right_kernel, bound);
+	});
 
 	return new_img;
 }
