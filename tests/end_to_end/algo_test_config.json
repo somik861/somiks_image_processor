@@ -1,0 +1,97 @@
+[
+  {
+    "sources": "lena.png",
+    "algos": [ "change_type", "change_type_1", "change_type_2" ],
+    "options": {
+      "change_type": {
+        "output_type": [ "GRAY_8", "GRAYA_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "RGB_8", "RGBA_8", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": false
+      },
+      "change_type_1": {
+        "output_type": [ "GRAY_8", "GRAYA_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "RGB_8", "RGBA_8", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": false
+      },
+      "change_type_2": {
+        "output_type": "RGBA_8",
+        "rescale": false
+      }
+    }
+  },
+  {
+    "sources": "lena.png",
+    "algos": [ "change_type", "change_type_1", "change_type_2" ],
+    "options": {
+      "change_type": {
+        "output_type": [ "GRAY_8", "GRAYA_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "RGB_8", "RGBA_8", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": true
+      },
+      "change_type_1": {
+        "output_type": [ "GRAY_8", "GRAYA_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "RGB_8", "RGBA_8", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": true
+      },
+      "change_type_2": {
+        "output_type": "RGBA_8",
+        "rescale": true
+      }
+    }
+  },
+
+  {
+    "sources": "lena.png",
+    "algos": [ "change_type", "blur", "change_type_1" ],
+    "options": {
+      "change_type": {
+        "output_type": [ "GRAY_8", "GRAYA_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "RGB_8", "RGBA_8", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": true
+      },
+      "blur": {
+        "filter": [ "gaussian", "box" ],
+        "intensity": [ 0.0, 1.0, 3.0, 6.0, 10.0 ],
+        "bound_condition": [ "zero", "nearest", "mirror" ]
+      },
+      "change_type_1": {
+        "output_type": "RGBA_8",
+        "rescale": true
+      }
+    }
+  },
+  {
+    "sources": "lena.png",
+    "algos": [ "change_type", "blur", "change_type_1" ],
+    "options": {
+      "change_type": {
+        "output_type": [ "GRAY_8", "GRAYA_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "RGB_8", "RGBA_8", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": true
+      },
+      "blur": {
+        "one_dim": true,
+        "dim_idx": [ 0, 1 ],
+        "filter": [ "gaussian", "box" ],
+        "intensity": [ 0.0, 1.0, 3.0, 6.0, 10.0 ],
+        "bound_condition": [ "zero", "nearest", "mirror" ]
+      },
+      "change_type_1": {
+        "output_type": "RGBA_8",
+        "rescale": true
+      }
+    }
+  },
+
+  {
+    "sources": "lena_gray.png",
+    "algos": [ "change_type", "unary_math", "change_type_1" ],
+    "options": {
+      "change_type": {
+        "output_type": [ "GRAY_8", "GRAY_16", "GRAY_32", "GRAY_64", "FLOAT", "DOUBLE", "COMPLEX_F", "COMPLEX_D" ],
+        "rescale": true
+      },
+      "unary_math": {
+        "function": [ "identity", "linear_stretch", "abs", "negative" ]
+      },
+      "change_type_1": {
+        "output_type": "GRAY_8",
+        "rescale": true
+      }
+    }
+  }
+]
