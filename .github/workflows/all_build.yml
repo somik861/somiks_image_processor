@@ -37,6 +37,12 @@ jobs:
       - name: Test release
         run: ctest --preset conan-release --output-on-failure
 
+      - name: Install skimage
+        run: python -m pip install scikit-image
+
+      - name: Test algorithms
+        run: python ${{github.workspace}}/tests/end_to_end/test_algo.py ${{github.workspace}}/build/Release/ssimp.exe
+
   build-windows-debug:
     runs-on: windows-latest
 
@@ -70,6 +76,12 @@ jobs:
 
       - name: Test debug
         run: ctest --preset conan-debug --output-on-failure
+
+      - name: Install skimage
+        run: python -m pip install scikit-image
+
+      - name: Test algorithms
+        run: python ${{github.workspace}}/tests/end_to_end/test_algo.py ${{github.workspace}}/build/Debug/ssimp.exe
 
 #  build-linux-clang-release:
 #    runs-on: ubuntu-latest
@@ -218,6 +230,12 @@ jobs:
       - name: Test release
         run: ctest --preset conan-release --output-on-failure
 
+      - name: Install skimage
+        run: python -m pip install scikit-image
+
+      - name: Test algorithms
+        run: python ${{github.workspace}}/tests/end_to_end/test_algo.py ${{github.workspace}}/build/ssimp
+
   build-linux-gcc-debug:
     runs-on: ubuntu-latest
 
@@ -266,3 +284,9 @@ jobs:
 
       - name: Test debug
         run: ctest --preset conan-debug --output-on-failure
+
+      - name: Install skimage
+        run: python -m pip install scikit-image
+
+      - name: Test algorithms
+        run: python ${{github.workspace}}/tests/end_to_end/test_algo.py ${{github.workspace}}/build/ssimp
