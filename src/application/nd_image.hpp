@@ -211,11 +211,25 @@ class ndImage : public ndImageBase {
 	template <typename T>
 	class RowProxyIterator {
 	  public:
+		using element_type = T;
+		using value_type = std::remove_cv_t<T>;
+		using size_type = std::size_t;
+		using pointer = T*;
+		using const_pointer = const T*;
+		using reference = T&;
+		using const_reference = const T&;
+
 		RowProxyIterator() = default;
 		RowProxyIterator(T* data, std::size_t jump_size)
 		    : _data(data), _jump_size(jump_size) {}
+		constexpr auto operator<=>(const RowProxyIterator& o) const {
+			return _data <=> o._data;
+		}
 		constexpr bool operator==(const RowProxyIterator& o) const {
 			return o._data == _data;
+		}
+		constexpr std::ptrdiff_t operator-(const RowProxyIterator& o) const {
+			return (o._data - _data) / _jump_size;
 		}
 		constexpr RowProxyIterator& operator++() {
 			std::advance(_data, _jump_size);
@@ -237,6 +251,40 @@ class ndImage : public ndImageBase {
 		}
 		constexpr T& operator*() const { return *_data; }
 		constexpr T* operator->() const { return _data; }
+
+		constexpr RowProxyIterator& operator+=(std::ptrdiff_t dist) {
+			_data += _jump_size * dist;
+			return *this;
+		}
+
+		constexpr RowProxyIterator& operator-=(std::ptrdiff_t dist) {
+			_data -= _jump_size * dist;
+			return *this;
+		}
+
+		constexpr RowProxyIterator operator+(std::ptrdiff_t dist) const {
+			auto cpy = *this;
+			cpy += dist;
+			return cpy;
+		}
+		constexpr RowProxyIterator operator-(std::ptrdiff_t dist) const {
+			auto cpy = *this;
+			cpy -= dist;
+			return cpy;
+		}
+
+		constexpr friend RowProxyIterator<T>
+		operator+(std::ptrdiff_t dist, const RowProxyIterator<T>& o) {
+			return o + dist;
+		}
+		constexpr friend RowProxyIterator<T>
+		operator-(std::ptrdiff_t dist, const RowProxyIterator<T>& o) {
+			return o - dist;
+		}
+
+		constexpr T& operator[](std::ptrdiff_t idx) const {
+			return *(_data + _jump_size * idx);
+		}
 
 	  private:
 		T* _data = nullptr;
