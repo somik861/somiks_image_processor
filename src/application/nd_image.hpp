@@ -211,19 +211,19 @@ class ndImage : public ndImageBase {
   public:
 	using value_type = T;
 
-	template <typename T>
+	template <typename U>
 	class RowProxyIterator {
 	  public:
-		using element_type = T;
-		using value_type = std::remove_cv_t<T>;
+		using element_type = U;
+		using value_type = std::remove_cv_t<U>;
 		using size_type = std::size_t;
-		using pointer = T*;
-		using const_pointer = const T*;
-		using reference = T&;
-		using const_reference = const T&;
+		using pointer = U*;
+		using const_pointer = const U*;
+		using reference = U&;
+		using const_reference = const U&;
 
 		RowProxyIterator() = default;
-		RowProxyIterator(T* data, std::size_t jump_size)
+		RowProxyIterator(U* data, std::size_t jump_size)
 		    : _data(data), _jump_size(jump_size) {}
 		constexpr auto operator<=>(const RowProxyIterator& o) const {
 			return _data <=> o._data;
@@ -252,8 +252,8 @@ class ndImage : public ndImageBase {
 			--(*this);
 			return cpy;
 		}
-		constexpr T& operator*() const { return *_data; }
-		constexpr T* operator->() const { return _data; }
+		constexpr U& operator*() const { return *_data; }
+		constexpr U* operator->() const { return _data; }
 
 		constexpr RowProxyIterator& operator+=(std::ptrdiff_t dist) {
 			_data += _jump_size * dist;
@@ -276,21 +276,21 @@ class ndImage : public ndImageBase {
 			return cpy;
 		}
 
-		constexpr friend RowProxyIterator<T>
-		operator+(std::ptrdiff_t dist, const RowProxyIterator<T>& o) {
+		constexpr friend RowProxyIterator<U>
+		operator+(std::ptrdiff_t dist, const RowProxyIterator<U>& o) {
 			return o + dist;
 		}
-		constexpr friend RowProxyIterator<T>
-		operator-(std::ptrdiff_t dist, const RowProxyIterator<T>& o) {
+		constexpr friend RowProxyIterator<U>
+		operator-(std::ptrdiff_t dist, const RowProxyIterator<U>& o) {
 			return o - dist;
 		}
 
-		constexpr T& operator[](std::ptrdiff_t idx) const {
+		constexpr U& operator[](std::ptrdiff_t idx) const {
 			return *(_data + _jump_size * idx);
 		}
 
 	  private:
-		T* _data = nullptr;
+		U* _data = nullptr;
 		int _jump_size = 0;
 	};
 
