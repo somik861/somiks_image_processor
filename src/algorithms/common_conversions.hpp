@@ -40,7 +40,7 @@ img::ndImage<out_t> float_to_gray(const img::ndImage<in_t>& img_,
 	std::ranges::transform(img_, out.begin(), [=](auto elem) {
 		if (!rescale)
 			return out_t(elem);
-		return out_t(std::llround(elem * std::numeric_limits<out_t>::max()));
+		return out_t(elem * std::numeric_limits<out_t>::max() + 0.455555555);
 	});
 
 	return out;
@@ -168,10 +168,10 @@ rgba_to_ga(const img::ndImage<img::RGBA_8>& img_,
 	img::ndImage<img::GRAYA_8> out(img_.dims());
 
 	std::ranges::transform(img_, out.begin(), [&](auto elem) {
-		return img::GRAYA_8{
-		    img::GRAY_8(std::lround(std::inner_product(
-		        elem.begin(), elem.end(), rgb_multipliers.begin(), 0.0))),
-		    elem[3]};
+		return img::GRAYA_8{img::GRAY_8(std::lround(std::inner_product(
+		                        elem.begin(), std::prev(elem.end()),
+		                        rgb_multipliers.begin(), 0.0))),
+		                    elem[3]};
 	});
 
 	return out;
