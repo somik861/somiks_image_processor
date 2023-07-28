@@ -208,6 +208,9 @@ class ndImage : public ndImageBase {
   private:
 	ndImage() = default;
 
+  public:
+	using value_type = T;
+
 	template <typename T>
 	class RowProxyIterator {
 	  public:
@@ -362,8 +365,6 @@ class ndImage : public ndImageBase {
 		std::vector<std::size_t> _coords;
 	};
 
-  public:
-	using value_type = T;
 	/**
 	 * Construct new image with arbitrary number of dimensions.
 	 * Dimensions are put directly to the constructor as *ints*.
@@ -467,6 +468,13 @@ class ndImage : public ndImageBase {
 	T* data() { return span().data(); }
 	const T* data() const { return span().data(); }
 
+	/**
+	 * Apply function to all coordinates of the image.
+	 * The function can either be T(T) or T(T, coords),
+	 * where coords is a std::vector<std::size_t> showing
+	 * current coords.
+	 * The element is replaced with the one returned.
+	 */
 	template <typename func_t>
 	void transform(func_t fun) {
 		std::vector<std::size_t> current_coords(dims().size());
@@ -500,14 +508,70 @@ class ndImage : public ndImageBase {
 		} while (std::ranges::any_of(current_coords, [](auto x) { return x; }));
 	}
 
+	/**
+	 * Return (non-owning) proxy for row access.
+	 *
+	 * The row could be better understand as 1D-tile.
+	 * The **movable_dim** defines along which dimension we want to move
+	 * and **fixed_coords** specifies the indicies in other dimensions.
+	 * Intuitively it can also be viewed as special case of slicing.
+	 *
+	 * From python.numpy: arr[0 , 1, :, 3, 4] is equivalent to
+	 * **row**(2, {0, 1, 3, 4});
+	 */
 	auto row(std::size_t movable_dim,
-	         const std::vector<std::size_t>& fixed_dims) {
-		return RowProxy(this, movable_dim, fixed_dims);
+	         const std::vector<std::size_t>& fixed_coords) {
+		return RowProxy(this, movable_dim, fixed_coords);
 	}
 
 	auto row(std::size_t movable_dim,
-	         const std::vector<std::size_t>& fixed_dims) const {
-		return RowProxy(this, movable_dim, fixed_dims);
+	         const std::vector<std::size_t>& fixed_coords) const {
+		return RowProxy(this, movable_dim, fixed_coords);
+	}
+
+	/**
+	 * Apply function to all rows along movable dimension.
+	 * The movable dimension has the same meaning as for **row(...)**.
+	 *
+	 * The function can either be void(RowProxy) or void(RowProxy,
+	 * fixed_coords), where fixed_coords is std::vector<std::size_t> containing
+	 * info about indicies to other dimensions. (the same as fixed_coords in
+	 * **row(...)**)
+	 *
+	 * The function has to modify image through proxy, return value is ignored.
+	 */
+	template <typename func_t>
+	void transform_rows(std::size_t movable_dim, func_t fun) {
+		std::vector<std::size_t> end_ = dims();
+		end_.erase(std::next(end_.begin(), movable_dim));
+		std::vector<std::size_t> fixed_coords(dims().size() - 1);
+		auto increment_coords = [&]() {
+			++fixed_coords[0];
+			for (std::size_t i = 0; i < fixed_coords.size(); ++i) {
+				if (fixed_coords[i] < end_[i])
+					break;
+				fixed_coords[i] = 0;
+				std::size_t next = i + 1;
+				if (next < fixed_coords.size())
+					++fixed_coords[next];
+			}
+		};
+
+		do {
+			if constexpr (std::is_invocable_v<func_t, RowProxy<ndImage<T>>&&>)
+				fun(row(movable_dim, fixed_coords));
+
+			else if constexpr (std::is_invocable_v<
+			                       func_t, RowProxy<ndImage<T>>&&,
+			                       const std::vector<std::size_t>&>)
+				fun(row(movable_dim, fixed_coords), fixed_coords);
+			else
+				static_assert(std::is_same_v<func_t, char> &&
+				                  std::is_same_v<func_t, void>, // Always false
+				              "Invalid function type");
+
+			increment_coords();
+		} while (std::ranges::any_of(fixed_coords, [](auto x) { return x; }));
 	}
 
   private:
