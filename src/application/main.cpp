@@ -13,10 +13,11 @@ void print_first_five(auto name, auto img_) {
 	std::cout << name << ": ";
 	if (img_.type() == ssimp::img::elem_type::DOUBLE)
 		for (std::size_t i = 0; i < 5; ++i)
-			std::cout << img_.as_typed<ssimp::img::DOUBLE>()(i) << " ";
+			std::cout << img_.template as_typed<ssimp::img::DOUBLE>()(i) << " ";
 	if (img_.type() == ssimp::img::elem_type::COMPLEX_D)
 		for (std::size_t i = 0; i < 5; ++i)
-			std::cout << img_.as_typed<ssimp::img::COMPLEX_D>()(i) << " ";
+			std::cout << img_.template as_typed<ssimp::img::COMPLEX_D>()(i)
+			          << " ";
 	std::cout << '\n';
 }
 } // namespace
