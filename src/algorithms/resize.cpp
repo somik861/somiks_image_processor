@@ -1,5 +1,7 @@
 #include "resize.hpp"
+#include "common_conversions.hpp"
 #include "common_macro.hpp"
+#include "fft.hpp"
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <map>
@@ -102,13 +104,80 @@ std::vector<std::size_t> scale_dims(const std::vector<std::size_t>& old,
 	return new_;
 }
 
-// TODO
+template <typename T>
+ssimp::img::ndImage<T>
+blur_dims_clever_help(const ssimp::img::ndImage<T>& img,
+                      const std::vector<std::size_t>& new_dims) {
+	auto img_cdouble =
+	    ssimp::algorithms::conversions::all_to_all<ssimp::img::COMPLEX_D>(
+	        img, false, {}, {}, {});
+
+	auto fft_img = ssimp::algorithms::FFT::apply(std::vector{img_cdouble},
+	                                             {{"direction", "forward"},
+	                                              {"shift", false},
+	                                              {"normalize", true}})[0]
+	                   .image.template as_typed<ssimp::img::COMPLEX_D>();
+
+	std::vector<std::size_t> dim_even(img.dims().size());
+	std::ranges::transform(img.dims(), dim_even.begin(),
+	                       [](auto x) { return 1 - (x % 2); });
+
+	std::vector<std::size_t> dim_mid(img.dims().size());
+	std::ranges::transform(img.dims(), dim_even.begin(),
+	                       [](auto x) { return x / 2 + x % 2; });
+
+	std::vector<std::size_t> dim_offset(img.dims().size());
+	for (std::size_t i = 0; i < dim_offset.size(); ++i)
+		dim_offset[i] = img.dims()[i] >= new_dims[i]
+		                    ? 0
+		                    : (img.dims()[i] - new_dims[i]) / 2;
+
+	for (std::size_t dim = 0; dim < new_dims.size(); ++dim)
+		fft_img.transform_rows(dim, [&](auto proxy) {
+			if (dim_offset[dim] == 0)
+				return;
+			for (std::size_t i = dim_mid[dim] - dim_offset[dim];
+			     i < dim_mid[dim] + dim_offset[dim] + dim_even[dim]; ++i)
+				proxy[i] = 0;
+		});
+
+	auto ifft_img = ssimp::algorithms::FFT::apply(std::vector{img_cdouble},
+	                                              {{"direction", "backward"},
+	                                               {"shift", false},
+	                                               {"normalize", true}})[0]
+	                    .image.template as_typed<ssimp::img::DOUBLE>();
+
+	return ssimp::algorithms::conversions::all_to_all<T>(ifft_img, false, {},
+	                                                     {}, {});
+}
+
 template <typename T>
 ssimp::img::ndImage<T>
 blur_dims_clever(const ssimp::img::ndImage<T>& img,
                  const std::vector<std::size_t>& new_dims) {
-	throw std::runtime_error("NOT IMPLEMENTED");
-	return img;
+	if constexpr (std::is_scalar_v<T>)
+		return blur_dims_clever_help(img, new_dims);
+	else {
+		constexpr std::size_t channel_count =
+		    ssimp::mt::traits::array_size_v<T>;
+		std::vector<ssimp::img::ndImage<ssimp::img::GRAY_8>> channels;
+		for (std::size_t ch = 0; ch < channel_count; ++ch) {
+			channels.emplace_back(img.dims());
+			std::ranges::transform(img, channels.back().begin(),
+			                       [=](auto elem) { return elem[ch]; });
+		}
+
+		std::ranges::transform(channels, channels.begin(), [&](auto img_) {
+			return blur_dims_clever_help(img_, new_dims);
+		});
+
+		ssimp::img::ndImage<T> out(img.dims());
+		for (std::size_t i = 0; i < out.span().size(); ++i)
+			for (std::size_t ch = 0; ch < channel_count; ++ch)
+				out(i)[ch] = channels[ch](i);
+
+		return out;
+	}
 }
 
 std::vector<double> gauss_right_kernel(double sigma) {
@@ -158,7 +227,7 @@ T _get_blurred(const ssimp::img::ndImage<T>& img,
 	else {
 		T out{};
 		for (std::size_t i = 0; i < out.size(); ++i)
-			out[i] = T::value_type(accum[i]);
+			out[i] = typename T::value_type(accum[i]);
 
 		return out;
 	}
@@ -264,14 +333,14 @@ Resize::apply(const std::vector<img::ndImage<T>>& imgs,
 	return {{resize_to(img_, new_dims, interp)}};
 }
 
-INSTANTIATE_TEMPLATE(Resize, img::GRAY8);
-INSTANTIATE_TEMPLATE(Resize, img::GRAY16);
-INSTANTIATE_TEMPLATE(Resize, img::GRAY32);
-INSTANTIATE_TEMPLATE(Resize, img::GRAY64);
+INSTANTIATE_TEMPLATE(Resize, img::GRAY_8);
+INSTANTIATE_TEMPLATE(Resize, img::GRAY_16);
+INSTANTIATE_TEMPLATE(Resize, img::GRAY_32);
+INSTANTIATE_TEMPLATE(Resize, img::GRAY_64);
 INSTANTIATE_TEMPLATE(Resize, img::FLOAT);
 INSTANTIATE_TEMPLATE(Resize, img::DOUBLE);
-INSTANTIATE_TEMPLATE(Resize, img::GRAY8A);
-INSTANTIATE_TEMPLATE(Resize, img::RGB8);
-INSTANTIATE_TEMPLATE(Resize, img::RGBA8);
+INSTANTIATE_TEMPLATE(Resize, img::GRAYA_8);
+INSTANTIATE_TEMPLATE(Resize, img::RGB_8);
+INSTANTIATE_TEMPLATE(Resize, img::RGBA_8);
 
 } // namespace ssimp::algorithms

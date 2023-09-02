@@ -5,15 +5,15 @@
 namespace ssimp::algorithms {
 class Resize {
   public:
-	using supported_types = std::tuple<img::GRAY8,
-	                                   img::GRAY16,
-	                                   img::GRAY32,
-	                                   img::GRAY64,
+	using supported_types = std::tuple<img::GRAY_8,
+	                                   img::GRAY_16,
+	                                   img::GRAY_32,
+	                                   img::GRAY_64,
 	                                   img::FLOAT,
 	                                   img::DOUBLE,
-	                                   img::GRAY8A,
-	                                   img::RGB8,
-	                                   img::RGBA8>;
+	                                   img::GRAYA_8,
+	                                   img::RGB_8,
+	                                   img::RGBA_8>;
 	constexpr static const char* name = "resize";
 
 	static bool image_count_supported(std::size_t count);
