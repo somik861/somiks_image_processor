@@ -15,6 +15,12 @@
       "text": "Shift to center",
       "id": "shift",
       "default": false
+    },
+    {
+      "type": "checkbox",
+      "text": "Normalize fft coefficients",
+      "id": "normalize",
+      "default": true
     }
   ]
 }
