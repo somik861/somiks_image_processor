@@ -313,7 +313,7 @@ class ndImage : public ndImageBase {
 			return (*_img)(_coords);
 		}
 
-		value_type operator[](std::size_t idx) const {
+		const value_type& operator[](std::size_t idx) const {
 			_coords[_movable_dim] = idx;
 			return (*_img)(_coords);
 		}
@@ -362,7 +362,7 @@ class ndImage : public ndImageBase {
 
 		img_t* _img;
 		std::size_t _movable_dim;
-		std::vector<std::size_t> _coords;
+		mutable std::vector<std::size_t> _coords;
 	};
 
 	/**
