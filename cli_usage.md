@@ -97,6 +97,7 @@ File needs to have the following structure:
     "debug" : true, // defaults to false if ommited
     "recurse" : true, // defaults to false if ommited, ignored when input_path is file
     "print_info": true, // defaults to false if ommited
+    "allow_override": true, // defaults to false if ommited
     "format" : "jpeg",
     "loading_options": { "compression" : "zlib" }, // does not need to contain all options, but needs to exist
     "saving_options": { "quality" : 50 }, // does not need to contain all options, but needs to exist

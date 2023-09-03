@@ -5,6 +5,7 @@
 #include "../../algorithms/fft.hpp"
 #include "../../algorithms/split_channels.hpp"
 #include "../../algorithms/unary_math.hpp"
+#include "../../algorithms/resize.hpp"
 #include "../nd_image.hpp"
 #include "_algo_format_base.hpp"
 #include <functional>
@@ -21,7 +22,8 @@ class AlgorithmManager : public details::_AlgoFormatBase {
 	                                          algorithms::ChangeType,
 	                                          algorithms::Blur,
 	                                          algorithms::FFT,
-	                                          algorithms::UnaryMath>;
+	                                          algorithms::UnaryMath,
+						  algorithms::Resize>;
 
   public:
 	/**

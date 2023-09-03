@@ -1,0 +1,35 @@
+{
+  "options": [
+    {
+      "type": "double",
+      "text": "Scale factor",
+      "id": "scale_factor",
+      "range": [ 1e-10, 1e10 ],
+      "default": 1.0,
+      "help": "Scale image by factor, each dimension of output is kept to be at least 1."
+    },
+    {
+      "type": "choice",
+      "text": "Interpolation",
+      "id": "interpolation",
+      "values": [ "nearest neighbour" ],
+      "default": "nearest neighbour"
+    },
+    {
+      "type": "text",
+      "text": "Exact resolution",
+      "id": "exact_res",
+      "range": [ 1, 1000 ],
+      "default": "auto",
+      "help": "Enter exact resolution as a numbers seprated by comma (e.g. '1920,1080'). To preserve aspect ratio, replace all reduntant numbers with 0 (e.g. '0,1080'). This overrides scale factor."
+    },
+    {
+      "type": "choice",
+      "text": "Anti-aliasing",
+      "id": "anti_aliasing",
+      "values": [ "none", "fast", "clever" ],
+      "default": "fast",
+      "help": "Anti-aliasing is only applied to downscaled dimensions."
+    }
+  ]
+}
