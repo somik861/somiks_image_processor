@@ -43,7 +43,7 @@ API::API()
 	}
 }
 
-std::string API::version() const { return "0.3"; }
+std::string API::version() const { return "0.4-dev"; }
 
 std::vector<img::LocalizedImage>
 API::load_image(const fs::path& path,
